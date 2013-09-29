@@ -1,0 +1,26 @@
+Skull.Station =
+
+  initializeStation: ->
+    @stations ||= {}
+    @delegateStations(@stations)
+
+    _trigger = @trigger
+    @trigger = ->
+      _trigger.apply(@, arguments)
+      @broadcast.apply(@, arguments)
+  
+  broadcast: (event, args...) ->
+    Skull.app.trigger(event, args...)
+    Skull.app.trigger("#{@moduleName()}.#{event}", args...)
+    
+  setStation: (key, callback) ->
+    [event, scope] = key.match(/(\S+)/g)
+    event = "#{scope}.#{event}" if scope
+    @listenTo(Skull.app, event, callback)
+  
+  delegateStations: (stations) ->
+    for key, callback of stations
+      @setStation(key, @[callback])
+  
+  undelegateStations: ->
+    @stopListening(Skull.app)
