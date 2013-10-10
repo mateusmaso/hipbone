@@ -20,9 +20,9 @@ Skull.Application::helpers['if'] = (conditional, options) ->
   remove = =>
     next = marker[0].nextSibling
     while next and next isnt delimiter[0]
-      _next = next.nextSibling
+      sibling = next.nextSibling
       $(next).remove()
-      next = _next
+      next = sibling
 
   react = (conditional) =>
     if bool(conditional) isnt status

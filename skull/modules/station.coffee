@@ -3,11 +3,7 @@ Skull.Station =
   initializeStation: ->
     @stations ||= {}
     @delegateStations(@stations)
-
-    _trigger = @trigger
-    @trigger = ->
-      _trigger.apply(@, arguments)
-      @broadcast.apply(@, arguments)
+    @trigger = _.catenate(@trigger, @broadcast)
   
   broadcast: (event, args...) ->
     Skull.app.trigger(event, args...)

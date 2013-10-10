@@ -36,3 +36,9 @@ class Skull.Router extends Backbone.Router
       [pair, key, value] = match
       params[Skull.decode(key)] = Skull.parse(Skull.decode(value))
     params
+
+  setTitle: (title) ->
+    document.title = title
+
+  setSubtitle: (title) ->
+    @setTitle("#{title} - #{Skull.app.title}")

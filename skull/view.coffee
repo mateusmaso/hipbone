@@ -5,7 +5,7 @@ class Skull.View extends Backbone.View
   @include Skull.Ajax
 
   constructor: (options={}) ->
-    @on("remove", @clear)
+    @on("remove", @doom)
     @on("sync", @update)
     @options = options
     @elements ||= {}
@@ -33,9 +33,10 @@ class Skull.View extends Backbone.View
   synced: ->
 
   populate: ->
-    if not @fetched and not @synced() and xhr = @fetch()
-      @fetched = @loading = true
-      xhr.done(=> @loading = false).done(=> @trigger("sync"))
+    if not @fetching and not @synced() and @fetching = @fetch()
+      @loading = true
+      @fetching.done => @loading = false
+      @fetching.done => @trigger("sync")
 
   context: ->
 
@@ -64,15 +65,15 @@ class Skull.View extends Backbone.View
     context
   
   delegateEvents: (events) ->
-    _events = {}
-    for event, callback of events || @events || {}
+    events ||= _.clone(@events) || {}
+    for event, callback of events
       do (event, callback) =>
-        _event = event
+        delete events[event]
         for selector in event.match(/(\w+)/g) || [] when @elements[selector]
-          _event = _event.replace(new RegExp("\\b#{selector}\\b", "g"), @elements[selector])
-        _events[_event] = (event) ->
-          @[callback].apply(@, arguments) unless $(event.target).attr('disabled')
-    super(_events)
+          event = event.replace(new RegExp("\\b#{selector}\\b", "g"), @elements[selector])
+        events[event] = _.prefilter @[callback], (event) ->
+          not $(event.target).attr('disabled')
+    super(events)
 
   enable: (selector) ->
     @$(selector).removeClass("disable")
@@ -87,3 +88,8 @@ class Skull.View extends Backbone.View
     @undelegateBubbles()
     @undelegateStations()
     @destroy()
+
+  doom: (sentence=1000) ->
+    _.delay (=>
+      @clear() unless $.contains(document, @el)
+    ), sentence

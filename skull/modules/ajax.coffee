@@ -21,9 +21,8 @@ Skull.Ajax =
       value = value.apply(Skull.app) if _.isFunction(value)
       options.headers[header] = value
 
-    beforeSend = options.beforeSend
-    options.beforeSend = (xhr, settings={}) ->
+    options.beforeSend = _.catenate ((xhr, settings={}) ->
       xhr.settings = settings
-      beforeSend.apply(@, arguments) if beforeSend
+    ), options.beforeSend
 
     options

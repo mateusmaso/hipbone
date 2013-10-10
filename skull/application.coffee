@@ -41,12 +41,6 @@ class Skull.Application extends Skull.Module
 
   initialize: ->
 
-  setTitle: (title) ->
-    document.title = title
-
-  setSubtitle: (title) ->
-    @setTitle("#{title} - #{@title}")
-
   run: ->
     initializer() for name, initializer of @initializers
     @trigger('ready')

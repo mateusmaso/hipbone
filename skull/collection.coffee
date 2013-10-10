@@ -33,10 +33,10 @@ class Skull.Collection extends Backbone.Collection
     @meta[key]
 
   setMeta: (meta={}) ->
-    _meta = _.pick(@meta, _.keys(meta))
-    if not _.isEqual(_meta, meta)
-      _.extend(@meta, meta)
-      @trigger("change:meta", _meta)
+    current = _.pick(@meta, _.keys(meta))
+    if not _.isEqual(current, meta)
+      @meta = _.extend(@meta, meta)
+      @trigger("change:meta", current)
 
   when: ->
     $.when(@synced || @fetch())

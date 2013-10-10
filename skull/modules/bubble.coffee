@@ -3,11 +3,7 @@ Skull.Bubble =
   initializeBubble: ->
     @bubbles ||= {}
     @delegateBubbles(@bubbles)
-
-    _trigger = @trigger
-    @trigger = ->
-      _trigger.apply(@, arguments)
-      @bubble.apply(@, arguments)
+    @trigger = _.catenate(@trigger, @bubble)
 
   bubble: (event, args...) ->
     event = "bubble#{event}"

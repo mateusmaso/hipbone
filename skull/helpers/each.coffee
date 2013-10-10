@@ -46,9 +46,9 @@ Skull.Application::helpers['each'] = (items, options) ->
   remove = =>
     next = marker[0].nextSibling
     while next and next isnt delimiter[0]
-      _next = next.nextSibling
+      sibling = next.nextSibling
       $(next).remove()
-      next = _next
+      next = sibling
 
   removeItem = (item, index) =>
     if options.hash.single
@@ -57,9 +57,9 @@ Skull.Application::helpers['each'] = (items, options) ->
     else
       next = markers[index][0].nextSibling
       while next and next isnt delimiters[index][0]
-        _next = next.nextSibling
+        sibling = next.nextSibling
         $(next).remove()
-        next = _next
+        next = sibling
 
       markers[index].remove()
       delimiters[index].remove()
@@ -68,7 +68,6 @@ Skull.Application::helpers['each'] = (items, options) ->
       delimiters.splice(index, 1)
 
   react = (splice) =>  
-    console.log(splice)
     if items.length is 0 and not empty
       empty = true
       appendEmpty()
