@@ -1,0 +1,2 @@
+- Memory free
+- Page transitions smooth
