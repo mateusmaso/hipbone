@@ -1,7 +1,9 @@
 backbone.skull
 ==============
 
-Dependencies
+## About
+
+## Dependencies
 
 * observe.js
 * jsondiffpatch.js
