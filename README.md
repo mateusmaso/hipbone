@@ -17,6 +17,7 @@ Skull is a backbone lightweight framework for building scalable apps
   * underscore.prefilter.js
   * underscore.string.js
 * handlebars.js (>= 1.0)
+  * handlebars.element.js
 * backbone.js (>= 1.0)
 
 ## License
