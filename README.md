@@ -1,7 +1,11 @@
 backbone.skull
 ==============
 
-Dependencies
+## About
+
+Skull is a backbone lightweight framework for building scalable apps
+
+## Dependencies
 
 * observe.js
 * jsondiffpatch.js
@@ -13,4 +17,9 @@ Dependencies
   * underscore.prefilter.js
   * underscore.string.js
 * handlebars.js (>= 1.0)
+  * handlebars.element.js
 * backbone.js (>= 1.0)
+
+## License
+
+Copyright (c) 2012-2013 Mateus Maso. Released under an MIT license.
