@@ -1,6 +1,6 @@
 Skull.Ajax = 
   
-  ajax: (options) ->
+  ajax: (options={}) ->
     @ajaxHandle($.ajax(@ajaxSettings(options)))
 
   ajaxHandle: (xhr) ->

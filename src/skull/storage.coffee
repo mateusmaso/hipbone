@@ -1,7 +1,7 @@
 class Skull.Storage extends Skull.Module
 
-  constructor: (defaults) ->
-    @set(key, value) for key, value of defaults when not @get(key)
+  constructor: (items={}) ->
+    @set(key, value) for key, value of items
 
   match: (regex) ->
     matches = {}

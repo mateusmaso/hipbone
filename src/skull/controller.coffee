@@ -20,17 +20,17 @@ class Skull.Controller extends Skull.Module
 
   initialize: ->
 
-  action: (params, chained) ->
+  action: (params={}, chained) ->
     return if @filter(params, chained, @constructor.beforeFilters).length > 0
     @[params.action](params, chained)
     @filter(params, chained, @constructor.afterFilters)
 
-  filter: (params, chained, filters) ->
+  filter: (params={}, chained, filters={}) ->
     _.filter filters, (filter) =>
       return if filter.only and not _.contains(filter.only, params.action) 
       @[filter.callback](params, chained) is false
 
   load: (objects...) ->
     deferreds = []
-    deferreds.push(object.when()) for object in objects
+    deferreds.push(object.prepare?() || object) for object in objects
     $.when(deferreds...)

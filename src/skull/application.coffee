@@ -28,11 +28,11 @@ class Skull.Application extends Skull.Module
     @collections ||= options.collections || {}
     @controllers ||= options.controllers || {}
 
-    for name, klass of _.pick(@constructor, _.functions(@constructor))
-      @views[name] = klass if klass.prototype instanceof Skull.View
-      @models[name] = klass if klass.prototype instanceof Skull.Model
-      @collections[name] = klass if klass.prototype instanceof Skull.Collection
-      @controllers[name] = klass if klass.prototype instanceof Skull.Controller
+    for name, method of _.pick(@constructor, _.functions(@constructor))
+      @views[name] = method if method.prototype instanceof Skull.View
+      @models[name] = method if method.prototype instanceof Skull.Model
+      @collections[name] = method if method.prototype instanceof Skull.Collection
+      @controllers[name] = method if method.prototype instanceof Skull.Controller
 
     @i18n = new Skull.I18n(@locales[@locale])
     @router = new Skull.Router
@@ -43,9 +43,8 @@ class Skull.Application extends Skull.Module
 
   run: ->
     initializer() for name, initializer of @initializers
-    @trigger('ready')
     @router.start(pushState: true)
 
-  fetch: (options) ->
+  fetch: (options={}) ->
     @ajax(_.extend(url: @url, options))
   

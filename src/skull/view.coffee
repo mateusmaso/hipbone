@@ -5,7 +5,7 @@ class Skull.View extends Backbone.View
   @include Skull.Ajax
 
   constructor: (options={}) ->
-    @on("remove", @doom)
+    @on("remove", _.debounce(_.prefilter(@clear, => not $.contains(document, @el))))
     @on("sync", @update)
     @options = options
     @elements ||= {}
@@ -88,8 +88,3 @@ class Skull.View extends Backbone.View
     @undelegateBubbles()
     @undelegateStations()
     @destroy()
-
-  doom: (sentence=1000) ->
-    _.delay (=>
-      @clear() unless $.contains(document, @el)
-    ), sentence

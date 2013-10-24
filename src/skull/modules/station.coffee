@@ -14,7 +14,7 @@ Skull.Station =
     event = "#{scope}.#{event}" if scope
     @listenTo(Skull.app, event, callback)
   
-  delegateStations: (stations) ->
+  delegateStations: (stations={}) ->
     for key, callback of stations
       @setStation(key, @[callback])
   

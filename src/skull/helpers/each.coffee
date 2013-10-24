@@ -91,8 +91,8 @@ Skull.Application::helpers['each'] = (items, options) ->
 
   if options.hash?.bind
     observer = observe(items)
-
     element = []
+
     for item, index in items
       if options.hash.single
         itemElement = elements[index] = Handlebars.parseHTML(renderItem(item, index))
@@ -102,7 +102,6 @@ Skull.Application::helpers['each'] = (items, options) ->
         itemDelimiter = delimiters[index] = $(document.createTextNode(""))
         itemElement = Handlebars.parseHTML(renderItem(item, index))
         element.push(itemMarker, itemElement, itemDelimiter)
-    
     if empty
       element = Handlebars.parseHTML(renderEmpty())
 

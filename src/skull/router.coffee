@@ -1,6 +1,6 @@
 class Skull.Router extends Backbone.Router
 
-  match: (route, options) ->
+  match: (route, options={}) ->
     @route route, options.as, =>
       @params = @parse(location.search.substring(1))  
       @params[name.substring(1)] = Skull.parse(arguments[i]) for name, i in route.match(/:\w+/g) || []
@@ -11,7 +11,7 @@ class Skull.Router extends Backbone.Router
       @controller.action(@params, @chained)
       @chain = chain
 
-  start: (options) ->
+  start: (options={}) ->
     Backbone.history.start(options)
   
   stop: ->

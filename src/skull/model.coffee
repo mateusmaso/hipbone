@@ -7,8 +7,10 @@ class Skull.Model extends Backbone.Model
   @include Skull.Station
   @include Skull.Ajax 
   
-  constructor: (attributes={}, options) ->
+  constructor: (attributes={}, options={}) ->
     return instance if @ isnt instance = @makeInstance(attributes, options)
+    @on("change", @updateHash)
+    @on("change", @updateTrack)
     @defaults ||= {}
     @defaults.type ||= @constructor.name
     @initializeStation()
@@ -16,10 +18,8 @@ class Skull.Model extends Backbone.Model
     @initializeProperty()
     @initializeMapping()
     super(attributes, options)
-    @on("change", @updateHash)
-    @on("change", @updateTrack)
 
-  toHash: (attributes) ->
+  toHash: (attributes={}) ->
     attributes.id
 
   updateHash: ->
@@ -28,8 +28,8 @@ class Skull.Model extends Backbone.Model
   updateTrack: ->
     @setTrack(track) if track = @toTrack(@attributes)
 
-  prepareInstance: (attributes, options) ->
-    @set(attributes, options) if attributes
+  prepareInstance: (attributes={}, options={}) ->
+    @set(attributes, options)
 
   hasAttributes: (attributes...) ->
     _.every(attributes, (attribute) => @attributes[attribute]?)
@@ -54,7 +54,7 @@ class Skull.Model extends Backbone.Model
 
     super(attributes, options)
 
-  when: ->
+  prepare: ->
     $.when(@synced || @fetch())
 
   fetch: (options={}) ->
@@ -64,14 +64,12 @@ class Skull.Model extends Backbone.Model
 
   toJSON: (options={}) ->
     options = _.defaults(options, properties: true, mappings: {})
-    json = _.deepClone(super)
-    json[mapping] = @get(mapping)?.toJSON(mappings: mappings) for mapping, mappings of options.mappings
+    json = _.extend(_.deepClone(super), hash: @hash, cid: @cid)
     json[property] = @get(property) for property, callback of @properties if options.properties
-    json.hash = @hash
-    json.cid = @cid
+    json[mapping] = @get(mapping)?.toJSON(mappings: mappings) for mapping, mappings of options.mappings
     json
 
-  parse: (response) ->
+  parse: (response={}) ->
     @synced = Date.now()
     response
 

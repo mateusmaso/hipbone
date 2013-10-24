@@ -7,7 +7,7 @@ Skull.Validation =
   hasErrors: ->
     @errors.length > 0
 
-  validate: (attributes) ->
+  validate: (attributes={}) ->
     @errors = []
     for attribute, value of attributes
       validation = @validations[attribute]

@@ -6,16 +6,17 @@ class Skull.Collection extends Backbone.Collection
 
   constructor: (models, options={}) ->
     return instance if @ isnt instance = @makeInstance(models, options)
-    @meta = {}
+    @on("add remove reset sort", => @trigger("update"))
+    @cid = _.uniqueId('col')
     @defaults ||= {}
     @defaults.type ||= @constructor.name
     @parent = options.parent
+    @meta = {}
     @setMeta(_.extend(offset: 0, limit: 10, @defaults, options.meta))
     @initializeStation()
     super
-    @on("add remove reset sort", => @trigger("update"))
 
-  model: (attributes, options) =>
+  model: (attributes, options={}) =>
     type = if @mapping is "Polymorphic" then attributes.type else @mapping
     new (Skull.app.models[type] || Skull.Model)(attributes, options)
 
@@ -29,6 +30,10 @@ class Skull.Collection extends Backbone.Collection
     @set(models, options) if models
     @setMeta(options.meta) if options.meta
 
+  set: (models, options={}) ->
+    models[index] = @_prepareModel(model, options) for model, index in models
+    super(models, options)
+
   getMeta: (key) ->
     @meta[key]
 
@@ -38,7 +43,7 @@ class Skull.Collection extends Backbone.Collection
       @meta = _.extend(@meta, meta)
       @trigger("change:meta", current)
 
-  when: ->
+  prepare: ->
     $.when(@synced || @fetch())
   
   fetch: (options={}) ->
@@ -54,12 +59,9 @@ class Skull.Collection extends Backbone.Collection
     @length is @getMeta('limit')
 
   toJSON: ->
-    json = _.extend(super, @meta)
-    json.hash = @hash
-    json.cid = @cid
-    json
+    _.extend(super, @meta, hash: @hash, cid: @cid)
 
-  parse: (response) ->
+  parse: (response={}) ->
     @synced = Date.now()
     @setMeta(response.meta)
     response.collection || response

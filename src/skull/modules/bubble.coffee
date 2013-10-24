@@ -17,7 +17,7 @@ Skull.Bubble =
     event = "#{event}.delegateBubbles"
     @$el.on(event, _.bind(callback, @))
 
-  delegateBubbles: (bubbles) ->
+  delegateBubbles: (bubbles={}) ->
     for key, callback of bubbles
       @setBubble(key, @[callback])
 
