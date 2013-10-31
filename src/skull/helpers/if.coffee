@@ -1,5 +1,6 @@
 Skull.Application::helpers['if'] = (conditional, options) ->
 
+  conditional = conditional?.models || conditional
   marker = $(document.createTextNode(""))
   delimiter = $(document.createTextNode(""))
   status = false

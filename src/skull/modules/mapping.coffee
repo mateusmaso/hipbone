@@ -1,9 +1,12 @@
 Skull.Mapping =
 
-  initializeMapping: ->
-    @mappings ||= {}
+  initializeMapping: (mappings={}) ->
+    @mappings = _.extend({}, @mappings, mappings)
 
-  prepareMapping: (mapping, value, options={}) -> 
+  getMapping: (mapping) -> 
+    @setMapping(mapping)
+
+  setMapping: (mapping, value, options={}) ->
     type = @mappings[mapping]
     polymorphic = type is "Polymorphic"
         

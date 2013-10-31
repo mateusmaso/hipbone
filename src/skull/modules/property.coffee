@@ -1,9 +1,9 @@
 Skull.Property =
 
-  initializeProperty: ->
-    @properties ||= {}
+  initializeProperty: (properties={}) ->
+    @properties = _.extend({}, @properties, properties)
 
-  prepareProperty: (property) -> 
+  getProperty: (property) -> 
     method = @properties[property]
     method = @[method] unless _.isFunction(method)
     method.apply(@)

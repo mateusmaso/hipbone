@@ -1,6 +1,7 @@
 class Skull.Collection extends Backbone.Collection
   
   @include Skull.Instance
+  @include Skull.Property
   @include Skull.Station
   @include Skull.Ajax
 
@@ -14,6 +15,7 @@ class Skull.Collection extends Backbone.Collection
     @meta = {}
     @setMeta(_.extend(offset: 0, limit: 10, @defaults, options.meta))
     @initializeStation()
+    @initializeProperty()
     super
 
   model: (attributes, options={}) =>
@@ -31,6 +33,8 @@ class Skull.Collection extends Backbone.Collection
     @setMeta(options.meta) if options.meta
 
   set: (models, options={}) ->
+    models = @parse(models, options) if options.parse
+    models = [models] unless _.isArray(models)
     models[index] = @_prepareModel(model, options) for model, index in models
     super(models, options)
 
@@ -48,7 +52,7 @@ class Skull.Collection extends Backbone.Collection
   
   fetch: (options={}) ->
     options.data ||= {}
-    options.data[key] = value for key, value of @meta when value?
+    options.data[key] = value for key, value of _.omit(@meta, 'type') when value?
     super(options)
 
   fetchMore: (options={}) ->
@@ -58,15 +62,24 @@ class Skull.Collection extends Backbone.Collection
   hasMore: ->
     @length is @getMeta('limit')
 
-  toJSON: ->
-    _.extend(super, @meta, hash: @hash, cid: @cid)
+  toJSON: (options={}) ->
+    json = super
+    if options.properties isnt false
+      json = _.extend(_.deepClone(@meta), length: @length, hash: @hash, cid: @cid, models: json)
+      json[property] = @getProperty(property) for property, callback of @properties
+    json
 
   parse: (response={}) ->
     @synced = Date.now()
     @setMeta(response.meta)
-    response.collection || response
+    response.models || response
 
   sync: (method, collection, options={}) ->
+    options.properties = false
     options.url ||= collection.url()
     options = @ajaxSettings(options)
     @ajaxHandle(Backbone.sync(method, collection, options))
+
+  unsync: ->
+    delete @synced
+    @trigger('unsync', @)

@@ -1,5 +1,6 @@
 Skull.Application::helpers['each'] = (items, options) ->
 
+  items = items?.models || items
   marker = $(document.createTextNode(""))
   markers = []
   delimiter = $(document.createTextNode(""))

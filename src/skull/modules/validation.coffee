@@ -1,7 +1,7 @@
 Skull.Validation =
 
-  initializeValidation: ->    
-    @validations ||= {}
+  initializeValidation: (validations={})->    
+    @validations = _.extend({}, @validations, validations)
     @errors = []
   
   hasErrors: ->

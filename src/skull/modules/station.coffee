@@ -1,9 +1,9 @@
 Skull.Station =
 
-  initializeStation: ->
-    @stations ||= {}
-    @delegateStations(@stations)
+  initializeStation: (stations={}) ->
+    @stations = _.extend({}, @stations, stations)
     @trigger = _.catenate(@trigger, @broadcast)
+    @delegateStations(@stations)
   
   broadcast: (event, args...) ->
     Skull.app.trigger(event, args...)

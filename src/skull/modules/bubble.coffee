@@ -1,9 +1,9 @@
 Skull.Bubble = 
 
-  initializeBubble: ->
-    @bubbles ||= {}
-    @delegateBubbles(@bubbles)
+  initializeBubble: (bubbles={}) ->
+    @bubbles = _.extend({}, @bubbles, bubbles)
     @trigger = _.catenate(@trigger, @bubble)
+    @delegateBubbles(@bubbles)
 
   bubble: (event, args...) ->
     event = "bubble#{event}"

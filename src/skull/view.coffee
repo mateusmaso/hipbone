@@ -33,7 +33,7 @@ class Skull.View extends Backbone.View
   synced: ->
 
   populate: ->
-    if not @fetching and not @synced() and @fetching = @fetch()
+    if not @synced() and @fetching = @fetch()
       @loading = true
       @fetching.done => @loading = false
       @fetching.done => @trigger("sync")

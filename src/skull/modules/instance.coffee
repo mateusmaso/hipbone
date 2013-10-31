@@ -8,15 +8,15 @@ Skull.Instance =
       store: (hash, instance) ->
         @instances[hash] = instance   
 
-      clear: ->
-        for hash, instance of @instances when instance.expires < Date.now()
-          delete @instances[hash] 
-
       tracked: (track) ->
         @trackings[track]
 
       track: (track, hash) ->
         @trackings[track] = hash
+
+      clear: ->
+        @instances = {}
+        @trackings = {}
 
   makeInstance: ->
     @constructor.instances ||= {}
@@ -34,7 +34,6 @@ Skull.Instance =
     else
       @setHash(hash)
       @setTrack(track)
-      @expires = Date.now()
       @
 
   prepareInstance: ->

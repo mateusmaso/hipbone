@@ -36,8 +36,8 @@ class Skull.Model extends Backbone.Model
 
   get: (attribute) ->
     if not (value = super)?
-      value = @prepareMapping(attribute) if @mappings[attribute]
-      value = @prepareProperty(attribute) if @properties[attribute]
+      value = @getMapping(attribute) if @mappings[attribute]
+      value = @getProperty(attribute) if @properties[attribute]
     value
 
   set: (attribute, value, options) ->
@@ -49,7 +49,7 @@ class Skull.Model extends Backbone.Model
       attributes[attribute] = value
 
     for attribute, value of _.pick(attributes, _.keys(@mappings))
-      @prepareMapping(attribute, value, parse: true)
+      @setMapping(attribute, value, parse: true)
       delete attributes[attribute]
 
     super(attributes, options)
@@ -62,11 +62,17 @@ class Skull.Model extends Backbone.Model
     options.data = _.extend(@pick(@fetchAttributes), options.data) if @isNew()
     super(options)
 
+  save: (attributes, options={}) ->
+    options.success = _.catenate((=> @trigger('save')), options.success)
+    super(attributes, options)
+
   toJSON: (options={}) ->
-    options = _.defaults(options, properties: true, mappings: {})
-    json = _.extend(_.deepClone(super), hash: @hash, cid: @cid)
-    json[property] = @get(property) for property, callback of @properties if options.properties
-    json[mapping] = @get(mapping)?.toJSON(mappings: mappings) for mapping, mappings of options.mappings
+    json = _.deepClone(super)
+    if options.properties isnt false
+      json = _.extend(json, hash: @hash, cid: @cid)
+      json[property] = @get(property) for property, callback of @properties
+    for mapping, mappings of options.mappings || {}
+      json[mapping] = @get(mapping)?.toJSON(_.extend({}, options, mappings: mappings))
     json
 
   parse: (response={}) ->
@@ -78,3 +84,7 @@ class Skull.Model extends Backbone.Model
     options.url ||= model.url() 
     options = @ajaxSettings(options)
     @ajaxHandle(Backbone.sync(method, model, options))
+
+  unsync: ->
+    delete @synced
+    @trigger('unsync', @)
