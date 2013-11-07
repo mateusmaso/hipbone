@@ -7,13 +7,15 @@ class Hipbone.Collection extends Backbone.Collection
 
   constructor: (models, options={}) ->
     return instance if @ isnt instance = @makeInstance(models, options)
-    @on("add remove reset sort", => @trigger("update"))
     @cid = _.uniqueId('col')
+    @on("change:meta", @updateHash)
+    @on("change:parent", @updateHash)
+    @on("add remove reset sort", => @trigger("update"))
     @defaults ||= {}
     @defaults.type ||= @constructor.name
-    @parent = options.parent
     @meta = {}
     @setMeta(_.extend(offset: 0, limit: 10, @defaults, options.meta))
+    @setParent(options.parent)
     @initializeStation()
     @initializeProperty()
     super
@@ -27,10 +29,14 @@ class Hipbone.Collection extends Backbone.Collection
 
   toHash: (models, options={}) ->
     options.parent.cid if options.parent
+
+  updateHash: ->
+    @setHash(hash) if hash = @toHash(@models, parent: @parent, meta: @meta)
   
   prepareInstance: (models, options={}) ->
     @set(models, options) if models
     @setMeta(options.meta) if options.meta
+    @setParent(options.parent) if options.parent
 
   set: (models, options={}) ->
     models = @parse(models, options) if options.parse
@@ -46,6 +52,15 @@ class Hipbone.Collection extends Backbone.Collection
     if not _.isEqual(current, meta)
       @meta = _.extend(@meta, meta)
       @trigger("change:meta", current)
+
+  getParent: ->
+    @parent
+
+  setParent: (parent) ->
+    current = @parent
+    if @parent isnt parent
+      @parent = parent
+      @trigger("change:parent", current)
 
   prepare: ->
     $.when(@synced || @fetch())

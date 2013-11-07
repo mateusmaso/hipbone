@@ -12,23 +12,28 @@ Hipbone.Mapping =
         
     if polymorphic or Hipbone.app.models[type]
       attributes = value || {}
-      model = attributes if attributes instanceof Hipbone.Model
 
-      if model instanceof Hipbone.Model
-        attributes = model.attributes
+      if attributes instanceof Hipbone.Model
+        model = attributes
       else
         attributes.id ||= @get("#{mapping}_id")
         attributes.type ||= @get("#{mapping}_type") || type
-        return unless attributes.id
+        model = new Hipbone.app.models[attributes.type](attributes, options) if attributes.id
 
-      @set("#{mapping}_id", attributes.id)
-      @set("#{mapping}_type", attributes.type) if polymorphic
+      if model
+        @set("#{mapping}_id", model.get('id'))
+        @set("#{mapping}_type", model.get('type')) if polymorphic
 
-      model || new Hipbone.app.models[attributes.type](attributes, options)
+      model
     else
       models = value
       options.parent = @
       options.meta = @get("#{mapping}_meta") || {}
       
-      collection = models if models instanceof Hipbone.Collection
-      collection || new Hipbone.app.collections[type](models, options)
+      if models instanceof Hipbone.Collection
+        collection = models
+        collection.setParent(options.parent)
+      else
+        collection = new Hipbone.app.collections[type](models, options)
+
+      collection
