@@ -11,7 +11,7 @@ class Hipbone.Collection extends Backbone.Collection
     @meta = {}
     @defaults ||= {}
     @defaults.type ||= @constructor.name
-    @setMeta(_.defaults(options.meta, @defaults, offset: 0, limit: 10))
+    @setMeta(_.defaults({}, options.meta, @defaults, offset: 0, limit: 10))
     @setParent(options.parent)
     @initializeStation()
     @initializeProperty()

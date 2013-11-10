@@ -71,8 +71,8 @@ class Hipbone.Model extends Backbone.Model
     if options.properties isnt false
       json = _.extend(json, hash: @hash, cid: @cid)
       json[property] = @get(property) for property, callback of @properties
-    for mapping, mappings of options.mappings || {}
-      json[mapping] = @get(mapping)?.toJSON(_.extend({}, options, mappings: mappings))
+    for mapping, mappings of options.mappings || {} when @get(mapping)
+      json[mapping] = @get(mapping).toJSON(_.extend({}, options, mappings: mappings))
     json
 
   parse: (response={}) ->
