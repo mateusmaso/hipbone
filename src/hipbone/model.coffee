@@ -9,8 +9,6 @@ class Hipbone.Model extends Backbone.Model
   
   constructor: (attributes={}, options={}) ->
     return instance if @ isnt instance = @makeInstance(attributes, options)
-    @on("change", @updateHash)
-    @on("change", @updateTrack)
     @defaults ||= {}
     @defaults.type ||= @constructor.name
     @initializeStation()
@@ -18,6 +16,8 @@ class Hipbone.Model extends Backbone.Model
     @initializeProperty()
     @initializeMapping()
     super(attributes, options)
+    @on("change", @updateHash)
+    @on("change", @updateTrack)
 
   toHash: (attributes={}) ->
     attributes.id

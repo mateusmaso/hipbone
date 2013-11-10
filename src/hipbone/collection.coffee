@@ -8,17 +8,17 @@ class Hipbone.Collection extends Backbone.Collection
   constructor: (models, options={}) ->
     return instance if @ isnt instance = @makeInstance(models, options)
     @cid = _.uniqueId('col')
-    @on("change:meta", @updateHash)
-    @on("change:parent", @updateHash)
-    @on("add remove reset sort", => @trigger("update"))
+    @meta = {}
     @defaults ||= {}
     @defaults.type ||= @constructor.name
-    @meta = {}
-    @setMeta(_.extend(offset: 0, limit: 10, @defaults, options.meta))
+    @setMeta(_.defaults(options.meta, @defaults, offset: 0, limit: 10))
     @setParent(options.parent)
     @initializeStation()
     @initializeProperty()
     super
+    @on("change:meta", @updateHash)
+    @on("change:parent", @updateHash)
+    @on("add remove reset sort", => @trigger("update"))
 
   model: (attributes, options={}) =>
     type = if @mapping is "Polymorphic" then attributes.type else @mapping
@@ -52,9 +52,6 @@ class Hipbone.Collection extends Backbone.Collection
     if not _.isEqual(current, meta)
       @meta = _.extend(@meta, meta)
       @trigger("change:meta", current)
-
-  getParent: ->
-    @parent
 
   setParent: (parent) ->
     current = @parent

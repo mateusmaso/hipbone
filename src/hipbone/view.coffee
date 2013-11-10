@@ -5,22 +5,34 @@ class Hipbone.View extends Backbone.View
   @include Hipbone.Ajax
 
   constructor: (options={}) ->
-    @on("remove", _.debounce(_.prefilter(@clear, => not $.contains(document, @el))))
-    @on("sync", @update)
-    @options = options
-    @elements ||= {}
+    @options = {}
     @internal = {}
+    @defaults ||= {}
+    @elements ||= {}
+    @set(_.defaults(options, @defaults))
+    @initializeStation()
     super
     @initializeBubble()
-    @initializeStation()
     @$el.data(view: @)
-    @$el.addClass(@options.class)
+    @$el.addClass(@get('class'))
     @$el.lifecycle(insert: => @trigger('insert'))
     @$el.lifecycle(remove: => @trigger('remove'))
+    @on("remove", _.debounce(_.prefilter(@clear, => not $.contains(document, @el))))
+    @on("change", @update)
+    @on("sync", @update)
     @populate()
     @render()
 
   destroy: ->
+
+  get: (option) ->
+    @options[option]
+
+  set: (options={}) ->
+    current = _.pick(@options, _.keys(options))
+    if not _.isEqual(current, options)
+      @options = _.extend(@options, options)
+      @trigger("change", current)
 
   $: (selector) ->
     super(@elements[selector] || selector)
@@ -33,10 +45,10 @@ class Hipbone.View extends Backbone.View
   synced: ->
 
   populate: ->
-    if not @synced() and @fetching = @fetch()
-      @loading = true
-      @fetching.done => @loading = false
-      @fetching.done => @trigger("sync")
+    if not @synced() and fetching = @fetch()
+      @set(loading: true)
+      fetching.done => @set(loading: false)
+      fetching.done => @trigger("sync")
 
   context: ->
 
@@ -61,9 +73,13 @@ class Hipbone.View extends Backbone.View
   context: ->
 
   present: (context={}) ->
-    context.loading = @loading
+    for key, value of @options when not context[key]?
+      if value instanceof Hipbone.Model or value instanceof Hipbone.Collection
+        context[key] = value.toJSON()
+      else
+        context[key] = value
     context
-  
+
   delegateEvents: (events) ->
     events ||= _.clone(@events) || {}
     for event, callback of events
