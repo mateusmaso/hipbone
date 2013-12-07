@@ -2,7 +2,7 @@ class Hipbone.Router extends Backbone.Router
 
   match: (route, options={}) ->
     @route route, options.as, =>
-      @params = @parse(location.search.substring(1))  
+      @params = @query()
       @params[name.substring(1)] = Hipbone.parse(arguments[i]) for name, i in route.match(/:\w+/g) || []
       @params.action = options.action   
       @params.controller = options.controller
@@ -17,7 +17,8 @@ class Hipbone.Router extends Backbone.Router
   stop: ->
     Backbone.history.stop() if Backbone.history.started
 
-  reload: ->
+  reload: (options={}) ->
+    @clear() if options.clear
     window.location.reload()
 
   navigate: (fragment, options={}) ->
@@ -25,9 +26,24 @@ class Hipbone.Router extends Backbone.Router
     anchor.search = $.param(options.params) if options.params
     fragment = anchor.pathname + anchor.search
     if options.reload then window.location = fragment else super(fragment, options)
+
+  change: (query) ->
+    @params = _.extend(@params, query)
+    delete query[key] for key, value of query when not value?
+    fragment = window.location.pathname
+    fragment += "?#{$.param(query)}" unless _.isEmpty(query)
+    window.history.replaceState({}, document.title, fragment)
+
+  clear: ->
+    query = @query()
+    query[key] = null for key in _.keys(query)
+    @change(query)
   
   location: ->
     window.location.pathname + window.location.search
+
+  query: ->
+    @parse(window.location.search.substring(1))
 
   parse: (query) ->
     params = {}

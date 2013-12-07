@@ -1,6 +1,6 @@
-Hipbone.Application::initializers.linkBridge = ->
+Hipbone.Application::initializers.push ->
 
-  $('body').on "click", "a:not([bypass])", (event) ->
+  $('body').on "click", "a:not([bypass])", (event) =>
     if href = $(event.currentTarget).attr("href")
       event.preventDefault()
-      Hipbone.app.router.navigate(href, trigger: true) 
+      @router.navigate(href, trigger: true) 

@@ -1,5 +1,6 @@
 Hipbone.Application::helpers['bind'] = (value, options) ->
 
+  value = Hipbone.path(@, keypath = value)
   marker = $(document.createTextNode(""))
   delimiter = $(document.createTextNode(""))
   single = not options.fn
@@ -33,7 +34,7 @@ Hipbone.Application::helpers['bind'] = (value, options) ->
     else
       new PathObserver context, keypath, (value) => react(value)
 
-  observer = observe(value, @, options.hash.keypath)
+  observer = observe(value, @, keypath)
 
   if single
     element = $(document.createTextNode(value))

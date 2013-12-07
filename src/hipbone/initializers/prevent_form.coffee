@@ -1,4 +1,4 @@
-Hipbone.Application::initializers.preventForm = ->
+Hipbone.Application::initializers.push ->
 
   $('body').on "submit", "form:not([bypass])", (event) ->
     event.preventDefault()

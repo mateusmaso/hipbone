@@ -1,4 +1,4 @@
-Hipbone.Application::initializers.matchRoutes = ->
+Hipbone.Application::initializers.push ->
 
-  for route in _.keys(Hipbone.app.routes).reverse()
-    Hipbone.app.router.match(route, Hipbone.app.routes[route]) 
+  for route in _.keys(@routes).reverse()
+    @router.match(route, @routes[route]) 

@@ -2,33 +2,51 @@ Hipbone.Mapping =
 
   initializeMapping: (mappings={}) ->
     @mappings = _.extend({}, @mappings, mappings)
+    @transients = {}
 
   getMapping: (mapping) -> 
-    @setMapping(mapping)
+    type = @mappings[mapping]
+
+    if type is "Polymorphic" or Hipbone.app.models[type]
+      if @get("#{mapping}_id")
+        @setMapping(mapping, id: @get("#{mapping}_id"), type: @get("#{mapping}_type") || type)
+      else
+        @transients[mapping]
+    else
+      @setMapping(mapping, null, parent: @, meta: @get("#{mapping}_meta"))
 
   setMapping: (mapping, value, options={}) ->
     type = @mappings[mapping]
-    polymorphic = type is "Polymorphic"
         
-    if polymorphic or Hipbone.app.models[type]
-      attributes = value || {}
+    if type is "Polymorphic" or Hipbone.app.models[type]
+      attributes = value
 
       if attributes instanceof Hipbone.Model
         model = attributes
-      else
-        attributes.id ||= @get("#{mapping}_id")
-        attributes.type ||= @get("#{mapping}_type") || type
-        model = new Hipbone.app.models[attributes.type](attributes, options) if attributes.id
+      else if attributes
+        model = new Hipbone.app.models[attributes.type](attributes, options)
 
       if model
-        @set("#{mapping}_id", model.get('id'))
-        @set("#{mapping}_type", model.get('type')) if polymorphic
+        if model.isNew()
+          @transients[mapping] = model
+          @unset("#{mapping}_id")
+          @unset("#{mapping}_type")
+        else
+          @set("#{mapping}_id", model.get('id'))
+          @set("#{mapping}_type", model.get('type')) if type is "Polymorphic"
+          delete @transients[mapping]
+
+          @listenTo model, "destroy", =>
+            @unset("#{mapping}_id")
+            @unset("#{mapping}_type")
+      else
+        @unset("#{mapping}_id")
+        @unset("#{mapping}_type")
+        delete @transients[mapping]
 
       model
     else
       models = value
-      options.parent = @
-      options.meta = @get("#{mapping}_meta") || {}
       
       if models instanceof Hipbone.Collection
         collection = models

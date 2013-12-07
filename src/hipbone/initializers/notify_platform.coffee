@@ -1,4 +1,4 @@
-Hipbone.Application::initializers.notifyPlatform = ->
+Hipbone.Application::initializers.push ->
 
-  Hipbone.app.on "all", ->
+  @on "all", ->
     Platform.performMicrotaskCheckpoint()

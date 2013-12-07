@@ -5,7 +5,7 @@ class Hipbone.Application extends Hipbone.Module
 
   locales: {}
   helpers: {}
-  initializers: {}
+  initializers: []
 
   constructor: (options={}) ->
     Hipbone.app = @
@@ -20,7 +20,7 @@ class Hipbone.Application extends Hipbone.Module
     @headers ||= options.headers || {}
     @helpers ||= options.helpers || {}
     @templates ||= options.templates || {}
-    @initializers ||= options.initializers || {}
+    @initializers ||= options.initializers || []
     @title ||= options.title || @constructor.name        
 
     @views ||= options.views || {}
@@ -39,11 +39,13 @@ class Hipbone.Application extends Hipbone.Module
     @storage = new Hipbone.Storage
     @initialize()
 
+    initializer.apply(@) for initializer in @initializers
+
   initialize: ->
 
   run: ->
-    initializer() for name, initializer of @initializers
     @router.start(pushState: true)
+    @trigger("ready")
 
   fetch: (options={}) ->
     @ajax(_.extend(url: @url, options))

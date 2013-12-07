@@ -49,18 +49,13 @@ class Hipbone.Model extends Backbone.Model
       attributes[attribute] = value
 
     for attribute, value of _.pick(attributes, _.keys(@mappings))
-      @setMapping(attribute, value, parse: true)
+      @setMapping(attribute, value, parse: true, parent: @)
       delete attributes[attribute]
 
     super(attributes, options)
 
   prepare: ->
     $.when(@synced || @fetch())
-
-  fetch: (options={}) ->
-    options.data ||= {}
-    options.data = _.extend(@pick(@fetchAttributes), options.data) if @isNew()
-    super(options)
 
   save: (attributes, options={}) ->
     options.success = _.catenate((=> @trigger('save')), options.success)

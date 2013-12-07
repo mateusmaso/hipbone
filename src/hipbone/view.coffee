@@ -19,7 +19,6 @@ class Hipbone.View extends Backbone.View
     @$el.lifecycle(remove: => @trigger('remove'))
     @on("remove", _.debounce(_.prefilter(@clear, => not $.contains(document, @el))))
     @on("change", @update)
-    @on("sync", @update)
     @populate()
     @render()
 
@@ -48,12 +47,11 @@ class Hipbone.View extends Backbone.View
     if not @synced() and fetching = @fetch()
       @set(loading: true)
       fetching.done => @set(loading: false)
-      fetching.done => @trigger("sync")
 
   context: ->
 
   update: ->
-    jsondiffpatch.config.objectHash = (object) -> object.cid or object
+    jsondiffpatch.config.objectHash = (object) -> object?.cid or object
     jsondiffpatch.patch(@internal, jsondiffpatch.diff(@internal, @present(@context())))
     @trigger("update")
     @
