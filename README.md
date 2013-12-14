@@ -17,7 +17,6 @@ Hipbone is a lightweight framework for building scalable apps on top of Backbone
 * Improved Model, Collection, Router and View from Backbone
 * Internationalization made easy
 * Application object and initializers
-* Template helpers with DOM manipulation support
 * Local storage support
 * Well defined hierarchy to reduce boilerplate
 * Everything is a modular event driven structure
