@@ -22,7 +22,7 @@ class Hipbone.Router extends Backbone.Router
     window.location.reload()
 
   navigate: (fragment, options={}) ->
-    anchor = $("<a/>").attr("href", fragment).get(0)
+    anchor = $("<a>").attr("href", fragment).get(0)
     anchor.search = $.param(options.params) if options.params
     fragment = anchor.pathname + anchor.search
     if options.reload then window.location = fragment else super(fragment, options)

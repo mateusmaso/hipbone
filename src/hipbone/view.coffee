@@ -4,19 +4,16 @@ class Hipbone.View extends Backbone.View
   @include Hipbone.Bubble
   @include Hipbone.Ajax
 
-  constructor: (options={}) ->
+  constructor: (options={}, content) ->
     @options = {}
     @internal = {}
     @defaults ||= {}
     @elements ||= {}
+    @content = content
     @set(_.defaults(options, @defaults))
     @initializeStation()
     super
     @initializeBubble()
-    @$el.data(view: @)
-    @$el.addClass(@get('class'))
-    @$el.lifecycle(insert: => @trigger('insert'))
-    @$el.lifecycle(remove: => @trigger('remove'))
     @on("remove", _.debounce(_.prefilter(@clear, => not $.contains(document, @el))))
     @on("change", @update)
     @populate()
@@ -32,6 +29,25 @@ class Hipbone.View extends Backbone.View
     if not _.isEqual(current, options)
       @options = _.extend(@options, options)
       @trigger("change", current)
+
+  setAttribute: (attributes) ->
+    for attribute, value of attributes
+      attribute = _.string.dasherize(attribute)
+      if attribute is 'class'
+        @$el.addClass(value)
+      else if _.isBoolean(value)
+        @$el.attr(attribute, value)
+      else if not _.isObject(value)
+        @$el.attr(attribute, value)
+
+  setElement: ->
+    super
+    @$el.data(view: @)
+    @$el.append(@content)
+    @setAttribute(@options)
+    @$el.lifecycle(insert: => @trigger('insert'))
+    @$el.lifecycle(remove: => @trigger('remove'))
+    @
 
   $: (selector) ->
     super(@elements[selector] || selector)
@@ -58,7 +74,6 @@ class Hipbone.View extends Backbone.View
 
   render: ->
     @update()
-    @$el.empty()
     @$el.html(@template(@templateName)) if @templateName
     @trigger("render")
     @
@@ -66,16 +81,14 @@ class Hipbone.View extends Backbone.View
   template: (path, context) ->
     path = Hipbone.app.prefix + path
     context = if _.isEmpty(context) then @internal else @present(context)
-    Handlebars.parseHTML(Hipbone.app.templates[path](context))
+    $(Handlebars.parseHTML(Hipbone.app.templates[path](context)))
 
   context: ->
 
   present: (context={}) ->
-    for key, value of @options when not context[key]?
+    for key, value of context = _.defaults(context, @options)
       if value instanceof Hipbone.Model or value instanceof Hipbone.Collection
         context[key] = value.toJSON()
-      else
-        context[key] = value
     context
 
   delegateEvents: (events) ->

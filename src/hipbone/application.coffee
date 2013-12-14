@@ -4,7 +4,6 @@ class Hipbone.Application extends Hipbone.Module
   @include Hipbone.Ajax
 
   locales: {}
-  helpers: {}
   initializers: []
 
   constructor: (options={}) ->
@@ -18,7 +17,6 @@ class Hipbone.Application extends Hipbone.Module
     @assets ||= options.assets || {}
     @locales ||= options.locales || {}
     @headers ||= options.headers || {}
-    @helpers ||= options.helpers || {}
     @templates ||= options.templates || {}
     @initializers ||= options.initializers || []
     @title ||= options.title || @constructor.name        
