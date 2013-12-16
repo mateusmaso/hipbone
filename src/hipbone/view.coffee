@@ -10,12 +10,11 @@ class Hipbone.View extends Backbone.View
     @defaults ||= {}
     @elements ||= {}
     @content = content
-    @set(_.defaults(options, @defaults))
+    @set(_.defaults({}, options, @defaults))
     @initializeStation()
     super
     @initializeBubble()
-    @on("remove", _.debounce(_.prefilter(@clear, => not $.contains(document, @el))))
-    @on("change", @update)
+    @setAttribute(options)
     @populate()
     @render()
 
@@ -25,18 +24,20 @@ class Hipbone.View extends Backbone.View
     @options[option]
 
   set: (options={}) ->
-    current = _.pick(@options, _.keys(options))
-    if not _.isEqual(current, options)
+    @previousOptions = _.pick(@options, _.keys(options))
+    if not _.isEqual(@previousOptions, options)
       @options = _.extend(@options, options)
-      @trigger("change", current)
+      @update() if @rendered
+      @trigger("change:#{key}") for key, value of options when value isnt @previousOptions[key]
+      @trigger("change")
 
   setAttribute: (attributes) ->
     for attribute, value of attributes
       attribute = _.string.dasherize(attribute)
       if attribute is 'class'
         @$el.addClass(value)
-      else if _.isBoolean(value)
-        @$el.attr(attribute, value)
+      else if _.isBoolean(value) and value
+        @$el.attr(attribute, '')
       else if not _.isObject(value)
         @$el.attr(attribute, value)
 
@@ -44,9 +45,9 @@ class Hipbone.View extends Backbone.View
     super
     @$el.data(view: @)
     @$el.append(@content)
-    @setAttribute(@options)
     @$el.lifecycle(insert: => @trigger('insert'))
     @$el.lifecycle(remove: => @trigger('remove'))
+    @$el.lifecycle(remove: => _.delay((=> @clear() if not $.contains(document, @el))))
     @
 
   $: (selector) ->
@@ -75,6 +76,7 @@ class Hipbone.View extends Backbone.View
   render: ->
     @update()
     @$el.html(@template(@templateName)) if @templateName
+    @rendered = true
     @trigger("render")
     @
   

@@ -16,8 +16,6 @@ class Hipbone.Model extends Backbone.Model
     @initializeProperty()
     @initializeMapping()
     super(attributes, options)
-    @on("change", @updateHash)
-    @on("change", @updateTrack)
 
   toHash: (attributes={}) ->
     attributes.id
@@ -52,7 +50,12 @@ class Hipbone.Model extends Backbone.Model
       @setMapping(attribute, value, parse: true, parent: @)
       delete attributes[attribute]
 
-    super(attributes, options)
+    value = super(attributes, options)
+    
+    @updateHash()
+    @updateTrack()
+
+    value
 
   prepare: ->
     $.when(@synced || @fetch())

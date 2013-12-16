@@ -7,6 +7,7 @@ class Hipbone.Collection extends Backbone.Collection
 
   constructor: (models, options={}) ->
     return instance if @ isnt instance = @makeInstance(models, options)
+    @on("add remove reset sort", => @trigger("update"))
     @cid = _.uniqueId('col')
     @meta = {}
     @defaults ||= {}
@@ -16,13 +17,9 @@ class Hipbone.Collection extends Backbone.Collection
     @initializeStation()
     @initializeProperty()
     super
-    @on("change:meta", @updateHash)
-    @on("change:parent", @updateHash)
-    @on("add remove reset sort", => @trigger("update"))
 
-  model: (attributes, options={}) =>
-    type = if @mapping is "Polymorphic" then attributes.type else @mapping
-    new (Hipbone.app.models[type] || Hipbone.Model)(attributes, options)
+  model: (attributes, options={}) ->
+    new (Hipbone.app.models[attributes.type] || Hipbone.Model)(attributes, options)
 
   url: ->
     if @parent then @parent.url() + @urlRoot else @urlRoot
@@ -48,16 +45,18 @@ class Hipbone.Collection extends Backbone.Collection
     @meta[key]
 
   setMeta: (meta={}) ->
-    current = _.pick(@meta, _.keys(meta))
-    if not _.isEqual(current, meta)
+    @previousMeta = _.pick(@meta, _.keys(meta))
+    if not _.isEqual(@previousMeta, meta)
       @meta = _.extend(@meta, meta)
-      @trigger("change:meta", current)
+      @updateHash()
+      @trigger("change:meta:#{key}") for key, value of meta when value isnt @previousMeta[key]
+      @trigger("change:meta")
 
   setParent: (parent) ->
-    current = @parent
     if @parent isnt parent
       @parent = parent
-      @trigger("change:parent", current)
+      @updateHash()
+      @trigger("change:parent")
 
   prepare: ->
     $.when(@synced || @fetch())

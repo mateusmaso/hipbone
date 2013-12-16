@@ -8,6 +8,6 @@ Hipbone.Application::initializers.push ->
 
       Handlebars.registerElement name, ((attributes) ->
         attributes[key] = Hipbone.instance(value) for key, value of attributes
-        new view(attributes, @childNodes).el
+        new view(attributes, $(@).contents()).el
       ), booleans: booleans
         
