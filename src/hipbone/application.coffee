@@ -42,8 +42,9 @@ class Hipbone.Application extends Hipbone.Module
   initialize: ->
 
   run: ->
+    @router.match(route, @routes[route]) for route in _.keys(@routes).reverse()
     @router.start(pushState: true)
-    @trigger("ready")
+    @trigger("run")
 
   fetch: (options={}) ->
     @ajax(_.extend(url: @url, options))

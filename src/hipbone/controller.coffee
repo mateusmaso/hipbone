@@ -1,7 +1,6 @@
 class Hipbone.Controller extends Hipbone.Module
   
   @include Backbone.Events
-  @include Hipbone.Station
   @include Hipbone.Ajax
 
   @beforeFilter: (callback, options={}) ->
@@ -15,7 +14,6 @@ class Hipbone.Controller extends Hipbone.Module
     @afterFilters.push(options)
 
   constructor: ->
-    @initializeStation()
     @initialize()
 
   initialize: ->

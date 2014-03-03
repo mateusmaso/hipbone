@@ -4,14 +4,12 @@ class Hipbone.Model extends Backbone.Model
   @include Hipbone.Validation
   @include Hipbone.Property
   @include Hipbone.Mapping
-  @include Hipbone.Station
   @include Hipbone.Ajax 
   
   constructor: (attributes={}, options={}) ->
     return instance if @ isnt instance = @makeInstance(attributes, options)
     @defaults ||= {}
     @defaults.type ||= @constructor.name
-    @initializeStation()
     @initializeValidation()
     @initializeProperty()
     @initializeMapping()

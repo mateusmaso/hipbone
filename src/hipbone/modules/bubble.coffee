@@ -3,7 +3,7 @@ Hipbone.Bubble =
   initializeBubble: (bubbles={}) ->
     @bubbles = _.extend({}, @bubbles, bubbles)
     @trigger = _.catenate(@trigger, @bubble)
-    @delegateBubbles(@bubbles)
+    @delegateBubbles()
 
   bubble: (event, args...) ->
     event = "bubble#{event}"
@@ -17,9 +17,8 @@ Hipbone.Bubble =
     event = "#{event}.delegateBubbles"
     @$el.on(event, _.bind(callback, @))
 
-  delegateBubbles: (bubbles={}) ->
-    for key, callback of bubbles
-      @setBubble(key, @[callback])
+  delegateBubbles: ->
+    @setBubble(key, @[callback]) for key, callback of @bubbles
 
   undelegateBubbles: ->
     @$el.off(".delegateBubbles")

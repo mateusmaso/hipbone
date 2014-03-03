@@ -3,7 +3,7 @@ class Hipbone.Router extends Backbone.Router
   match: (route, options={}) ->
     @route route, options.as, =>
       @params = @query()
-      @params[name.substring(1)] = Hipbone.parse(arguments[i]) for name, i in route.match(/:\w+/g) || []
+      @params[name.substring(1)] = Hipbone.parse(arguments[index]) for name, index in route.match(/:\w+/g) || []
       @params.action = options.action   
       @params.controller = options.controller
       @chained = (chain = options.as + @params[options.chain]) is @chain and options.chain
@@ -15,7 +15,7 @@ class Hipbone.Router extends Backbone.Router
     Backbone.history.start(options)
   
   stop: ->
-    Backbone.history.stop() if Backbone.history.started
+    Backbone.history.stop() if Backbone.History.started
 
   reload: (options={}) ->
     @clear() if options.clear
@@ -36,7 +36,7 @@ class Hipbone.Router extends Backbone.Router
 
   clear: ->
     query = @query()
-    query[key] = null for key in _.keys(query)
+    query[key] = undefined for key in _.keys(query)
     @change(query)
   
   location: ->

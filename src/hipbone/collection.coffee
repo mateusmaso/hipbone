@@ -2,7 +2,6 @@ class Hipbone.Collection extends Backbone.Collection
   
   @include Hipbone.Instance
   @include Hipbone.Property
-  @include Hipbone.Station
   @include Hipbone.Ajax
 
   constructor: (models, options={}) ->
@@ -14,7 +13,6 @@ class Hipbone.Collection extends Backbone.Collection
     @defaults.type ||= @constructor.name
     @setMeta(_.defaults({}, options.meta, @defaults, offset: 0, limit: 10))
     @setParent(options.parent)
-    @initializeStation()
     @initializeProperty()
     super
 
@@ -63,12 +61,19 @@ class Hipbone.Collection extends Backbone.Collection
   
   fetch: (options={}) ->
     options.data ||= {}
-    options.data[key] = value for key, value of _.omit(@meta, 'type') when value?
+    options.data[key] = value for key, value of @meta when value?
+
+    if options.increment
+      @setMeta(offset: @getMeta('offset') + @getMeta('limit'))
+      options.data.offset = @getMeta("offset")
+    else
+      options.data.offset = 0
+      options.data.limit = @getMeta("offset") + @getMeta("limit")
+
     super(options)
 
   fetchMore: (options={}) ->
-    @setMeta(offset: @getMeta('offset') + @getMeta('limit'))
-    @fetch(_.extend(remove: false, options))
+    @fetch(_.extend(remove: false, increment: true, options))
 
   hasMore: ->
     @length is @getMeta('limit')

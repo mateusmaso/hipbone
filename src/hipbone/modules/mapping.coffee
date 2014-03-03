@@ -13,7 +13,7 @@ Hipbone.Mapping =
       else
         @transients[mapping]
     else
-      @setMapping(mapping, null, parent: @, meta: @get("#{mapping}_meta"))
+      @setMapping(mapping, undefined, parent: @, meta: @get("#{mapping}_meta"))
 
   setMapping: (mapping, value, options={}) ->
     type = @mappings[mapping]
@@ -35,10 +35,6 @@ Hipbone.Mapping =
           @set("#{mapping}_id", model.get('id'))
           @set("#{mapping}_type", model.get('type')) if type is "Polymorphic"
           delete @transients[mapping]
-
-          @listenTo model, "destroy", =>
-            @unset("#{mapping}_id")
-            @unset("#{mapping}_type")
       else
         @unset("#{mapping}_id")
         @unset("#{mapping}_type")

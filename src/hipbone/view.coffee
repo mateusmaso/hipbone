@@ -1,6 +1,5 @@
 class Hipbone.View extends Backbone.View
     
-  @include Hipbone.Station
   @include Hipbone.Bubble
   @include Hipbone.Ajax
 
@@ -11,10 +10,8 @@ class Hipbone.View extends Backbone.View
     @elements ||= {}
     @content = content
     @set(_.defaults({}, options, @defaults))
-    @initializeStation()
     super
     @initializeBubble()
-    @setAttribute(options)
     @populate()
     @render()
 
@@ -30,6 +27,11 @@ class Hipbone.View extends Backbone.View
       @update() if @rendered
       @trigger("change:#{key}") for key, value of options when value isnt @previousOptions[key]
       @trigger("change")
+
+  unset: (option) ->
+    options = {}
+    options[option] = undefined
+    @set(options)
 
   setAttribute: (attributes) ->
     for attribute, value of attributes
@@ -47,7 +49,8 @@ class Hipbone.View extends Backbone.View
     @$el.append(@content)
     @$el.lifecycle(insert: => @trigger('insert'))
     @$el.lifecycle(remove: => @trigger('remove'))
-    @$el.lifecycle(remove: => _.delay((=> @clear() if not $.contains(document, @el))))
+    @$el.lifecycle(remove: => _.delay(=> not $.contains(document, @el) and @clear()))
+    @setAttribute(@options)
     @
 
   $: (selector) ->
@@ -64,12 +67,16 @@ class Hipbone.View extends Backbone.View
     if not @synced() and fetching = @fetch()
       @set(loading: true)
       fetching.done => @set(loading: false)
+    else if @eagerSync and fetching = @fetch()
+      @set(reloading: true)
+      fetching.done => @set(reloading: false)
 
   context: ->
 
   update: ->
-    jsondiffpatch.config.objectHash = (object) -> object?.cid or object
+    jsondiffpatch.config.objectHash = (object) -> object?.cid || object
     jsondiffpatch.patch(@internal, jsondiffpatch.diff(@internal, @present(@context())))
+    Platform.performMicrotaskCheckpoint()
     @trigger("update")
     @
 
@@ -105,15 +112,12 @@ class Hipbone.View extends Backbone.View
     super(events)
 
   enable: (selector) ->
-    @$(selector).removeClass("disable")
     @$(selector).removeAttr('disabled')
 
   disable: (selector) ->
-    @$(selector).addClass("disable")
     @$(selector).attr('disabled', true)
 
   clear: ->
     @stopListening()
     @undelegateBubbles()
-    @undelegateStations()
     @destroy()

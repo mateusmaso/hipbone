@@ -3,20 +3,14 @@ Hipbone.Application::initializers.push ->
   Handlebars.registerHelper 'asset', (key) ->
     Hipbone.app.assets[key]
 
+  Handlebars.registerHelper 't', (key, options) ->
+    Hipbone.app.i18n.t(key, options.hash)
+
   Handlebars.registerHelper 'template', (path, options) ->
     path = Hipbone.app.prefix + path
     context = if _.isEmpty(options.hash) then @ else options.hash
     template = Hipbone.app.templates[path](context)
-    if options.hash.unescape
-      template
-    else
-      new Handlebars.SafeString(template)
-
-  Handlebars.registerHelper 'translate', (key, options) ->
-    Hipbone.app.i18n.t(key, options.hash)
-
-  Handlebars.registerHelper 't', (key, options) ->
-    Hipbone.app.i18n.t(key, options.hash)
+    if options.hash.unescape then template else new Handlebars.SafeString(template)
 
   eachHelper = Handlebars.helpers['each']
   Handlebars.registerHelper 'each', (items, options) ->
@@ -30,4 +24,3 @@ Hipbone.Application::initializers.push ->
     else
       conditional = conditional?.models || conditional
     ifHelper.apply(@, [conditional, options])
-

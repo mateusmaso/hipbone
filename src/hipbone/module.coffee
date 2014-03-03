@@ -4,14 +4,12 @@ class Hipbone.Module
 
   @include: (modules...) ->
     for module in modules
-      for name, method of module when name not in moduleKeywords
-        @::[name] = method
+      @::[name] = method for name, method of module when name not in moduleKeywords
       module.included.apply(@) if module.included
 
   @extend: (modules...) ->
     for module in modules
-      for name, method of module when name not in moduleKeywords
-        @[name] = method
+      @[name] = method for name, method of module when name not in moduleKeywords
       module.extended.apply(@) if module.extended
 
   moduleName: ->

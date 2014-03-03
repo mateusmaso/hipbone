@@ -4,8 +4,8 @@ Hipbone.Ajax =
     @ajaxHandle($.ajax(@ajaxSettings(options)))
 
   ajaxHandle: (xhr) ->
-    xhr.done => @trigger("ajax_success", arguments...)
-    xhr.fail => @trigger("ajax_error", arguments...)
+    xhr.done => Hipbone.app.trigger("ajaxSuccess", arguments...)
+    xhr.fail => Hipbone.app.trigger("ajaxError", arguments...)
     xhr
   
   ajaxSettings: (options={}) ->
