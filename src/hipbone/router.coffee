@@ -25,7 +25,13 @@ class Hipbone.Router extends Backbone.Router
     anchor = $("<a>").attr("href", fragment).get(0)
     anchor.search = $.param(options.params) if options.params
     fragment = anchor.pathname + anchor.search
-    if options.reload then window.location = fragment else super(fragment, options)
+    
+    if options.reload
+      window.location = fragment
+    else if options.load
+      Backbone.history.loadUrl(fragment)
+    else 
+      super(fragment, options)
 
   change: (query) ->
     @params = _.extend(@params, query)

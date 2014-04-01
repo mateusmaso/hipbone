@@ -12,7 +12,7 @@ class Hipbone.Application extends Hipbone.Module
     @url ||= options.url || '/'
     @host ||= options.host || ''
     @prefix ||= options.prefix || ''
-    @locale ||= options.locale || 'english'
+    @locale ||= options.locale || 'en'
     @routes ||= options.routes || {}
     @assets ||= options.assets || {}
     @locales ||= options.locales || {}
