@@ -12,9 +12,6 @@ class Hipbone.Module
       @[name] = method for name, method of module when name not in moduleKeywords
       module.extended.apply(@) if module.extended
 
-  moduleName: ->
-    _.string.underscored(@constructor.name)
-
 for module in ['Model', 'Collection', 'Router', 'View', 'History']
   Backbone[module] = _.extend(Backbone[module], Hipbone.Module)
   Backbone[module]:: = _.extend(Backbone[module]::, Hipbone.Module::)

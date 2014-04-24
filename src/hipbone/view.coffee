@@ -1,6 +1,5 @@
 class Hipbone.View extends Backbone.View
     
-  @include Hipbone.Bubble
   @include Hipbone.Ajax
 
   constructor: (options={}, content) ->
@@ -11,7 +10,6 @@ class Hipbone.View extends Backbone.View
     @content = content
     @set(_.defaults({}, options, @defaults))
     super
-    @initializeBubble()
     @populate()
     @render()
 
@@ -105,8 +103,9 @@ class Hipbone.View extends Backbone.View
     for event, callback of events
       do (event, callback) =>
         delete events[event]
-        for selector in event.match(/(\w+)/g) || [] when @elements[selector]
-          event = event.replace(new RegExp("\\b#{selector}\\b", "g"), @elements[selector])
+        [event, eventName, selector] = event.match(/^(\S+)\s*(.*)$/)
+        if alias = @elements[selector]
+          event = "#{eventName} #{selector.replace(new RegExp("\\b#{selector}\\b", "g"), alias)}"
         events[event] = _.prefilter @[callback], (event) ->
           not $(event.target).attr('disabled')
     super(events)
@@ -117,7 +116,10 @@ class Hipbone.View extends Backbone.View
   disable: (selector) ->
     @$(selector).attr('disabled', true)
 
+  trigger: (name) ->
+    @$el?.trigger("#{name}.view")
+    super
+
   clear: ->
     @stopListening()
-    @undelegateBubbles()
     @destroy()

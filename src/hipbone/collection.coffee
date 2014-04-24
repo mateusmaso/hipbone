@@ -76,7 +76,7 @@ class Hipbone.Collection extends Backbone.Collection
     @fetch(_.extend(remove: false, increment: true, options))
 
   hasMore: ->
-    @length is @getMeta('limit')
+    @length is (@getMeta('offset') + @getMeta('limit'))
 
   toJSON: (options={}) ->
     json = super
