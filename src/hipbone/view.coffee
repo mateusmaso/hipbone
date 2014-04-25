@@ -116,8 +116,8 @@ class Hipbone.View extends Backbone.View
   disable: (selector) ->
     @$(selector).attr('disabled', true)
 
-  trigger: (name) ->
-    @$el?.trigger("#{name}.view")
+  trigger: (name, args...) ->
+    @$el?.trigger("#{name}.view", args)
     super
 
   clear: ->
