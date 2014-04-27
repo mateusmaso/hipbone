@@ -1,8 +1,6 @@
 hipbone
 ==============
 
-## About
-
 Hipbone is a lightweight framework for building scalable apps on top of Backbone and inspired by other libraries such as Ember, React and Spine. It was first developed in the early days of Backbone and through time many enhancements were made in its technology, architecture and conventions. The main idea behind this project was to bring simplicity in development with smart solutions, proven paths and intuitive ways of dealing SPA problems.
 
 ## Features
