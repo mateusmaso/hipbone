@@ -6,9 +6,9 @@ Hipbone is a lightweight framework for building scalable apps on top of Backbone
 ## Features
 
 * Identity map caching.
+* Local storage support.
 * ```View``` as components.
 * Handlebars templating.
-* Local storage support.
 * Custom elements syntax.
 * Simple one-way data binding.
 * Internationalization made easy.
