@@ -9,7 +9,7 @@ class Hipbone.Model extends Backbone.Model
   constructor: (attributes={}, options={}) ->
     return instance if @ isnt instance = @makeInstance(attributes, options)
     @defaults ||= {}
-    @defaults.type ||= @constructor.name
+    @defaults.type ||= "Model"
     @initializeValidation()
     @initializeProperty()
     @initializeMapping()

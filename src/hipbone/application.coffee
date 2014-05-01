@@ -11,6 +11,7 @@ class Hipbone.Application extends Hipbone.Module
 
     @url ||= options.url || '/'
     @host ||= options.host || ''
+    @title ||= options.title || 'App'
     @prefix ||= options.prefix || ''
     @locale ||= options.locale || 'en'
     @routes ||= options.routes || {}
@@ -19,7 +20,6 @@ class Hipbone.Application extends Hipbone.Module
     @headers ||= options.headers || {}
     @templates ||= options.templates || {}
     @initializers ||= options.initializers || []
-    @title ||= options.title || @constructor.name        
 
     @views ||= options.views || {}
     @models ||= options.models || {}

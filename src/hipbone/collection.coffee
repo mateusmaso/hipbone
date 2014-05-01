@@ -10,7 +10,7 @@ class Hipbone.Collection extends Backbone.Collection
     @cid = _.uniqueId('col')
     @meta = {}
     @defaults ||= {}
-    @defaults.type ||= @constructor.name
+    @defaults.type ||= "Collection"
     @setMeta(_.defaults({}, options.meta, @defaults, offset: 0, limit: 10))
     @setParent(options.parent)
     @initializeProperty()
