@@ -1,40 +1,29 @@
 class Hipbone.Model extends Backbone.Model
-  
-  @include Hipbone.Instance
-  @include Hipbone.Validation
-  @include Hipbone.Property
+
   @include Hipbone.Mapping
-  @include Hipbone.Ajax 
-  
+  @include Hipbone.Validation
+  @include Hipbone.ComputedAttribute
+
+  hashName: "model"
+
+  typeAttribute: "type"
+
   constructor: (attributes={}, options={}) ->
-    return instance if @ isnt instance = @makeInstance(attributes, options)
-    @defaults ||= {}
-    @defaults.type ||= "Model"
-    @initializeValidation()
-    @initializeProperty()
+    hashes = @hashes(attributes)
+
+    if model = Hipbone.app.identityMap.findAll(hashes)[0]
+      model.set(attributes, options)
+      return model
+    else
+      Hipbone.app.identityMap.storeAll(hashes, @)
+
     @initializeMapping()
-    super(attributes, options)
-
-  toHash: (attributes={}) ->
-    attributes.id
-
-  updateHash: ->
-    @setHash(hash) if hash = @toHash(@attributes)
-
-  updateTrack: ->
-    @setTrack(track) if track = @toTrack(@attributes)
-
-  prepareInstance: (attributes={}, options={}) ->
-    @set(attributes, options)
-
-  hasAttributes: (attributes...) ->
-    _.every(attributes, (attribute) => @attributes[attribute]?)
+    @initializeValidation()
+    @initializeComputedAttribute()
+    super
 
   get: (attribute) ->
-    if not (value = super)?
-      value = @getMapping(attribute) if @mappings[attribute]
-      value = @getProperty(attribute) if @properties[attribute]
-    value
+    @getMapping(attribute) || @getComputedAttribute(attribute) || super
 
   set: (attribute, value, options) ->
     if _.isObject(attribute)
@@ -44,42 +33,39 @@ class Hipbone.Model extends Backbone.Model
       attributes = {}
       attributes[attribute] = value
 
-    for attribute, value of _.pick(attributes, _.keys(@mappings))
-      @setMapping(attribute, value, parse: true, parent: @)
+    @type = attributes[@typeAttribute] || @type
+
+    for attribute, value of _.pick(attributes, _.keys(@mappings), @polymorphics)
+      @setMapping(attribute, value, parse: true)
       delete attributes[attribute]
 
-    value = super(attributes, options)
-    
-    @updateHash()
-    @updateTrack()
-
-    value
-
-  prepare: ->
-    $.when(@synced || @fetch())
-
-  save: (attributes, options={}) ->
-    options.success = _.catenate((=> @trigger('save')), options.success)
     super(attributes, options)
 
+    Hipbone.app.identityMap.storeAll(@hashes(@attributes), @)
+
   toJSON: (options={}) ->
-    json = _.deepClone(super)
-    if options.properties isnt false
-      json = _.extend(json, hash: @hash, cid: @cid)
-      json[property] = @get(property) for property, callback of @properties
-    for mapping, mappings of options.mappings || {} when @get(mapping)
-      json[mapping] = @get(mapping).toJSON(_.extend({}, options, mappings: mappings))
-    json
+    mappings = options.mappings || {}
+    computedAttributes = options.computedAttributes || _.keys(@computedAttributes)
+    _.extend(_.deepClone(super), @toJSONMappings(mappings), @toJSONComputedAttributes(computedAttributes), cid: @cid)
+
+  hashes: (attributes) ->
+    hashes = []
+    hashes.push(@cid) if @cid
+    hashes.push("#{@hashName}-#{attributes[@idAttribute]}") if attributes[@idAttribute]
+    hashes
 
   parse: (response={}) ->
     @synced = Date.now()
     response
 
+  prepare: ->
+    $.when(@synced || @fetch())
+
   sync: (method, model, options={}) ->
-    options.properties = false
-    options.url ||= model.url() 
-    options = @ajaxSettings(options)
-    @ajaxHandle(Backbone.sync(method, model, options))
+    options.url ||= model.url()
+    options.computedAttributes = []
+    options = Hipbone.app.ajaxSettings(options)
+    Hipbone.app.ajaxHandle(Backbone.sync(method, model, options))
 
   unsync: ->
     delete @synced

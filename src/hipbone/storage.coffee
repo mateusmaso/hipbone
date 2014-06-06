@@ -9,7 +9,7 @@ class Hipbone.Storage extends Hipbone.Module
     matches
 
   get: (key) ->
-    Hipbone.parse(value) if value = localStorage[key]
+    _.parse(value) if value = localStorage[key]
 
   set: (key, value) ->
     localStorage.setItem(key, JSON.stringify(value))

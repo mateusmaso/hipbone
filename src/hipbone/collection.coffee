@@ -1,64 +1,74 @@
 class Hipbone.Collection extends Backbone.Collection
-  
-  @include Hipbone.Instance
-  @include Hipbone.Property
-  @include Hipbone.Ajax
+
+  defaults: {}
+
+  model: Hipbone.Model
+
+  hashName: "collection"
 
   constructor: (models, options={}) ->
-    return instance if @ isnt instance = @makeInstance(models, options)
-    @on("add remove reset sort", => @trigger("update"))
-    @cid = _.uniqueId('col')
+    unless _.isArray(models)
+      options = models || {}
+      models = null
+
+    hashes = @hashes(models, options)
+
+    if collection = Hipbone.app.identityMap.findAll(hashes)[0]
+      collection.set(models, options) if models
+      collection.setMeta(options.meta) if options.meta
+      collection.setParent(options.parent) if options.parent
+      return collection
+    else
+      Hipbone.app.identityMap.storeAll(hashes, @)
+
+    @on("add remove reset sort", => @trigger("update", @))
+
     @meta = {}
-    @defaults ||= {}
-    @defaults.type ||= "Collection"
-    @setMeta(_.defaults({}, options.meta, @defaults, offset: 0, limit: 10))
+    @cid = _.uniqueId('col')
     @setParent(options.parent)
-    @initializeProperty()
+    @setMeta(_.defaults({}, options.meta, @defaults, offset: 0, limit: 10))
     super
 
-  model: (attributes, options={}) ->
-    new (Hipbone.app.models[attributes.type] || Hipbone.Model)(attributes, options)
+  _prepareModel: (attributes, options={}) ->
+    unless @_isModel(attributes)
+      attributes = new (Hipbone.app.models[@parseModelType(attributes)] || @model)(attributes, options)
+    super
+
+  generateId: (attributes) ->
+    if @model and @_isModel(@model::)
+      Model = @model
+    else
+      Model = Hipbone.app.models[@parseModelType(attributes)]
+
+    "#{attributes[Model::typeAttribute]}-#{attributes[Model::idAttribute]}"
 
   url: ->
     if @parent then @parent.url() + @urlRoot else @urlRoot
 
-  toHash: (models, options={}) ->
-    options.parent.cid if options.parent
-
-  updateHash: ->
-    @setHash(hash) if hash = @toHash(@models, parent: @parent, meta: @meta)
-  
-  prepareInstance: (models, options={}) ->
-    @set(models, options) if models
-    @setMeta(options.meta) if options.meta
-    @setParent(options.parent) if options.parent
-
   set: (models, options={}) ->
-    models = @parse(models, options) if options.parse
-    models = [models] unless _.isArray(models)
-    models[index] = @_prepareModel(model, options) for model, index in models
     super(models, options)
+    Hipbone.app.identityMap.storeAll(@hashes(models, parent: @parent, meta: @meta), this)
 
   getMeta: (key) ->
     @meta[key]
 
-  setMeta: (meta={}) ->
-    @previousMeta = _.pick(@meta, _.keys(meta))
-    if not _.isEqual(@previousMeta, meta)
+  setMeta: (meta={}, options={}) ->
+    @_previousMeta = _.pick(@meta, _.keys(meta))
+    if not _.isEqual(@_previousMeta, meta)
       @meta = _.extend(@meta, meta)
-      @updateHash()
-      @trigger("change:meta:#{key}") for key, value of meta when value isnt @previousMeta[key]
-      @trigger("change:meta")
+      @trigger("change:meta:#{key}", this, value, options) for key, value of meta when value isnt @_previousMeta[key]
+      @trigger("change:meta", this, meta, options)
 
-  setParent: (parent) ->
+    Hipbone.app.identityMap.storeAll(@hashes(@models, parent: @parent, meta: @meta), this)
+
+  setParent: (parent, options={}) ->
+    @_previousParent = @parent
     if @parent isnt parent
       @parent = parent
-      @updateHash()
-      @trigger("change:parent")
+      @trigger("change:parent", this, @parent, options)
 
-  prepare: ->
-    $.when(@synced || @fetch())
-  
+    Hipbone.app.identityMap.storeAll(@hashes(@models, parent: @parent, meta: @meta), this)
+
   fetch: (options={}) ->
     options.data ||= {}
     options.data[key] = value for key, value of @meta when value?
@@ -79,22 +89,30 @@ class Hipbone.Collection extends Backbone.Collection
     @length is (@getMeta('offset') + @getMeta('limit'))
 
   toJSON: (options={}) ->
-    json = super
-    if options.properties isnt false
-      json = _.extend(_.deepClone(@meta), length: @length, hash: @hash, cid: @cid, models: json)
-      json[property] = @getProperty(property) for property, callback of @properties
-    json
+    _.extend(_.deepClone(@meta), length: @length, cid: @cid, models: super)
+
+  hashes: (models, options={}) ->
+    hashes = []
+    hashes.push(@cid) if @cid
+    hashes.push("#{@hashName}-#{options.parent.cid}") if options.parent?.cid
+    hashes
 
   parse: (response={}) ->
     @synced = Date.now()
     @setMeta(response.meta)
     response.models || response
 
+  parseModelType: (attributes={}) ->
+    attributes.type
+
+  prepare: ->
+    $.when(@synced || @fetch())
+
   sync: (method, collection, options={}) ->
-    options.properties = false
     options.url ||= collection.url()
-    options = @ajaxSettings(options)
-    @ajaxHandle(Backbone.sync(method, collection, options))
+    options.attrs ||= @toJSON(computedAttributes: []).models
+    options = Hipbone.app.ajaxSettings(options)
+    Hipbone.app.ajaxHandle(Backbone.sync(method, collection, options))
 
   unsync: ->
     delete @synced

@@ -1,55 +1,72 @@
 class Hipbone.View extends Backbone.View
-    
-  @include Hipbone.Ajax
 
-  constructor: (options={}, content) ->
-    @options = {}
+  defaults: {}
+
+  booleans: []
+
+  elements: {}
+
+  elementName: "view"
+
+  constructor: (properties={}, content) ->
     @internal = {}
-    @defaults ||= {}
-    @elements ||= {}
+    @properties = {}
     @content = content
-    @set(_.defaults({}, options, @defaults))
+    @set(_.defaults({}, properties, @defaults))
     super
     @populate()
     @render()
 
+    @initialized = true
+
   destroy: ->
 
-  get: (option) ->
-    @options[option]
+  get: (property) ->
+    @properties[property]
 
-  set: (options={}) ->
-    @previousOptions = _.pick(@options, _.keys(options))
-    if not _.isEqual(@previousOptions, options)
-      @options = _.extend(@options, options)
-      @update() if @rendered
-      @trigger("change:#{key}") for key, value of options when value isnt @previousOptions[key]
+  set: (property, value, options={}) ->
+    if _.isObject(property)
+      properties = property
+      options = value || {}
+    else
+      properties = {}
+      properties[property] = value
+
+    @_previousProperties = _.pick(@properties, _.keys(properties))
+    if not _.isEqual(@_previousProperties, properties)
+      @properties = _.extend(@properties, properties)
+      @update() if @initialized
+      @trigger("change:#{key}") for key, value of properties when value isnt @_previousProperties[key]
       @trigger("change")
 
-  unset: (option) ->
-    options = {}
-    options[option] = undefined
-    @set(options)
-
-  setAttribute: (attributes) ->
-    for attribute, value of attributes
-      attribute = _.string.dasherize(attribute)
-      if attribute is 'class'
-        @$el.addClass(value)
-      else if _.isBoolean(value) and value
-        @$el.attr(attribute, '')
-      else if not _.isObject(value)
-        @$el.attr(attribute, value)
+  unset: (property) ->
+    @set(property, undefined)
 
   setElement: ->
     super
-    @$el.data(view: @)
-    @$el.append(@content)
-    @$el.lifecycle(insert: => @trigger('insert'))
-    @$el.lifecycle(remove: => @trigger('remove'))
-    @$el.lifecycle(remove: => _.delay(=> not $.contains(document, @el) and @clear()))
-    @setAttribute(@options)
-    @
+    attributes = {}
+    attributes[_.string.dasherize(property)] = value for property, value of @properties
+    @_setAttributes(attributes)
+
+    @$el.data(view: this)
+    @$el.lifecycle
+      insert: =>
+        @trigger('insert')
+      remove: =>
+        @trigger('remove')
+        _.delay(=> not $.contains(document, @el) and @clear())
+      change: (attribute, value) =>
+        attribute = _.string.camelize(attribute)
+        @set(attribute, Handlebars.parseValue(value,  _.contains(@booleans, attribute)))
+
+  _setAttributes: (attributes={}) ->
+    for attribute, value of attributes
+      if attribute is 'class'
+        @$el.addClass(value)
+      else if _.contains(@booleans, attribute)
+        @$el.attr(attribute, '') if value
+      else if not _.isObject(value)
+        @$el.attr(attribute, value)
 
   $: (selector) ->
     super(@elements[selector] || selector)
@@ -75,49 +92,36 @@ class Hipbone.View extends Backbone.View
     jsondiffpatch.config.objectHash = (object) -> object?.cid || object
     jsondiffpatch.patch(@internal, jsondiffpatch.diff(@internal, @present(@context())))
     Platform.performMicrotaskCheckpoint()
-    @trigger("update")
-    @
 
   render: ->
     @update()
     @$el.html(@template(@templateName)) if @templateName
-    @rendered = true
-    @trigger("render")
-    @
-  
+
+    if @container
+      @$(@container).append(@content)
+    else
+      @$el.append(@content)
+
   template: (path, context) ->
-    path = Hipbone.app.prefix + path
+    path = Hipbone.app.templatePath + path
     context = if _.isEmpty(context) then @internal else @present(context)
     $(Handlebars.parseHTML(Hipbone.app.templates[path](context)))
 
   context: ->
 
   present: (context={}) ->
-    for key, value of context = _.defaults(context, @options)
+    for key, value of context = _.defaults(context, @properties)
       if value instanceof Hipbone.Model or value instanceof Hipbone.Collection
         context[key] = value.toJSON()
     context
 
-  delegateEvents: (events) ->
-    events ||= _.clone(@events) || {}
-    for event, callback of events
-      do (event, callback) =>
-        delete events[event]
-        [event, eventName, selector] = event.match(/^(\S+)\s*(.*)$/)
-        if alias = @elements[selector]
-          event = "#{eventName} #{selector.replace(new RegExp("\\b#{selector}\\b", "g"), alias)}"
-        events[event] = _.prefilter @[callback], (event) ->
-          not $(event.target).attr('disabled')
-    super(events)
-
-  enable: (selector) ->
-    @$(selector).removeAttr('disabled')
-
-  disable: (selector) ->
-    @$(selector).attr('disabled', true)
+  delegate: (eventName, selector, listener) ->
+    selector = @elements[selector] || selector
+    listener = _.prefilter(listener, (event) -> not $(event.target).attr('disabled'))
+    super(eventName, selector, listener)
 
   trigger: (name, args...) ->
-    @$el?.trigger("#{name}.view", args)
+    @$el.trigger("hb.#{name}", args) if @el
     super
 
   clear: ->

@@ -3,8 +3,8 @@ class Hipbone.Router extends Backbone.Router
   match: (route, options={}) ->
     @route route, options.as, =>
       @params = @query()
-      @params[name.substring(1)] = Hipbone.parse(arguments[index]) for name, index in route.match(/:\w+/g) || []
-      @params.action = options.action   
+      @params[name.substring(1)] = _.parse(arguments[index]) for name, index in route.match(/:\w+/g) || []
+      @params.action = options.action
       @params.controller = options.controller
       @chained = (chain = options.as + @params[options.chain]) is @chain and options.chain
       @controller = new Hipbone.app.controllers["#{_.string.capitalize(@params.controller)}Controller"]
@@ -13,7 +13,7 @@ class Hipbone.Router extends Backbone.Router
 
   start: (options={}) ->
     Backbone.history.start(options)
-  
+
   stop: ->
     Backbone.history.stop() if Backbone.History.started
 
@@ -25,12 +25,12 @@ class Hipbone.Router extends Backbone.Router
     anchor = $("<a>").attr("href", fragment).get(0)
     anchor.search = $.param(options.params) if options.params
     fragment = anchor.pathname + anchor.search
-    
+
     if options.reload
       window.location = fragment
     else if options.load
       Backbone.history.loadUrl(fragment)
-    else 
+    else
       super(fragment, options)
 
   change: (query) ->
@@ -44,7 +44,7 @@ class Hipbone.Router extends Backbone.Router
     query = @query()
     query[key] = undefined for key in _.keys(query)
     @change(query)
-  
+
   location: ->
     window.location.pathname + window.location.search
 
@@ -56,5 +56,8 @@ class Hipbone.Router extends Backbone.Router
     regex = /([^&=]+)=?([^&]*)/g
     while match = regex.exec(query)
       [pair, key, value] = match
-      params[Hipbone.decode(key)] = Hipbone.parse(Hipbone.decode(value))
+      params[@decode(key)] = _.parse(@decode(value))
     params
+
+  decode: (string) ->
+    decodeURIComponent(string.replace(/\+/g, " "))

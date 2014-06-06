@@ -7,20 +7,20 @@ Hipbone.Application::initializers.push ->
     Hipbone.app.i18n.t(key, options.hash)
 
   Handlebars.registerHelper 'template', (path, options) ->
-    path = Hipbone.app.prefix + path
-    context = if _.isEmpty(options.hash) then @ else options.hash
+    path = Hipbone.app.templatePath + path
+    context = if _.isEmpty(options.hash) then this else options.hash
     template = Hipbone.app.templates[path](context)
     if options.hash.unescape then template else new Handlebars.SafeString(template)
 
-  eachHelper = Handlebars.helpers['each']
+  eachHelper = Handlebars.helpers.each
   Handlebars.registerHelper 'each', (items, options) ->
-    items = items?.models || items
-    eachHelper.apply(@, [items, options])
+    items = items.models || items if items
+    eachHelper.apply(this, [items, options])
 
-  ifHelper = Handlebars.helpers['if']
+  ifHelper = Handlebars.helpers.if
   Handlebars.registerHelper 'if', (conditional, options) ->
-    if options.hash.bind and Hipbone.path(@, conditional)?.models
+    if options.hash.bind and _.path(this, conditional)?.models
       conditional = conditional + ".models"
-    else
-      conditional = conditional?.models || conditional
-    ifHelper.apply(@, [conditional, options])
+    else if conditional
+      conditional = conditional.models || conditional
+    ifHelper.apply(this, [conditional, options])

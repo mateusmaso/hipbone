@@ -1,7 +1,6 @@
 class Hipbone.Controller extends Hipbone.Module
-  
+
   @include Backbone.Events
-  @include Hipbone.Ajax
 
   @beforeFilter: (callback, options={}) ->
     options.callback = callback
@@ -25,10 +24,5 @@ class Hipbone.Controller extends Hipbone.Module
 
   filter: (params={}, chained, filters={}) ->
     _.filter filters, (filter) =>
-      return if filter.only and not _.contains(filter.only, params.action) 
+      return if filter.only and not _.contains(filter.only, params.action)
       @[filter.callback](params, chained) is false
-
-  load: (objects...) ->
-    deferreds = []
-    deferreds.push(object.prepare?() || object) for object in objects
-    $.when(deferreds...)
