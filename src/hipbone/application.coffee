@@ -24,7 +24,7 @@ class Hipbone.Application extends Hipbone.Module
   applicationOptions = ['url', 'title', 'locale', 'routes', 'assets', 'locales', 'templates', 'templatePath', 'initializers']
 
   constructor: (options={}) ->
-    Hipbone.app = _.extend(@, _.pick(options, applicationOptions))
+    Hipbone.app = _.extend(this, _.pick(options, applicationOptions))
 
     @views = {}
     @models = {}
@@ -58,7 +58,7 @@ class Hipbone.Application extends Hipbone.Module
   run: ->
     @router.match(route, @routes[route]) for route in _.keys(@routes).reverse()
     @router.start(pushState: true)
-    @trigger("run", @)
+    @trigger("run", this)
 
   fetch: (options={}) ->
     @ajax(_.extend(url: @url, options))

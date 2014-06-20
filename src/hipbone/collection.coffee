@@ -19,9 +19,7 @@ class Hipbone.Collection extends Backbone.Collection
       collection.setParent(options.parent) if options.parent
       return collection
     else
-      Hipbone.app.identityMap.storeAll(hashes, @)
-
-    @on("add remove reset sort", => @trigger("update", @))
+      Hipbone.app.identityMap.storeAll(hashes, this)
 
     @meta = {}
     @cid = _.uniqueId('col')
@@ -40,7 +38,10 @@ class Hipbone.Collection extends Backbone.Collection
     else
       Model = Hipbone.app.models[@parseModelType(attributes)]
 
-    "#{attributes[Model::typeAttribute]}-#{attributes[Model::idAttribute]}"
+    if attributes[Model::idAttribute]
+      "#{attributes[Model::typeAttribute]}-#{attributes[Model::idAttribute]}"
+    else
+      super
 
   url: ->
     if @parent then @parent.url() + @urlRoot else @urlRoot
@@ -116,4 +117,4 @@ class Hipbone.Collection extends Backbone.Collection
 
   unsync: ->
     delete @synced
-    @trigger('unsync', @)
+    @trigger('unsync', this)

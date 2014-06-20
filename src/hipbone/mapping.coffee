@@ -21,7 +21,7 @@ Hipbone.Mapping =
       attributes[Hipbone.app.models[type]::idAttribute] = id
       model = new Hipbone.app.models[type](attributes) if id
     else if Hipbone.app.collections[type]
-      collection = new Hipbone.app.collections[type](parent: @)
+      collection = new Hipbone.app.collections[type](parent: this)
 
     model || collection || @transients[mapping]
 

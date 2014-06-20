@@ -15,7 +15,7 @@ class Hipbone.Model extends Backbone.Model
       model.set(attributes, options)
       return model
     else
-      Hipbone.app.identityMap.storeAll(hashes, @)
+      Hipbone.app.identityMap.storeAll(hashes, this)
 
     @initializeMapping()
     @initializeValidation()
@@ -23,7 +23,12 @@ class Hipbone.Model extends Backbone.Model
     super
 
   get: (attribute) ->
-    @getMapping(attribute) || @getComputedAttribute(attribute) || super
+    if @mappings[attribute] or _.contains(@polymorphics, attribute)
+      @getMapping(attribute)
+    else if @computedAttributes[attribute]
+      @getComputedAttribute(attribute)
+    else
+      super
 
   set: (attribute, value, options) ->
     if _.isObject(attribute)
@@ -41,7 +46,7 @@ class Hipbone.Model extends Backbone.Model
 
     super(attributes, options)
 
-    Hipbone.app.identityMap.storeAll(@hashes(@attributes), @)
+    Hipbone.app.identityMap.storeAll(@hashes(@attributes), this)
 
   toJSON: (options={}) ->
     mappings = options.mappings || {}
@@ -69,4 +74,4 @@ class Hipbone.Model extends Backbone.Model
 
   unsync: ->
     delete @synced
-    @trigger('unsync', @)
+    @trigger('unsync', this)

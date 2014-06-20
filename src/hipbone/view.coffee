@@ -1,8 +1,10 @@
 class Hipbone.View extends Backbone.View
 
+  booleans: []
+
   defaults: {}
 
-  booleans: []
+  bindings: {}
 
   elements: {}
 
@@ -14,10 +16,9 @@ class Hipbone.View extends Backbone.View
     @content = content
     @set(_.defaults({}, properties, @defaults))
     super
+    @initialized = true
     @populate()
     @render()
-
-    @initialized = true
 
   destroy: ->
 
@@ -82,13 +83,22 @@ class Hipbone.View extends Backbone.View
     if not @synced() and fetching = @fetch()
       @set(loading: true)
       fetching.done => @set(loading: false)
-    else if @eagerSync and fetching = @fetch()
-      @set(reloading: true)
-      fetching.done => @set(reloading: false)
+    else if @background
+      @fetch()
 
   context: ->
 
   update: ->
+    bindingAttributes = {}
+
+    for attribute, callback of @bindings
+      bindingAttributes[attribute] = value = callback.apply(this)
+      if attribute is "class"
+        @$el.removeClass(@bindingClass)
+        @bindingClass = value
+
+    @_setAttributes(bindingAttributes)
+
     jsondiffpatch.config.objectHash = (object) -> object?.cid || object
     jsondiffpatch.patch(@internal, jsondiffpatch.diff(@internal, @present(@context())))
     Platform.performMicrotaskCheckpoint()
