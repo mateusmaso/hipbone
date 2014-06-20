@@ -32,9 +32,9 @@ Hipbone is a lightweight framework for building scalable apps on top of Backbone
   * underscore.path.js
   * underscore.parse.js
   * underscore.string.js
+  * underscore.prefilter.js
   * underscore.catenate.js
   * underscore.deepclone.js
-  * underscore.prefilter.js
 * backbone.js (>= 1.1.2 caseywebdev:generate-id)
 
 ## Future
