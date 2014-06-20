@@ -37,6 +37,13 @@ Hipbone is a lightweight framework for building scalable apps on top of Backbone
   * underscore.prefilter.js
 * backbone.js (>= 1.1.2 caseywebdev:generate-id)
 
+## Future
+
+* Remove Backbone dependency.
+* Use a third party library for routing.
+* Move from Handlebars to HTMLBars.
+* Integrate with Web Components using polyfills as a fallback.
+
 ## License
 
 Copyright (c) 2012-2014 Mateus Maso. Released under an MIT license.
