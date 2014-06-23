@@ -51,6 +51,7 @@ class Hipbone.Model extends Backbone.Model
   toJSON: (options={}) ->
     mappings = options.mappings || {}
     computedAttributes = options.computedAttributes || _.keys(@computedAttributes)
+    mappingOptions.sync = true for mapping, mappingOptions of mappings if options.sync
     _.extend(_.deepClone(super), @toJSONMappings(mappings), @toJSONComputedAttributes(computedAttributes), cid: @cid)
 
   hashes: (attributes) ->
@@ -67,8 +68,8 @@ class Hipbone.Model extends Backbone.Model
     $.when(@synced || @fetch())
 
   sync: (method, model, options={}) ->
+    options.sync = true
     options.url ||= model.url()
-    options.computedAttributes = []
     options = Hipbone.app.ajaxSettings(options)
     Hipbone.app.ajaxHandle(Backbone.sync(method, model, options))
 

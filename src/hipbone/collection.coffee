@@ -1,7 +1,5 @@
 class Hipbone.Collection extends Backbone.Collection
 
-  defaults: {}
-
   model: Hipbone.Model
 
   hashName: "collection"
@@ -9,7 +7,7 @@ class Hipbone.Collection extends Backbone.Collection
   constructor: (models, options={}) ->
     unless _.isArray(models)
       options = models || {}
-      models = null
+      models = undefined
 
     hashes = @hashes(models, options)
 
@@ -22,6 +20,7 @@ class Hipbone.Collection extends Backbone.Collection
       Hipbone.app.identityMap.storeAll(hashes, this)
 
     @meta = {}
+    @defaults ||= {}
     @cid = _.uniqueId('col')
     @setParent(options.parent)
     @setMeta(_.defaults({}, options.meta, @defaults, offset: 0, limit: 10))
@@ -90,7 +89,10 @@ class Hipbone.Collection extends Backbone.Collection
     @length is (@getMeta('offset') + @getMeta('limit'))
 
   toJSON: (options={}) ->
-    _.extend(_.deepClone(@meta), length: @length, cid: @cid, models: super)
+    if options.sync
+      super
+    else
+      _.extend(_.deepClone(@meta), length: @length, cid: @cid, models: super)
 
   hashes: (models, options={}) ->
     hashes = []
@@ -110,8 +112,8 @@ class Hipbone.Collection extends Backbone.Collection
     $.when(@synced || @fetch())
 
   sync: (method, collection, options={}) ->
+    options.sync = true
     options.url ||= collection.url()
-    options.attrs ||= @toJSON(computedAttributes: []).models
     options = Hipbone.app.ajaxSettings(options)
     Hipbone.app.ajaxHandle(Backbone.sync(method, collection, options))
 

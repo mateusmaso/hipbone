@@ -55,5 +55,5 @@ Hipbone.Mapping =
 
   toJSONMappings: (mappings) ->
     json = {}
-    json[mapping] = @getMapping(mapping)?.toJSON(mappings: value) for mapping, value of mappings
+    json[mapping] = @getMapping(mapping)?.toJSON(options) for mapping, options of mappings
     json

@@ -3,6 +3,11 @@ class Hipbone.IdentityMap extends Hipbone.Module
   constructor: ->
     @instances = {}
 
+  match: (regex) ->
+    matches = {}
+    matches[key] = value for key, value of @instances when regex.test(key)
+    matches
+
   find: (key) ->
     @instances[key]
 

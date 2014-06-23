@@ -1,16 +1,12 @@
 class Hipbone.View extends Backbone.View
 
-  booleans: []
-
-  defaults: {}
-
-  bindings: {}
-
-  elements: {}
-
   elementName: "view"
 
   constructor: (properties={}, content) ->
+    @booleans ||= []
+    @defaults ||= {}
+    @bindings ||= {}
+    @elements ||= {}
     @internal = {}
     @properties = {}
     @content = content
@@ -37,8 +33,8 @@ class Hipbone.View extends Backbone.View
     if not _.isEqual(@_previousProperties, properties)
       @properties = _.extend(@properties, properties)
       @update() if @initialized
-      @trigger("change:#{key}") for key, value of properties when value isnt @_previousProperties[key]
-      @trigger("change")
+      @trigger("change:#{key}", this, value, options) for key, value of properties when value isnt @_previousProperties[key]
+      @trigger("change", this, properties, options)
 
   unset: (property) ->
     @set(property, undefined)

@@ -3,39 +3,28 @@ class Hipbone.Application extends Hipbone.Module
   @include Hipbone.Ajax
   @include Backbone.Events
 
-  url: '/'
-
-  title: 'App'
-
-  locale: 'en'
-
-  routes: {}
-
-  assets: {}
-
   locales: {}
-
-  templates: {}
 
   initializers: []
 
-  templatePath: ''
-
-  applicationOptions = ['url', 'title', 'locale', 'routes', 'assets', 'locales', 'templates', 'templatePath', 'initializers']
-
   constructor: (options={}) ->
-    Hipbone.app = _.extend(this, _.pick(options, applicationOptions))
+    Hipbone.app = this
 
-    @views = {}
-    @models = {}
-    @collections = {}
-    @controllers = {}
+    @url ||= options.url
+    @root ||= options.root || 'body'
+    @views ||= options.views || {}
+    @title ||= options.title || 'App'
+    @locale ||= options.local || 'en'
+    @models ||= options.models || {}
+    @routes ||= options.routes || {}
+    @assets ||= options.assets || {}
+    @templates ||= options.templates || {}
+    @collections ||= options.collections || {}
+    @controllers ||= options.controllers || {}
+    @templatePath ||= options.templatePath || ''
 
-    for name, method of _.pick(@constructor, _.functions(@constructor))
-      @views[name] = method if method.prototype instanceof Hipbone.View
-      @models[name] = method if method.prototype instanceof Hipbone.Model
-      @collections[name] = method if method.prototype instanceof Hipbone.Collection
-      @controllers[name] = method if method.prototype instanceof Hipbone.Controller
+    @locales = options.locales if options.locales
+    @initializers = options.initializers if options.initializers
 
     @i18n = new Hipbone.I18n(@locales[@locale])
     @router = new Hipbone.Router
@@ -49,6 +38,12 @@ class Hipbone.Application extends Hipbone.Module
 
   initialize: ->
 
+  configure: ->
+
+  prepare: ->
+    fetching = @ajax(url: @url) if @url
+    $.when(fetching)
+
   setTitle: (title) ->
     document.title = title
 
@@ -56,9 +51,9 @@ class Hipbone.Application extends Hipbone.Module
     @setTitle("#{title} - #{@title}")
 
   run: ->
-    @router.match(route, @routes[route]) for route in _.keys(@routes).reverse()
-    @router.start(pushState: true)
-    @trigger("run", this)
-
-  fetch: (options={}) ->
-    @ajax(_.extend(url: @url, options))
+    $.when(@prepare()).done (response) =>
+      @configure(response)
+      @appView = new @views.ApplicationView
+      @router.match(route, @routes[route]) for route in _.keys(@routes).reverse()
+      @router.start(pushState: true)
+      @trigger("run")
