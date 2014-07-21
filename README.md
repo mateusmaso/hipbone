@@ -5,15 +5,16 @@ Hipbone is a lightweight framework for building scalable apps on top of Backbone
 
 ## Features
 
+* Fast back.
 * Computed attributes.
 * Identity map caching.
 * Local storage support.
-* ```View``` as components.
+* View as components.
 * Handlebars templating.
 * Custom elements syntax.
 * Simple one-way data binding.
 * Internationalization made easy.
-* ```Application```, configuration and initializers.
+* Application, configuration and initializers.
 * Well defined hierarchy to reduce boilerplate.
 * Everything is a modular event driven structure.
 * Relationships mapping with polymorphism support.
@@ -35,7 +36,7 @@ Hipbone is a lightweight framework for building scalable apps on top of Backbone
   * underscore.prefilter.js
   * underscore.catenate.js
   * underscore.deepclone.js
-* backbone.js (>= 1.1.2 caseywebdev:generate-id)
+* backbone.js (>= 1.1.2 edge)
 
 ## Future
 
