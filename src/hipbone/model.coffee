@@ -15,7 +15,7 @@ class Hipbone.Model extends Backbone.Model
       model.set(attributes, options)
       return model
     else
-      Hipbone.app.identityMap.storeAll(hashes, this)
+      @store(hashes)
 
     @initializeMapping()
     @initializeValidation()
@@ -28,12 +28,12 @@ class Hipbone.Model extends Backbone.Model
     else if @computedAttributes[attribute]
       @getComputedAttribute(attribute)
     else
-      super
+      _.path(@attributes, attribute)
 
-  set: (attribute, value, options) ->
+  set: (attribute, value, options={}) ->
     if _.isObject(attribute)
       attributes = attribute
-      options = value
+      options = value || {}
     else
       attributes = {}
       attributes[attribute] = value
@@ -44,9 +44,27 @@ class Hipbone.Model extends Backbone.Model
       @setMapping(attribute, value, parse: true)
       delete attributes[attribute]
 
-    super(attributes, options)
+    for attribute, value of attributes
+      paths = attribute.split(".")
 
-    Hipbone.app.identityMap.storeAll(@hashes(@attributes), this)
+      if paths.length > 1
+        value = attributes[attribute]
+        delete attributes[attribute]
+
+        unless _.isEqual(@get(attribute), value)
+          nestedAttributes = {}
+          nestedAttributes[attribute] = value
+          previousAttribute = @get(attribute)
+          @attributes = _.pathExtend(@attributes, nestedAttributes)
+
+          unless options.silent
+            for path in _.clone(paths).reverse()
+              attribute = paths.join(".")
+              paths.pop()
+              @trigger("change:#{attribute}", this, previousAttribute, options)
+
+    super(attributes, options)
+    @store()
 
   toJSON: (options={}) ->
     mappings = options.mappings || {}
@@ -61,18 +79,16 @@ class Hipbone.Model extends Backbone.Model
     hashes
 
   parse: (response={}) ->
-    @synced = Date.now()
+    @synced = _.now()
     response
 
   prepare: ->
     $.when(@synced || @fetch())
 
-  sync: (method, model, options={}) ->
-    options.sync = true
-    options.url ||= model.url()
-    options = Hipbone.app.ajaxSettings(options)
-    Hipbone.app.ajaxHandle(Backbone.sync(method, model, options))
-
   unsync: ->
     delete @synced
     @trigger('unsync', this)
+
+  store: (hashes) ->
+    hashes ||= @hashes(@attributes)
+    Hipbone.app.identityMap.storeAll(hashes, this)

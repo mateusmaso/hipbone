@@ -1,5 +1,7 @@
 class Hipbone.Collection extends Backbone.Collection
 
+  @include Hipbone.Accessor
+
   model: Hipbone.Model
 
   hashName: "collection"
@@ -14,16 +16,14 @@ class Hipbone.Collection extends Backbone.Collection
     if collection = Hipbone.app.identityMap.findAll(hashes)[0]
       collection.set(models, options) if models
       collection.setMeta(options.meta) if options.meta
-      collection.setParent(options.parent) if options.parent
+      collection.parent = options.parent if options.parent
       return collection
     else
-      Hipbone.app.identityMap.storeAll(hashes, this)
+      @store(hashes)
 
-    @meta = {}
-    @defaults ||= {}
     @cid = _.uniqueId('col')
-    @setParent(options.parent)
-    @setMeta(_.defaults({}, options.meta, @defaults, offset: 0, limit: 10))
+    @parent = options.parent
+    @initializeAccessor(accessorName: "meta", accessorsName: "meta", accessorEvent: "change:meta", accessors: options.meta, defaults: offset: 0, limit: 10)
     super
 
   _prepareModel: (attributes, options={}) ->
@@ -31,7 +31,7 @@ class Hipbone.Collection extends Backbone.Collection
       attributes = new (Hipbone.app.models[@parseModelType(attributes)] || @model)(attributes, options)
     super
 
-  generateId: (attributes) ->
+  modelId: (attributes) ->
     if @model and @_isModel(@model::)
       Model = @model
     else
@@ -47,27 +47,11 @@ class Hipbone.Collection extends Backbone.Collection
 
   set: (models, options={}) ->
     super(models, options)
-    Hipbone.app.identityMap.storeAll(@hashes(models, parent: @parent, meta: @meta), this)
+    @store()
 
-  getMeta: (key) ->
-    @meta[key]
-
-  setMeta: (meta={}, options={}) ->
-    @_previousMeta = _.pick(@meta, _.keys(meta))
-    if not _.isEqual(@_previousMeta, meta)
-      @meta = _.extend(@meta, meta)
-      @trigger("change:meta:#{key}", this, value, options) for key, value of meta when value isnt @_previousMeta[key]
-      @trigger("change:meta", this, meta, options)
-
-    Hipbone.app.identityMap.storeAll(@hashes(@models, parent: @parent, meta: @meta), this)
-
-  setParent: (parent, options={}) ->
-    @_previousParent = @parent
-    if @parent isnt parent
-      @parent = parent
-      @trigger("change:parent", this, @parent, options)
-
-    Hipbone.app.identityMap.storeAll(@hashes(@models, parent: @parent, meta: @meta), this)
+  setAccessor: ->
+    Hipbone.Accessor.setAccessor.apply(this, arguments)
+    @store()
 
   fetch: (options={}) ->
     options.data ||= {}
@@ -101,7 +85,7 @@ class Hipbone.Collection extends Backbone.Collection
     hashes
 
   parse: (response={}) ->
-    @synced = Date.now()
+    @synced = _.now()
     @setMeta(response.meta)
     response.models || response
 
@@ -111,12 +95,10 @@ class Hipbone.Collection extends Backbone.Collection
   prepare: ->
     $.when(@synced || @fetch())
 
-  sync: (method, collection, options={}) ->
-    options.sync = true
-    options.url ||= collection.url()
-    options = Hipbone.app.ajaxSettings(options)
-    Hipbone.app.ajaxHandle(Backbone.sync(method, collection, options))
-
   unsync: ->
     delete @synced
     @trigger('unsync', this)
+
+  store: (hashes) ->
+    hashes ||= @hashes(@models, parent: @parent, meta: @meta)
+    Hipbone.app.identityMap.storeAll(hashes, this)

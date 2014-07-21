@@ -1,112 +1,121 @@
 class Hipbone.View extends Backbone.View
 
+  @include Hipbone.Accessor
+
+  hashName: "view"
+
   elementName: "view"
 
   constructor: (properties={}, content) ->
+    hashes = @hashes(properties)
+
+    if view = Hipbone.app.identityMap.findAll(hashes)[0]
+      view.setContent(content)
+      view.set(properties)
+      return view
+    else
+      @store(hashes)
+
     @booleans ||= []
-    @defaults ||= {}
-    @bindings ||= {}
     @elements ||= {}
     @internal = {}
-    @properties = {}
     @content = content
-    @set(_.defaults({}, properties, @defaults))
+    @classNameBindings ||= {}
+    @deferact = _.debounce(@react)
+    @initializeAccessor(accessorsName: "properties", accessors: properties)
     super
-    @initialized = true
     @populate()
     @render()
+    @hooks()
 
   destroy: ->
 
-  get: (property) ->
-    @properties[property]
+  insert: ->
 
-  set: (property, value, options={}) ->
-    if _.isObject(property)
-      properties = property
-      options = value || {}
-    else
-      properties = {}
-      properties[property] = value
+  detach: ->
 
-    @_previousProperties = _.pick(@properties, _.keys(properties))
-    if not _.isEqual(@_previousProperties, properties)
-      @properties = _.extend(@properties, properties)
-      @update() if @initialized
-      @trigger("change:#{key}", this, value, options) for key, value of properties when value isnt @_previousProperties[key]
-      @trigger("change", this, properties, options)
+  change: (attribute, value) ->
 
-  unset: (property) ->
-    @set(property, undefined)
-
-  setElement: ->
-    super
-    attributes = {}
-    attributes[_.string.dasherize(property)] = value for property, value of @properties
-    @_setAttributes(attributes)
-
-    @$el.data(view: this)
+  hooks: ->
     @$el.lifecycle
       insert: =>
-        @trigger('insert')
+        @insert()
+        @trigger("insert")
       remove: =>
-        @trigger('remove')
-        _.delay(=> not $.contains(document, @el) and @clear())
+        @detach()
+        @trigger("detach")
       change: (attribute, value) =>
+        @change(attribute, value)
         attribute = _.string.camelize(attribute)
         @set(attribute, Handlebars.parseValue(value,  _.contains(@booleans, attribute)))
 
+  setAccessor: (accessor, value, options={}) ->
+    options = value || {} if _.isObject(accessor)
+    Hipbone.Accessor.setAccessor.apply(this, arguments)
+    @update(options) if @$el?.is("[lifecycle]")
+    @store()
+
+  setElement: ->
+    super
+    @set(class: "#{@el.className} #{@get("class") || ''}")
+    @_setAttributes(@properties)
+    @el.hipboneView = this
+
+  setContent: (content) ->
+    if @container
+      @$(@container).append(content)
+    else
+      @$el.append(content)
+
+    @content = content
+
+  setAttribute: (attribute, value) ->
+    attribute = _.string.dasherize(attribute)
+
+    if attribute is "class"
+      @$el.addClass(value)
+    else if _.contains(@booleans, attribute)
+      @$el.attr(attribute, '') if value
+    else if not _.isObject(value)
+      @$el.attr(attribute, value)
+
   _setAttributes: (attributes={}) ->
-    for attribute, value of attributes
-      if attribute is 'class'
-        @$el.addClass(value)
-      else if _.contains(@booleans, attribute)
-        @$el.attr(attribute, '') if value
-      else if not _.isObject(value)
-        @$el.attr(attribute, value)
+    @setAttribute(attribute, value) for attribute, value of attributes
 
   $: (selector) ->
     super(@elements[selector] || selector)
 
   $view: (selector) ->
-    @$(selector).data('view')
+    @$(selector)[0].hipboneView
 
   fetch: ->
 
   synced: ->
 
   populate: ->
-    if not @synced() and fetching = @fetch()
-      @set(loading: true)
-      fetching.done => @set(loading: false)
-    else if @background
+    @set(loading: true) unless @synced()
+    @prepare().done => @set(loading: false)
+
+  prepare: ->
+    if @background
       @fetch()
+    else
+      $.when(@synced() || @fetch())
 
   context: ->
 
-  update: ->
-    bindingAttributes = {}
+  update: (options={}) ->
+    @merge(@present(@context()))
 
-    for attribute, callback of @bindings
-      bindingAttributes[attribute] = value = callback.apply(this)
-      if attribute is "class"
-        @$el.removeClass(@bindingClass)
-        @bindingClass = value
-
-    @_setAttributes(bindingAttributes)
-
-    jsondiffpatch.config.objectHash = (object) -> object?.cid || object
-    jsondiffpatch.patch(@internal, jsondiffpatch.diff(@internal, @present(@context())))
-    Platform.performMicrotaskCheckpoint()
+    if options.immediate or Object.observe
+      @react()
+    else
+      @deferact()
 
   render: ->
-    @update()
+    @merge(@present(@context()))
     @$el.html(@template(@templateName)) if @templateName
-
-    if @container
-      @$(@container).append(@content)
-    else
-      @$el.append(@content)
+    @setContent(@content) if @content
 
   template: (path, context) ->
     path = Hipbone.app.templatePath + path
@@ -123,13 +132,41 @@ class Hipbone.View extends Backbone.View
 
   delegate: (eventName, selector, listener) ->
     selector = @elements[selector] || selector
-    listener = _.prefilter(listener, (event) -> not $(event.target).attr('disabled'))
     super(eventName, selector, listener)
 
-  trigger: (name, args...) ->
-    @$el.trigger("hb.#{name}", args) if @el
+  bubble: ->
+    @trigger(arguments...)
+    @$el.trigger(arguments...)
+
+  remove: ->
+    @destroy()
     super
 
-  clear: ->
-    @stopListening()
-    @destroy()
+  hashes: (properties={}) ->
+    hashes = []
+    hashes.push(@cid) if @cid
+    hashes
+
+  react: ->
+    @_classNameBindings ||= {}
+    for className, callback of @classNameBindings
+      oldValue = @_classNameBindings[className]
+      value = @_classNameBindings[className] = callback.apply(this)
+      if _.isBoolean(value)
+        if value
+          @$el.addClass(className)
+        else
+          @$el.removeClass(className)
+      else if value isnt oldValue
+        @$el.removeClass(oldValue)
+        @$el.addClass(value)
+
+    Platform.performMicrotaskCheckpoint()
+
+  merge: (context) ->
+    jsondiffpatch.config.objectHash = (object) -> object?.cid || object
+    jsondiffpatch.patch(@internal, jsondiffpatch.diff(@internal, context))
+
+  store: (hashes) ->
+    hashes ||= @hashes()
+    Hipbone.app.identityMap.storeAll(hashes, this)

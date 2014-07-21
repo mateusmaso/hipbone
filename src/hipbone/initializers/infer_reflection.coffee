@@ -7,8 +7,14 @@ Hipbone.Application::initializers.push ->
   for name, method of _.pick(@constructor, _.functions(@constructor))
     @views[name] = method if method.prototype instanceof Hipbone.View
     @models[name] = method if method.prototype instanceof Hipbone.Model
+    @routes[name] = method if method.prototype instanceof Hipbone.Route
     @collections[name] = method if method.prototype instanceof Hipbone.Collection
-    @controllers[name] = method if method.prototype instanceof Hipbone.Controller
+
+  for name, Route of @routes
+    setReflection(Route, "hashName", _.string.dasherize(name).substring(1))
+
+  for name, View of @views
+    setReflection(View, "hashName", _.string.dasherize(name).substring(1))
 
   for name, Model of @models
     Model::defaults = _.extend({}, _.clone(Model::defaults), type: name)

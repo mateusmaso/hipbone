@@ -2,6 +2,7 @@
 //= require ./hipbone/ajax
 //= require ./hipbone/module
 //= require ./hipbone/mapping
+//= require ./hipbone/accessor
 //= require ./hipbone/validation
 //= require ./hipbone/computed_attribute
 //= require ./hipbone/model

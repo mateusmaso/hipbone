@@ -5,19 +5,27 @@ class Hipbone.IdentityMap extends Hipbone.Module
 
   match: (regex) ->
     matches = {}
-    matches[key] = value for key, value of @instances when regex.test(key)
+    matches[key] = instance.value for key, instance of @instances when regex.test(key)
     matches
 
   find: (key) ->
-    @instances[key]
+    @store(key, value) if value = @instances[key]?.value
+    value
 
   findAll: (keys) ->
     values = []
     values.push(value) for key in keys when value = @find(key)
     values
 
-  store: (key, value) ->
-    @instances[key] = value
+  store: (key, value, options={}) ->
+    defaults = value: value
+    @instances[key] = _.extend(defaults, options)
 
-  storeAll: (keys, value) ->
-    @store(key, value) for key in keys
+  storeAll: (keys, value, options={}) ->
+    @store(key, value, options) for key in keys
+
+  delete: (key) ->
+    delete @instances[key]
+
+  deleteAll: (keys) ->
+    @delete(key) for key in keys
