@@ -13,6 +13,9 @@ Hipbone.Application::initializers.push ->
     index = 0
     text.replace /%@/g, (format) -> formats[index++]
 
+  Handlebars.registerHelper 'eval', (javascript, options={}) ->
+    eval(javascript)
+
   Handlebars.registerHelper 'template', (path, options={}) ->
     path = Hipbone.app.templatePath + path
     context = if _.isEmpty(options.hash) then this else options.hash

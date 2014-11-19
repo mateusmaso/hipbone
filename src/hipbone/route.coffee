@@ -6,7 +6,7 @@ class Hipbone.Route extends Hipbone.Module
   hashName: "route"
 
   constructor: (params={}) ->
-    params = @parse(params)
+    params = _.defaults({}, @parse(params), @defaults)
     hashes = @hashes(params)
     path = Hipbone.history.location.pathname
 
@@ -41,9 +41,9 @@ class Hipbone.Route extends Hipbone.Module
     @prepare().done => @display()
 
   display: ->
-    @transition()
-    @render()
-    document.title = @title()
+    if @transition() isnt false
+      document.title = @title()
+      @render()
 
   prepare: ->
     $.when(@fetch())
@@ -67,11 +67,15 @@ class Hipbone.Route extends Hipbone.Module
 
   render: ->
     @element ||= @content()
+
     Hipbone.app.appView.templateName = @templateName
-    Hipbone.app.appView.setContent(@element)
     Hipbone.app.appView.set(@context())
-    Hipbone.app.appView.$el.children().detach()
-    Hipbone.app.appView.render()
+
+    if Hipbone.app.appView.content isnt @element
+      Hipbone.app.appView.setContent(null)
+      Hipbone.app.appView.$el.children().detach()
+      Hipbone.app.appView.render()
+      Hipbone.app.appView.setContent(@element)
 
   store: (hashes) ->
     hashes ||= @hashes(@params)

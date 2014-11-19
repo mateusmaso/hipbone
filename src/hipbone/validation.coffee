@@ -4,8 +4,11 @@ Hipbone.Validation =
     @errors = []
     @validations = _.extend({}, @validations, validations)
 
-  hasErrors: ->
-    @errors.length > 0
+  hasErrors: (attributes=[]) ->
+    if _.isEmpty(attributes)
+      @errors.length > 0
+    else
+      _.intersection(@errors, attributes).length > 0
 
   validate: (attributes={}) ->
     @errors = []
@@ -14,4 +17,3 @@ Hipbone.Validation =
       if validation and not validation.apply(this, [value, attributes])
         @errors.push(attribute)
     @errors if @hasErrors()
-

@@ -44,6 +44,9 @@ class Hipbone.Model extends Backbone.Model
       @setMapping(attribute, value, parse: true)
       delete attributes[attribute]
 
+    changed = false
+    onChange = => changed = false
+
     for attribute, value of attributes
       paths = attribute.split(".")
 
@@ -61,9 +64,13 @@ class Hipbone.Model extends Backbone.Model
             for path in _.clone(paths).reverse()
               attribute = paths.join(".")
               paths.pop()
+              changed = true
               @trigger("change:#{attribute}", this, previousAttribute, options)
 
+    @on("change", onChange)
     super(attributes, options)
+    @off("change", onChange)
+    @trigger('change', this, options) if changed
     @store()
 
   toJSON: (options={}) ->

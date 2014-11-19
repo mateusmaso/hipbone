@@ -55,7 +55,7 @@ class Hipbone.View extends Backbone.View
     @update(options) if @$el?.is("[lifecycle]")
     @store()
 
-  setElement: ->
+  _ensureElement: ->
     super
     @set(class: "#{@el.className} #{@get("class") || ''}")
     @_setAttributes(@properties)
@@ -86,7 +86,7 @@ class Hipbone.View extends Backbone.View
     super(@elements[selector] || selector)
 
   $view: (selector) ->
-    @$(selector)[0].hipboneView
+    @$(selector)[0].hipboneView if @$(selector)[0]
 
   fetch: ->
 
@@ -134,9 +134,9 @@ class Hipbone.View extends Backbone.View
     selector = @elements[selector] || selector
     super(eventName, selector, listener)
 
-  bubble: ->
+  bubble: (eventName, args...) ->
     @trigger(arguments...)
-    @$el.trigger(arguments...)
+    @$el.trigger(eventName, args)
 
   remove: ->
     @destroy()

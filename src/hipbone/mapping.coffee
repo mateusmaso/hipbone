@@ -47,6 +47,8 @@ Hipbone.Mapping =
       @transients[mapping] = collection
     else
       delete @transients[mapping]
+      @unset(@mappingIdAttribute(mapping))
+      @unset(@mappingTypeAttribute(mapping))
 
     model || collection
 
