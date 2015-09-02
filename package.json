@@ -1,0 +1,45 @@
+{
+  "name": "hipbone",
+  "description": "Lightweight framework for building scalable apps on top of Backbone",
+  "version": "1.0.0",
+  "author": "mateusmaso",
+  "keywords": ["backbone", "javascript", "spa", "binding", "handlebars", "htmlbars"],
+  "devDependencies": {
+    "chai": "*",
+    "mocha": "*",
+    "grunt": "~0.4.5",
+    "grunt-mocha": "~0.4.0",
+    "grunt-contrib-coffee": "~0.13.0",
+    "grunt-contrib-concat": "~0.5.0",
+    "grunt-contrib-uglify": "~0.5.0"
+  },
+  "licenses": [{
+    "type": "MIT",
+    "url": "https://github.com/mateusmaso/hipbone/blob/master/LICENSE.txt"
+  }],
+  "repository": {
+    "type" : "git",
+    "url": "http://github.com/mateusmaso/hipbone"
+  },
+  "dependencies": {
+    "observe-js": "~0.4.0",
+    "jsondiffpatch": "0.0.8",
+    "jquery": "~2.1.0",
+    "jquery.lifecycle": "~0.1.2",
+    "handlebars": "~1.1.0",
+    "handlebars.element": "~0.1.3",
+    "handlebars.binding": "~0.1.3",
+    "underscore": "~1.5.0",
+    "underscore.path": "~0.1.4",
+    "underscore.parse": "~0.1.1",
+    "underscore.string": "~2.3.2",
+    "underscore.prefilter": "~0.1.2",
+    "underscore.catenate": "~0.1.1",
+    "underscore.deepclone": "~0.1.1",
+    "backbone": "~1.2.2"
+  },
+  "scripts": {
+    "test": "grunt mocha"
+  },
+  "main": "dist/hipbone.js"
+}
