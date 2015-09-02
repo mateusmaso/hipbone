@@ -6,12 +6,10 @@ Hipbone is a framework for building scalable apps on top of Backbone.
 ## Features
 
 * Rails-like app architecture (initializers & internationalization & identity map cache & module include/extend).
-* Backbone.Model & Backbone.Collection ```boost``` (relationship mapping & polymorphism & computed attributes).
-* Backbone.View as components and handlebars templating (one-way data binding & custom elements syntax).
+* ```Backbone.Model``` & ```Backbone.Collection``` boost (relationship mapping & polymorphism & computed attributes).
+* ```Backbone.View``` as components and handlebars templating (one-way data binding & custom elements syntax).
 * 🔥🔥🔥 Routing system (fast back & reusable routes & url helpers & auto in-app href pushstate)
 * And more!
-
-# (local storage & in-app href pushstate & )
 
 ## Dependencies
 
