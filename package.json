@@ -1,6 +1,6 @@
 {
   "name": "hipbone",
-  "description": "Lightweight framework for building scalable apps on top of Backbone",
+  "description": "Backbone based framework for building scalable apps",
   "version": "1.0.0",
   "author": "mateusmaso",
   "keywords": ["backbone", "javascript", "spa", "binding", "handlebars", "htmlbars"],

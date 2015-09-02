@@ -1,49 +1,35 @@
-hipbone
+hipbone [![Build Status](https://travis-ci.org/mateusmaso/hipbone.svg?branch=master)](https://travis-ci.org/mateusmaso/hipbone)
 ==============
 
-Hipbone is a lightweight framework for building scalable apps on top of Backbone. It was first developed in the early days of Backbone and through time many enhancements were made in its technology, architecture and conventions. The main idea behind this project was to bring simplicity in development with smart solutions, proven paths and intuitive ways of dealing SPA problems.
+Hipbone is a framework for building scalable apps on top of Backbone.
 
 ## Features
 
-* Fast back.
-* Computed attributes.
-* Identity map caching.
-* Local storage support.
-* View as components.
-* Handlebars templating.
-* Custom elements syntax.
-* Simple one-way data binding.
-* Internationalization made easy.
-* Application, configuration and initializers.
-* Well defined hierarchy to reduce boilerplate.
-* Everything is a modular event driven structure.
-* Relationships mapping with polymorphism support.
-* Improved ```Model```, ```Collection```, ```Router``` and ```View```.
+* Rails-like app architecture (initializers & internationalization & identity map cache & module include/extend).
+* Backbone.Model & Backbone.Collection ```boost``` (relationship mapping & polymorphism & computed attributes).
+* Backbone.View as components and handlebars templating (one-way data binding & custom elements syntax).
+* 🔥🔥🔥 Routing system (fast back & reusable routes & url helpers & auto in-app href pushstate)
+* And more!
+
+# (local storage & in-app href pushstate & )
 
 ## Dependencies
 
-* observe.js (>= 0.3.0)
+* observe.js (>= 0.4.0)
 * jsondiffpatch.js (>= 0.0.8)
-* jquery.js (>= 2.0)
-  * jquery.lifecycle.js
-* handlebars.js (>= 1.0)
-  * handlebars.element.js
-  * handlebars.binding.js
-* underscore.js (>= 1.5)
-  * underscore.path.js
-  * underscore.parse.js
-  * underscore.string.js
-  * underscore.prefilter.js
-  * underscore.catenate.js
-  * underscore.deepclone.js
-* backbone.js (>= 1.1.2 edge)
-
-## Future
-
-* Remove Backbone dependency.
-* Use a third party library for routing.
-* Move from Handlebars to HTMLBars.
-* Integrate with Web Components using polyfills as a fallback.
+* jquery.js (>= 2.1.0)
+  * jquery.lifecycle.js (>= 0.1.2)
+* handlebars.js (>= 1.1.0)
+  * handlebars.element.js (>= 0.1.3)
+  * handlebars.binding.js (>= 0.1.3)
+* underscore.js (>= 1.5.0)
+  * underscore.path.js (>= 0.1.4)
+  * underscore.parse.js (>= 0.1.1)
+  * underscore.string.js (>= 2.3.2)
+  * underscore.prefilter.js (>= 0.1.2)
+  * underscore.catenate.js (>= 0.1.1)
+  * underscore.deepclone.js (>= 0.1.1)
+* backbone.js (>= 1.2.2)
 
 ## License
 
