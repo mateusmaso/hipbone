@@ -11,6 +11,28 @@
 
     RootView.prototype.templateName = "/root";
 
+    RootView.prototype.elements = {
+      newTodo: ".new-todo"
+    };
+
+    RootView.prototype.events = {
+      "keypress newTodo": "addTodo"
+    };
+
+    RootView.prototype.addTodo = function(event) {
+      var text;
+      if (event.keyCode !== 13) {
+        return;
+      }
+      text = this.$("newTodo").val();
+      if (!_.string.isBlank(text)) {
+        this.$("newTodo").val("");
+        return this.get("todos").add(new TodoMVC.Todo({
+          text: text
+        }));
+      }
+    };
+
     return RootView;
 
   })(Hipbone.View);

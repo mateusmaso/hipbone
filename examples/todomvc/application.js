@@ -51,8 +51,6 @@
       return Todo.__super__.constructor.apply(this, arguments);
     }
 
-    Todo.prototype.urlRoot = "/todo";
-
     return Todo;
 
   })(Hipbone.Model);
@@ -69,8 +67,6 @@
     function Todos() {
       return Todos.__super__.constructor.apply(this, arguments);
     }
-
-    Todos.prototype.urlRoot = "/todos";
 
     Todos.prototype.model = TodoMVC.Todo;
 
@@ -97,7 +93,15 @@
 
     RootRoute.prototype.initialize = function() {
       return this.set({
-        todos: new TodoMVC.Todos
+        todos: new TodoMVC.Todos([
+          {
+            text: "um"
+          }, {
+            text: "dois"
+          }, {
+            text: "tres"
+          }
+        ])
       });
     };
 
@@ -151,6 +155,28 @@
 
     RootView.prototype.templateName = "/root";
 
+    RootView.prototype.elements = {
+      newTodo: ".new-todo"
+    };
+
+    RootView.prototype.events = {
+      "keypress newTodo": "addTodo"
+    };
+
+    RootView.prototype.addTodo = function(event) {
+      var text;
+      if (event.keyCode !== 13) {
+        return;
+      }
+      text = this.$("newTodo").val();
+      if (!_.string.isBlank(text)) {
+        this.$("newTodo").val("");
+        return this.get("todos").add(new TodoMVC.Todo({
+          text: text
+        }));
+      }
+    };
+
     return RootView;
 
   })(Hipbone.View);
@@ -168,7 +194,21 @@
       return TodoView.__super__.constructor.apply(this, arguments);
     }
 
+    TodoView.prototype.tagName = "li";
+
     TodoView.prototype.templateName = "/todo";
+
+    TodoView.prototype.elements = {
+      destroy: ".destroy"
+    };
+
+    TodoView.prototype.events = {
+      "click destroy": "removeTodo"
+    };
+
+    TodoView.prototype.removeTodo = function() {
+      return this.get("todo").destroy();
+    };
 
     return TodoView;
 
@@ -187,7 +227,15 @@
       return TodosView.__super__.constructor.apply(this, arguments);
     }
 
+    TodosView.prototype.tagName = "ul";
+
     TodosView.prototype.templateName = "/todos";
+
+    TodosView.prototype.className = "todo-list";
+
+    TodosView.prototype.initialize = function() {
+      return this.listenTo(this.get("todos"), "update", this.update);
+    };
 
     return TodosView;
 

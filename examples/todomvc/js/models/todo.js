@@ -9,8 +9,6 @@
       return Todo.__super__.constructor.apply(this, arguments);
     }
 
-    Todo.prototype.urlRoot = "/todo";
-
     return Todo;
 
   })(Hipbone.Model);

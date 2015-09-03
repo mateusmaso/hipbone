@@ -9,7 +9,21 @@
       return TodoView.__super__.constructor.apply(this, arguments);
     }
 
+    TodoView.prototype.tagName = "li";
+
     TodoView.prototype.templateName = "/todo";
+
+    TodoView.prototype.elements = {
+      destroy: ".destroy"
+    };
+
+    TodoView.prototype.events = {
+      "click destroy": "removeTodo"
+    };
+
+    TodoView.prototype.removeTodo = function() {
+      return this.get("todo").destroy();
+    };
 
     return TodoView;
 

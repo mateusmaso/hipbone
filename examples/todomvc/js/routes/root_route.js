@@ -15,7 +15,15 @@
 
     RootRoute.prototype.initialize = function() {
       return this.set({
-        todos: new TodoMVC.Todos
+        todos: new TodoMVC.Todos([
+          {
+            text: "um"
+          }, {
+            text: "dois"
+          }, {
+            text: "tres"
+          }
+        ])
       });
     };
 

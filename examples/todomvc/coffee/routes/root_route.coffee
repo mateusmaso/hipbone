@@ -5,7 +5,11 @@ class TodoMVC.RootRoute extends Hipbone.Route
   templateName: "/application"
 
   initialize: ->
-    @set(todos: new TodoMVC.Todos)
+    @set(todos: new TodoMVC.Todos([
+      {text: "um"},
+      {text: "dois"},
+      {text: "tres"}
+    ]))
 
   buildUrl: ->
     "/"

@@ -9,8 +9,6 @@
       return Todos.__super__.constructor.apply(this, arguments);
     }
 
-    Todos.prototype.urlRoot = "/todos";
-
     Todos.prototype.model = TodoMVC.Todo;
 
     return Todos;

@@ -9,7 +9,15 @@
       return TodosView.__super__.constructor.apply(this, arguments);
     }
 
+    TodosView.prototype.tagName = "ul";
+
     TodosView.prototype.templateName = "/todos";
+
+    TodosView.prototype.className = "todo-list";
+
+    TodosView.prototype.initialize = function() {
+      return this.listenTo(this.get("todos"), "update", this.update);
+    };
 
     return TodosView;
 
