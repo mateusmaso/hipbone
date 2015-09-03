@@ -86,7 +86,7 @@ class Hipbone.Model extends Backbone.Model
     hashes
 
   parse: (response={}) ->
-    @synced = _.now()
+    @synced = Date.now()
     response
 
   prepare: ->

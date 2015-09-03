@@ -85,7 +85,7 @@ class Hipbone.Collection extends Backbone.Collection
     hashes
 
   parse: (response={}) ->
-    @synced = _.now()
+    @synced = Date.now()
     @setMeta(response.meta)
     response.models || response
 

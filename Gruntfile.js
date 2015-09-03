@@ -19,6 +19,13 @@ module.exports = function(grunt) {
         files: [
           {
             expand: true,
+            cwd: 'spec',
+            src: ['**/*.coffee'],
+            dest: 'spec/',
+            ext: '.spec.js'
+          },
+          {
+            expand: true,
             cwd: 'src',
             src: ['**/*.coffee'],
             dest: 'lib/',
@@ -63,6 +70,16 @@ module.exports = function(grunt) {
         src: ['spec/**/*.html']
       }
     },
+    watch: {
+      coffee: {
+        files: ['spec/**/*.coffee', 'src/**/*.coffee'],
+        tasks: 'coffee'
+      },
+      concat: {
+        files: ['lib/**/*.js'],
+        tasks: 'concat'
+      }
+    },
     clean: ['dist']
   });
 
@@ -70,6 +87,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-coffee');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-concat');
+  grunt.loadNpmTasks('grunt-contrib-watch');
 
-  grunt.registerTask('default', ['coffee', 'concat', 'uglify', 'mocha']);
+  grunt.registerTask('default', ['coffee', 'concat', 'uglify', 'mocha', 'watch']);
 };

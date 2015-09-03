@@ -178,7 +178,7 @@
       return model || collection || this.transients[mapping];
     },
     setMapping: function(mapping, value, options) {
-      var collection, model, type;
+      var collection, meta, model, models, type;
       if (options == null) {
         options = {};
       }
@@ -189,13 +189,20 @@
         collection = value;
         collection.setParent(this);
       } else if (Hipbone.app.models[type] || _.contains(this.polymorphics, mapping)) {
-        type = this.parseMappingType(value) || type;
+        type = this.parseMappingType(mapping, value) || type;
         if (value) {
           model = new Hipbone.app.models[type](value, options);
         }
       } else if (Hipbone.app.collections[type]) {
-        collection = new Hipbone.app.collections[type](value, _.extend(options, {
-          parent: this
+        if (_.isArray(value)) {
+          models = value;
+        } else if (_.isObject(value)) {
+          meta = value.meta;
+          models = value.models;
+        }
+        collection = new Hipbone.app.collections[type](models, _.extend(options, {
+          parent: this,
+          meta: meta
         }));
       }
       if (model) {
@@ -546,7 +553,7 @@
       if (response == null) {
         response = {};
       }
-      this.synced = _.now();
+      this.synced = Date.now();
       return response;
     };
 
@@ -810,7 +817,7 @@
       if (response == null) {
         response = {};
       }
-      this.synced = _.now();
+      this.synced = Date.now();
       this.setMeta(response.meta);
       return response.models || response;
     };

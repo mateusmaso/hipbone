@@ -34,10 +34,15 @@ Hipbone.Mapping =
       collection = value
       collection.setParent(this)
     else if Hipbone.app.models[type] or _.contains(@polymorphics, mapping)
-      type = @parseMappingType(value) || type
+      type = @parseMappingType(mapping, value) || type
       model = new Hipbone.app.models[type](value, options) if value
     else if Hipbone.app.collections[type]
-      collection = new Hipbone.app.collections[type](value, _.extend(options, parent: this))
+      if _.isArray(value)
+        models = value
+      else if _.isObject(value)
+        meta = value.meta
+        models = value.models
+      collection = new Hipbone.app.collections[type](models, _.extend(options, parent: this, meta: meta))
 
     if model
       @set(@mappingIdAttribute(mapping), model.id)
