@@ -37,7 +37,7 @@ module.exports = function(grunt) {
           }
         },
         files: {
-          "templates.js": "js/templates/application.hbs"
+          "js/templates.js": ["coffee/templates/*.hbs"]
         }
       }
     }

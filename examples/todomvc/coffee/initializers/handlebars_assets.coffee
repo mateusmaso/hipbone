@@ -1,4 +1,4 @@
 TodoMVC::initializers.push ->
 
   @templates = HandlebarsTemplates
-  @templatePath = "js/templates"
+  @templatePath = "coffee/templates"

@@ -1,17 +1,11 @@
 class TodoMVC.RootRoute extends Hipbone.Route
 
-  matchUrl: "(/)"
+  matchUrl: "*all"
 
   templateName: "/application"
 
   initialize: ->
-    @set(todos: new TodoMVC.Todos())
-
-  transition: ->
-    return false if @withoutCurrentUser()
-
-  fetch: ->
-    @get("todos").fetch()
+    @set(todos: new TodoMVC.Todos)
 
   buildUrl: ->
     "/"

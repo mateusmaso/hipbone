@@ -9,12 +9,6 @@
       return TodoMVC.__super__.constructor.apply(this, arguments);
     }
 
-    TodoMVC.prototype.host = "/api/v1";
-
-    TodoMVC.prototype.locale = "pt-BR";
-
-    TodoMVC.prototype.title = "Todo MVC";
-
     return TodoMVC;
 
   })(Hipbone.Application);
@@ -24,7 +18,7 @@
 (function() {
   TodoMVC.prototype.initializers.push(function() {
     this.templates = HandlebarsTemplates;
-    return this.templatePath = "js/templates";
+    return this.templatePath = "coffee/templates";
   });
 
 }).call(this);
@@ -97,24 +91,14 @@
       return RootRoute.__super__.constructor.apply(this, arguments);
     }
 
-    RootRoute.prototype.matchUrl = "(/)";
+    RootRoute.prototype.matchUrl = "*all";
 
     RootRoute.prototype.templateName = "/application";
 
     RootRoute.prototype.initialize = function() {
       return this.set({
-        todos: new TodoMVC.Todos()
+        todos: new TodoMVC.Todos
       });
-    };
-
-    RootRoute.prototype.transition = function() {
-      if (this.withoutCurrentUser()) {
-        return false;
-      }
-    };
-
-    RootRoute.prototype.fetch = function() {
-      return this.get("todos").fetch();
     };
 
     RootRoute.prototype.buildUrl = function() {

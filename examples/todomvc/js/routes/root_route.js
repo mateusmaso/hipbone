@@ -9,24 +9,14 @@
       return RootRoute.__super__.constructor.apply(this, arguments);
     }
 
-    RootRoute.prototype.matchUrl = "(/)";
+    RootRoute.prototype.matchUrl = "*all";
 
     RootRoute.prototype.templateName = "/application";
 
     RootRoute.prototype.initialize = function() {
       return this.set({
-        todos: new TodoMVC.Todos()
+        todos: new TodoMVC.Todos
       });
-    };
-
-    RootRoute.prototype.transition = function() {
-      if (this.withoutCurrentUser()) {
-        return false;
-      }
-    };
-
-    RootRoute.prototype.fetch = function() {
-      return this.get("todos").fetch();
     };
 
     RootRoute.prototype.buildUrl = function() {

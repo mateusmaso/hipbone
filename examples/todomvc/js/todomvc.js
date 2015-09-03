@@ -9,12 +9,6 @@
       return TodoMVC.__super__.constructor.apply(this, arguments);
     }
 
-    TodoMVC.prototype.host = "/api/v1";
-
-    TodoMVC.prototype.locale = "pt-BR";
-
-    TodoMVC.prototype.title = "Todo MVC";
-
     return TodoMVC;
 
   })(Hipbone.Application);
