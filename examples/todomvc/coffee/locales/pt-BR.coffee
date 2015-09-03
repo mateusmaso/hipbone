@@ -1,0 +1,3 @@
+TodoMVC::locales['pt-BR'] = {
+
+}

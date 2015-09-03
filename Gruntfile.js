@@ -16,11 +16,15 @@ module.exports = function(grunt) {
     },
     coffee: {
       glob_to_multiple: {
-        expand: true,
-        cwd: 'src',
-        src: ['**/*.coffee'],
-        dest: 'lib/',
-        ext: '.js'
+        files: [
+          {
+            expand: true,
+            cwd: 'src',
+            src: ['**/*.coffee'],
+            dest: 'lib/',
+            ext: '.js'
+          }
+        ]
       }
     },
     concat: {

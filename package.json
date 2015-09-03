@@ -31,6 +31,7 @@
     "handlebars.binding": "~0.1.3",
     "underscore": "~1.5.0",
     "underscore.path": "~0.1.4",
+    "underscore.pathextend": "~0.1.2",
     "underscore.parse": "~0.1.1",
     "underscore.string": "~2.3.2",
     "underscore.prefilter": "~0.1.2",
