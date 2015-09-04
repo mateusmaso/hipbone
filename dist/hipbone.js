@@ -520,21 +520,23 @@
     };
 
     Model.prototype.toJSON = function(options) {
-      var computedAttributes, mapping, mappingOptions, mappings;
+      var computedAttributes, json, mapping, mappingOptions, mappings;
       if (options == null) {
         options = {};
       }
       mappings = options.mappings || {};
-      computedAttributes = options.computedAttributes || _.keys(this.computedAttributes);
-      if (options.sync) {
-        for (mapping in mappings) {
-          mappingOptions = mappings[mapping];
-          mappingOptions.sync = true;
-        }
+      for (mapping in mappings) {
+        mappingOptions = mappings[mapping];
+        mappingOptions.sync = options.sync;
       }
-      return _.extend(_.deepClone(Model.__super__.toJSON.apply(this, arguments)), this.toJSONMappings(mappings), this.toJSONComputedAttributes(computedAttributes), {
-        cid: this.cid
-      });
+      computedAttributes = options.computedAttributes || _.keys(this.computedAttributes);
+      json = _.deepClone(Model.__super__.toJSON.apply(this, arguments));
+      if (!options.sync) {
+        json = _.extend(json, {
+          cid: this.cid
+        }, this.toJSONComputedAttributes(computedAttributes), this.toJSONMappings(mappings));
+      }
+      return json;
     };
 
     Model.prototype.hashes = function(attributes) {
@@ -784,18 +786,19 @@
     };
 
     Collection.prototype.toJSON = function(options) {
+      var json;
       if (options == null) {
         options = {};
       }
-      if (options.sync) {
-        return Collection.__super__.toJSON.apply(this, arguments);
-      } else {
-        return _.extend(_.deepClone(this.meta), {
+      json = Collection.__super__.toJSON.apply(this, arguments);
+      if (!options.sync) {
+        json = _.extend(_.deepClone(this.meta), {
           length: this.length,
           cid: this.cid,
-          models: Collection.__super__.toJSON.apply(this, arguments)
+          models: json
         });
       }
+      return json;
     };
 
     Collection.prototype.hashes = function(models, options) {

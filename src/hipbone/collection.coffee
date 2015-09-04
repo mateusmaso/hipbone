@@ -73,10 +73,9 @@ class Hipbone.Collection extends Backbone.Collection
     @length is (@getMeta('offset') + @getMeta('limit'))
 
   toJSON: (options={}) ->
-    if options.sync
-      super
-    else
-      _.extend(_.deepClone(@meta), length: @length, cid: @cid, models: super)
+    json = super
+    json = _.extend(_.deepClone(@meta), length: @length, cid: @cid, models: json) unless options.sync
+    json
 
   hashes: (models, options={}) ->
     hashes = []

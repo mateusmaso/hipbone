@@ -29,10 +29,6 @@
             return Book.__super__.constructor.apply(this, arguments);
           }
 
-          Book.prototype.mappings = {
-            pages: "Pages"
-          };
-
           return Book;
 
         })(Hipbone.Model);
@@ -43,28 +39,9 @@
             return Page.__super__.constructor.apply(this, arguments);
           }
 
-          Page.prototype.mappings = {
-            book: "Book",
-            annotations: "Annotations"
-          };
-
-          Page.prototype.polymorphics = ["top_annotation"];
-
           return Page;
 
         })(Hipbone.Model);
-        App.Pages = (function(superClass) {
-          extend(Pages, superClass);
-
-          function Pages() {
-            return Pages.__super__.constructor.apply(this, arguments);
-          }
-
-          Pages.prototype.model = App.Page;
-
-          return Pages;
-
-        })(Hipbone.Collection);
         App.ReaderAnnotation = (function(superClass) {
           extend(ReaderAnnotation, superClass);
 
@@ -95,30 +72,47 @@
           return Annotations;
 
         })(Hipbone.Collection);
+        App.Pages = (function(superClass) {
+          extend(Pages, superClass);
+
+          function Pages() {
+            return Pages.__super__.constructor.apply(this, arguments);
+          }
+
+          return Pages;
+
+        })(Hipbone.Collection);
         this.app = new App;
         return this.app.run();
       });
-      return describe("Model", function() {
-        before(function() {
-          return this.model = new Hipbone.Model;
-        });
+      describe("Model", function() {
         describe("identity map", function() {
-          it("should be equal", function() {
-            var modelWithId;
-            modelWithId = new Hipbone.Model({
+          it("should be equal with id", function() {
+            var model;
+            model = new Hipbone.Model({
               id: 1
             });
-            return chai.expect(modelWithId).to.equal(new Hipbone.Model({
+            return chai.expect(model).to.equal(new Hipbone.Model({
               id: 1
             }));
           });
-          return it("should be diff", function() {
-            var modelWithoutId;
-            modelWithoutId = new Hipbone.Model;
-            return chai.expect(modelWithoutId).to.not.equal(new Hipbone.Model);
+          return it("should be different without id", function() {
+            var model;
+            model = new Hipbone.Model;
+            return chai.expect(model).to.not.equal(new Hipbone.Model);
           });
         });
         describe("mappings", function() {
+          before(function() {
+            this.App.Book.prototype.mappings = {
+              pages: "Pages"
+            };
+            this.App.Page.prototype.mappings = {
+              book: "Book"
+            };
+            this.App.Page.prototype.polymorphics = ["top_annotation"];
+            return this.App.Pages.prototype.model = App.Page;
+          });
           describe("model", function() {
             it("should be null by default", function() {
               var page;
@@ -228,11 +222,209 @@
             });
           });
         });
-        describe("validation", function() {
-          return it("to-do", function() {});
+        describe("validations", function() {
+          before(function() {
+            this.App.Page.prototype.validations = {
+              text: function(text) {
+                return !_.string.isBlank(text);
+              }
+            };
+            return this.page = new this.App.Page;
+          });
+          it("should be valid", function() {
+            this.page.set({
+              text: "teste"
+            });
+            return chai.expect([this.page.isValid(), this.page.errors]).to.be.deep.equal([true, []]);
+          });
+          return it("should not be valid", function() {
+            this.page.set({
+              text: ""
+            });
+            return chai.expect([this.page.isValid(), this.page.errors]).to.be.deep.equal([false, ["text"]]);
+          });
         });
-        return describe("computed attributes", function() {
-          return it("to-do", function() {});
+        describe("computed attributes", function() {
+          before(function() {
+            this.App.Book.prototype.computedAttributes = {
+              full_title: "fullTitle"
+            };
+            return this.App.Book.prototype.fullTitle = function() {
+              return (this.get("title")) + " by " + (this.get("author"));
+            };
+          });
+          return it("should get attribute", function() {
+            var book;
+            book = new this.App.Book({
+              title: "Hipbone",
+              author: "Mateus"
+            });
+            return chai.expect(book.get("full_title")).to.be.equal("Hipbone by Mateus");
+          });
+        });
+        describe("nested attributes", function() {
+          before(function() {
+            return this.book = new this.App.Book({
+              image: {
+                size: {
+                  large: "http://..."
+                }
+              }
+            });
+          });
+          it("should get attribute", function() {
+            return chai.expect(this.book.get("image.size.large")).to.be.equal("http://...");
+          });
+          return it("should trigger event", function(done) {
+            this.book.on("change:image.size.large", (function(_this) {
+              return function() {
+                chai.expect(_this.book.get("image.size.large")).to.be.equal("https://...");
+                return done();
+              };
+            })(this));
+            return this.book.set("image.size.large", "https://...");
+          });
+        });
+        return describe("json", function() {
+          before(function() {
+            return this.book = new this.App.Book({
+              id: 5,
+              title: "Hipbone",
+              author: "Mateus",
+              pages: [
+                {
+                  book_id: 5
+                }, {
+                  book_id: 5
+                }
+              ]
+            });
+          });
+          it("should include by default cid and computed attributes", function() {
+            return chai.expect(_.keys(this.book.toJSON())).to.be.deep.equal(["id", "title", "author", "type", "cid", "full_title"]);
+          });
+          it("should behave as backbone when sync", function() {
+            return chai.expect(_.keys(this.book.toJSON({
+              sync: true
+            }))).to.be.deep.equal(["id", "title", "author", "type"]);
+          });
+          return it("should include mappings when requested", function() {
+            return chai.expect(_.path(this.book.toJSON({
+              mappings: {
+                pages: {
+                  mappings: {
+                    book: {}
+                  }
+                }
+              }
+            }), "pages.models.1.book.id")).to.be.equal(5);
+          });
+        });
+      });
+      return describe("Collection", function() {
+        describe("parent", function() {
+          before(function() {
+            this.App.Page.prototype.urlRoot = "/pages";
+            this.App.Annotations.prototype.urlRoot = "/annotations";
+            this.page = new this.App.Page({
+              id: 1
+            });
+            return this.annotations = new this.App.Annotations([], {
+              parent: this.page
+            });
+          });
+          it("should initialize", function() {
+            return chai.expect(this.annotations.parent).to.be.equal(this.page);
+          });
+          return it("should compose url", function() {
+            return chai.expect(this.annotations.url()).to.be.equal("/pages/1/annotations");
+          });
+        });
+        describe("meta", function() {
+          return it("should initialize", function() {
+            var collection;
+            collection = new Hipbone.Collection([], {
+              meta: {
+                count: 10
+              }
+            });
+            return chai.expect(collection.getMeta("count")).to.be.equal(10);
+          });
+        });
+        describe("identity map", function() {
+          it("should be equal with parent", function() {
+            var collection, model;
+            model = new Hipbone.Model;
+            collection = new Hipbone.Collection([], {
+              parent: model
+            });
+            return chai.expect(collection).to.be.equal(new Hipbone.Collection([], {
+              parent: model
+            }));
+          });
+          return it("should be different without parent", function() {
+            var collection;
+            collection = new Hipbone.Collection([]);
+            return chai.expect(collection).to.not.be.equal(new Hipbone.Collection([]));
+          });
+        });
+        describe("dynamic model", function() {
+          it("should set model", function() {
+            var annotation1, annotation2, annotations;
+            annotation1 = new this.App.AuthorAnnotation({
+              id: 1
+            });
+            annotation2 = new this.App.ReaderAnnotation({
+              id: 1
+            });
+            annotations = new this.App.Annotations([annotation1, annotation2]);
+            return chai.expect(annotations.map(function(annotation) {
+              return annotation.id;
+            })).to.be.deep.equal([1, 1]);
+          });
+          return it("should set object", function() {
+            var annotation1, annotation2, annotations;
+            annotation1 = {
+              id: 1,
+              type: "AuthorAnnotation"
+            };
+            annotation2 = {
+              id: 1,
+              type: "ReaderAnnotation"
+            };
+            annotations = new this.App.Annotations([annotation1, annotation2]);
+            return chai.expect(annotations.map(function(annotation) {
+              return annotation.id;
+            })).to.be.deep.equal([1, 1]);
+          });
+        });
+        describe("limit + offset", function() {});
+        return describe("json", function() {
+          before(function() {
+            return this.pages = new this.App.Pages([
+              {
+                id: 1
+              }, {
+                id: 2
+              }
+            ]);
+          });
+          it("should include by default cid, meta and helpers", function() {
+            return chai.expect(_.keys(this.pages.toJSON())).to.be.deep.equal(["offset", "limit", "length", "cid", "models"]);
+          });
+          return it("should behave as backbone when sync", function() {
+            return chai.expect(this.pages.toJSON({
+              sync: true
+            })).to.be.deep.equal([
+              {
+                id: 1,
+                type: "Page"
+              }, {
+                id: 2,
+                type: "Page"
+              }
+            ]);
+          });
         });
       });
     });

@@ -75,9 +75,11 @@ class Hipbone.Model extends Backbone.Model
 
   toJSON: (options={}) ->
     mappings = options.mappings || {}
+    mappingOptions.sync = options.sync for mapping, mappingOptions of mappings
     computedAttributes = options.computedAttributes || _.keys(@computedAttributes)
-    mappingOptions.sync = true for mapping, mappingOptions of mappings if options.sync
-    _.extend(_.deepClone(super), @toJSONMappings(mappings), @toJSONComputedAttributes(computedAttributes), cid: @cid)
+    json = _.deepClone(super)
+    json = _.extend(json, cid: @cid, @toJSONComputedAttributes(computedAttributes), @toJSONMappings(mappings)) unless options.sync
+    json
 
   hashes: (attributes) ->
     hashes = []
