@@ -1,7 +1,7 @@
 Hipbone.ComputedAttribute =
 
   initializeComputedAttribute: (computedAttributes={}) ->
-    @computedAttributes ||= {}
+    @computedAttributes = _.extend({}, @computedAttributes, computedAttributes)
 
   getComputedAttribute: (attribute) ->
     method = @computedAttributes[attribute]

@@ -371,12 +371,99 @@
 }).call(this);
 
 (function() {
+  Hipbone.Filter = {
+    initializeFilter: function(filters) {
+      if (filters == null) {
+        filters = {};
+      }
+      return this.filters = _.extend({}, this.filters, filters);
+    },
+    filterJSON: function(options) {
+      var attribute, json, ref, value;
+      if (options == null) {
+        options = {};
+      }
+      json = {};
+      ref = this.filters;
+      for (attribute in ref) {
+        value = ref[attribute];
+        if (_.isFunction(value)) {
+          value = value.apply(this, [options]);
+        }
+        if (value != null) {
+          json[attribute] = value;
+        }
+      }
+      return json;
+    }
+  };
+
+}).call(this);
+
+(function() {
+  Hipbone.Pagination = {
+    initializePagination: function(pagination) {
+      if (pagination == null) {
+        pagination = {};
+      }
+      this.pagination = _.extend({}, this.pagination, pagination);
+      this.paginationOffset = this.pagination.offset;
+      this.filters || (this.filters = {});
+      this.filters.limit = function(options) {
+        if (options == null) {
+          options = {};
+        }
+        if (this.paginationOffset) {
+          if (options.paginate) {
+            return this.pagination.limit;
+          } else {
+            return this.pagination.limit + this.paginationOffset;
+          }
+        }
+      };
+      return this.filters.offset = function(options) {
+        if (options == null) {
+          options = {};
+        }
+        if (this.paginationOffset) {
+          if (options.paginate) {
+            return this.paginationOffset;
+          } else {
+            return 0;
+          }
+        }
+      };
+    },
+    incrementPagination: function() {
+      return this.paginationOffset = this.pagination.limit + this.paginationOffset;
+    },
+    paginate: function(options) {
+      if (options == null) {
+        options = {};
+      }
+      this.incrementPagination();
+      return this.fetch(_.extend({
+        remove: false,
+        paginate: true
+      }, options));
+    },
+    hasMore: function() {
+      return this.length < this.getPaginationCount();
+    },
+    getPaginationCount: function() {
+      return this.getMeta('count');
+    }
+  };
+
+}).call(this);
+
+(function() {
   Hipbone.ComputedAttribute = {
     initializeComputedAttribute: function(computedAttributes) {
       if (computedAttributes == null) {
         computedAttributes = {};
       }
-      return this.computedAttributes || (this.computedAttributes = {});
+      return this.computedAttributes = _.extend({}, this.computedAttributes, computedAttributes);
     },
     getComputedAttribute: function(attribute) {
       var method;
@@ -418,6 +505,8 @@
   Hipbone.Model = (function(superClass) {
     extend(Model, superClass);
 
+    Model.include(Hipbone.Filter);
+
     Model.include(Hipbone.Mapping);
 
     Model.include(Hipbone.Validation);
@@ -443,11 +532,22 @@
       } else {
         this.store(hashes);
       }
-      this.initializeMapping();
-      this.initializeValidation();
-      this.initializeComputedAttribute();
+      this.initializeFilter(options.filters);
+      this.initializeMapping(options.mappings, options.polymorphics);
+      this.initializeValidation(options.validations);
+      this.initializeComputedAttribute(options.computedAttributes);
       Model.__super__.constructor.apply(this, arguments);
     }
+
+    Model.prototype.url = function(options) {
+      var queryParams, url;
+      queryParams = this.filterJSON(options);
+      url = Model.__super__.url.apply(this, arguments);
+      if (!_.isEmpty(queryParams)) {
+        url = url + "?" + ($.param(queryParams));
+      }
+      return url;
+    };
 
     Model.prototype.get = function(attribute) {
       if (this.mappings[attribute] || _.contains(this.polymorphics, attribute)) {
@@ -658,6 +758,10 @@
 
     Collection.include(Hipbone.Accessor);
 
+    Collection.include(Hipbone.Filter);
+
+    Collection.include(Hipbone.Pagination);
+
     Collection.prototype.model = Hipbone.Model;
 
     Collection.prototype.hashName = "collection";
@@ -692,13 +796,16 @@
         accessorName: "meta",
         accessorsName: "meta",
         accessorEvent: "change:meta",
-        accessors: options.meta,
-        defaults: {
-          offset: 0,
-          limit: 10
-        }
+        accessors: options.meta
       });
+      this.initializeFilter(options.filters);
+      this.initializePagination(options.pagination);
       Collection.__super__.constructor.apply(this, arguments);
+      this.on("add remove reset sort", (function(_this) {
+        return function() {
+          return _this.trigger("update", _this);
+        };
+      })(this));
     }
 
     Collection.prototype._prepareModel = function(attributes, options) {
@@ -725,12 +832,14 @@
       }
     };
 
-    Collection.prototype.url = function() {
-      if (this.parent) {
-        return this.parent.url() + this.urlRoot;
-      } else {
-        return this.urlRoot;
+    Collection.prototype.url = function(options) {
+      var queryParams, url;
+      queryParams = this.filterJSON(options);
+      url = this.parent ? this.parent.url(options) + this.urlRoot : this.urlRoot;
+      if (!_.isEmpty(queryParams)) {
+        url = url + "?" + ($.param(queryParams));
       }
+      return url;
     };
 
     Collection.prototype.set = function(models, options) {
@@ -744,45 +853,6 @@
     Collection.prototype.setAccessor = function() {
       Hipbone.Accessor.setAccessor.apply(this, arguments);
       return this.store();
-    };
-
-    Collection.prototype.fetch = function(options) {
-      var key, ref, value;
-      if (options == null) {
-        options = {};
-      }
-      options.data || (options.data = {});
-      ref = this.meta;
-      for (key in ref) {
-        value = ref[key];
-        if (value != null) {
-          options.data[key] = value;
-        }
-      }
-      if (options.increment) {
-        this.setMeta({
-          offset: this.getMeta('offset') + this.getMeta('limit')
-        });
-        options.data.offset = this.getMeta("offset");
-      } else {
-        options.data.offset = 0;
-        options.data.limit = this.getMeta("offset") + this.getMeta("limit");
-      }
-      return Collection.__super__.fetch.call(this, options);
-    };
-
-    Collection.prototype.fetchMore = function(options) {
-      if (options == null) {
-        options = {};
-      }
-      return this.fetch(_.extend({
-        remove: false,
-        increment: true
-      }, options));
-    };
-
-    Collection.prototype.hasMore = function() {
-      return this.length === (this.getMeta('offset') + this.getMeta('limit'));
     };
 
     Collection.prototype.toJSON = function(options) {
@@ -852,6 +922,31 @@
     return Collection;
 
   })(Backbone.Collection);
+
+}).call(this);
+
+(function() {
+  Hipbone.Filter = {
+    initializeFilter: function(filters) {
+      if (filters == null) {
+        filters = {};
+      }
+      return this.filters = _.extend({}, this.filters, filters);
+    },
+    filterJSON: function(options) {
+      var attribute, json, value;
+      json = {};
+      for (attribute in filters) {
+        value = filters[attribute];
+        if (_.isFunction(value)) {
+          json[attribute] = value.apply(this, [options]);
+        } else {
+          json[attribute] = value;
+        }
+      }
+      return json;
+    }
+  };
 
 }).call(this);
 
@@ -1580,7 +1675,7 @@
       options = {};
     }
     options.sync = true;
-    options.url || (options.url = model.url());
+    options.url || (options.url = model.url(options));
     options = Hipbone.app.ajaxSettings(options);
     return Hipbone.app.ajaxHandle(sync.apply(this, [method, model, options]));
   };

@@ -1,6 +1,8 @@
 class Hipbone.Collection extends Backbone.Collection
 
   @include Hipbone.Accessor
+  @include Hipbone.Filter
+  @include Hipbone.Pagination
 
   model: Hipbone.Model
 
@@ -23,8 +25,11 @@ class Hipbone.Collection extends Backbone.Collection
 
     @cid = _.uniqueId('col')
     @parent = options.parent
-    @initializeAccessor(accessorName: "meta", accessorsName: "meta", accessorEvent: "change:meta", accessors: options.meta, defaults: offset: 0, limit: 10)
+    @initializeAccessor(accessorName: "meta", accessorsName: "meta", accessorEvent: "change:meta", accessors: options.meta)
+    @initializeFilter(options.filters)
+    @initializePagination(options.pagination)
     super
+    @on("add remove reset sort", => @trigger("update", this))
 
   _prepareModel: (attributes, options={}) ->
     unless @_isModel(attributes)
@@ -42,8 +47,11 @@ class Hipbone.Collection extends Backbone.Collection
     else
       super
 
-  url: ->
-    if @parent then @parent.url() + @urlRoot else @urlRoot
+  url: (options) ->
+    queryParams = @filterJSON(options)
+    url = if @parent then @parent.url(options) + @urlRoot else @urlRoot
+    url = "#{url}?#{$.param(queryParams)}" unless _.isEmpty(queryParams)
+    url
 
   set: (models, options={}) ->
     super(models, options)
@@ -52,25 +60,6 @@ class Hipbone.Collection extends Backbone.Collection
   setAccessor: ->
     Hipbone.Accessor.setAccessor.apply(this, arguments)
     @store()
-
-  fetch: (options={}) ->
-    options.data ||= {}
-    options.data[key] = value for key, value of @meta when value?
-
-    if options.increment
-      @setMeta(offset: @getMeta('offset') + @getMeta('limit'))
-      options.data.offset = @getMeta("offset")
-    else
-      options.data.offset = 0
-      options.data.limit = @getMeta("offset") + @getMeta("limit")
-
-    super(options)
-
-  fetchMore: (options={}) ->
-    @fetch(_.extend(remove: false, increment: true, options))
-
-  hasMore: ->
-    @length is (@getMeta('offset') + @getMeta('limit'))
 
   toJSON: (options={}) ->
     json = super

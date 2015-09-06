@@ -46,6 +46,9 @@ module.exports = function(grunt) {
           'lib/hipbone/mapping.js',
           'lib/hipbone/accessor.js',
           'lib/hipbone/validation.js',
+          'lib/hipbone/filter.js',
+          'lib/hipbone/mapping.js',
+          'lib/hipbone/pagination.js',
           'lib/hipbone/computed_attribute.js',
           'lib/hipbone/model.js',
           'lib/**/*.js'

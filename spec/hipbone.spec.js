@@ -62,6 +62,16 @@
           return AuthorAnnotation;
 
         })(Hipbone.Model);
+        App.ReaderAnnotations = (function(superClass) {
+          extend(ReaderAnnotations, superClass);
+
+          function ReaderAnnotations() {
+            return ReaderAnnotations.__super__.constructor.apply(this, arguments);
+          }
+
+          return ReaderAnnotations;
+
+        })(Hipbone.Collection);
         App.Annotations = (function(superClass) {
           extend(Annotations, superClass);
 
@@ -285,6 +295,21 @@
             return this.book.set("image.size.large", "https://...");
           });
         });
+        describe("filters", function() {
+          before(function() {
+            this.App.ReaderAnnotation.prototype.urlRoot = "/annotations";
+            return this.App.ReaderAnnotation.prototype.filters = {
+              reader: true
+            };
+          });
+          return it("should be in query url params", function() {
+            var readerAnnotation;
+            readerAnnotation = new this.App.ReaderAnnotation({
+              id: 5
+            });
+            return chai.expect(readerAnnotation.url()).to.be.equal("/annotations/5?reader=true");
+          });
+        });
         return describe("json", function() {
           before(function() {
             return this.book = new this.App.Book({
@@ -398,7 +423,37 @@
             })).to.be.deep.equal([1, 1]);
           });
         });
-        describe("limit + offset", function() {});
+        describe("filters", function() {
+          before(function() {
+            this.App.ReaderAnnotations.prototype.urlRoot = "/annotations";
+            return this.App.ReaderAnnotations.prototype.filters = {
+              reader: true
+            };
+          });
+          return it("should be in query url params", function() {
+            var readerAnnotations;
+            readerAnnotations = new this.App.ReaderAnnotations();
+            return chai.expect(readerAnnotations.url()).to.be.equal("/annotations?reader=true");
+          });
+        });
+        describe("pagination", function() {
+          before(function() {
+            this.App.ReaderAnnotations.prototype.pagination = {
+              offset: 0,
+              limit: 10
+            };
+            return this.readerAnnotations = new this.App.ReaderAnnotations();
+          });
+          it("should increment pagination", function() {
+            this.readerAnnotations.incrementPagination();
+            return chai.expect(this.readerAnnotations.url({
+              paginate: true
+            })).to.be.equal("/annotations?reader=true&limit=10&offset=10");
+          });
+          return it("should fetch only models since beginning", function() {
+            return chai.expect(this.readerAnnotations.url()).to.be.equal("/annotations?reader=true&limit=20&offset=0");
+          });
+        });
         return describe("json", function() {
           before(function() {
             return this.pages = new this.App.Pages([
@@ -407,10 +462,14 @@
               }, {
                 id: 2
               }
-            ]);
+            ], {
+              meta: {
+                count: 10
+              }
+            });
           });
           it("should include by default cid, meta and helpers", function() {
-            return chai.expect(_.keys(this.pages.toJSON())).to.be.deep.equal(["offset", "limit", "length", "cid", "models"]);
+            return chai.expect(_.keys(this.pages.toJSON())).to.be.deep.equal(["count", "length", "cid", "models"]);
           });
           return it("should behave as backbone when sync", function() {
             return chai.expect(this.pages.toJSON({

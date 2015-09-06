@@ -9,6 +9,7 @@ if navigator.userAgent.indexOf('PhantomJS') < 0
       class App.Page extends Hipbone.Model
       class App.ReaderAnnotation extends Hipbone.Model
       class App.AuthorAnnotation extends Hipbone.Model
+      class App.ReaderAnnotations extends Hipbone.Collection
       class App.Annotations extends Hipbone.Collection
       class App.Pages extends Hipbone.Collection
 
@@ -113,6 +114,15 @@ if navigator.userAgent.indexOf('PhantomJS') < 0
             done()
           @book.set("image.size.large", "https://...")
 
+      describe "filters", ->
+        before ->
+          @App.ReaderAnnotation::urlRoot = "/annotations"
+          @App.ReaderAnnotation::filters = reader: true
+
+        it "should be in query url params", ->
+          readerAnnotation = new @App.ReaderAnnotation(id: 5)
+          chai.expect(readerAnnotation.url()).to.be.equal("/annotations/5?reader=true")
+
       describe "json", ->
         before ->
           @book = new @App.Book(id: 5, title: "Hipbone", author: "Mateus", pages: [{book_id: 5}, {book_id: 5}])
@@ -169,14 +179,33 @@ if navigator.userAgent.indexOf('PhantomJS') < 0
           annotations = new @App.Annotations([annotation1, annotation2])
           chai.expect(annotations.map (annotation) -> annotation.id).to.be.deep.equal([1, 1])
 
-      describe "limit + offset", ->
+      describe "filters", ->
+        before ->
+          @App.ReaderAnnotations::urlRoot = "/annotations"
+          @App.ReaderAnnotations::filters = reader: true
+
+        it "should be in query url params", ->
+          readerAnnotations = new @App.ReaderAnnotations()
+          chai.expect(readerAnnotations.url()).to.be.equal("/annotations?reader=true")
+
+      describe "pagination", ->
+        before ->
+          @App.ReaderAnnotations::pagination = offset: 0, limit: 10
+          @readerAnnotations = new @App.ReaderAnnotations()
+
+        it "should increment pagination", ->
+          @readerAnnotations.incrementPagination()
+          chai.expect(@readerAnnotations.url(paginate: true)).to.be.equal("/annotations?reader=true&limit=10&offset=10")
+
+        it "should fetch only models since beginning", ->
+          chai.expect(@readerAnnotations.url()).to.be.equal("/annotations?reader=true&limit=20&offset=0")
 
       describe "json", ->
         before ->
-          @pages = new @App.Pages([{id: 1}, {id: 2}])
+          @pages = new @App.Pages([{id: 1}, {id: 2}], meta: count: 10)
 
         it "should include by default cid, meta and helpers", ->
-          chai.expect(_.keys(@pages.toJSON())).to.be.deep.equal(["offset", "limit", "length", "cid", "models"])
+          chai.expect(_.keys(@pages.toJSON())).to.be.deep.equal(["count", "length", "cid", "models"])
 
         it "should behave as backbone when sync", ->
           chai.expect(@pages.toJSON(sync: true)).to.be.deep.equal([{id: 1, type: "Page"}, {id: 2, type: "Page"}])

@@ -1,5 +1,6 @@
 class Hipbone.Model extends Backbone.Model
 
+  @include Hipbone.Filter
   @include Hipbone.Mapping
   @include Hipbone.Validation
   @include Hipbone.ComputedAttribute
@@ -17,10 +18,17 @@ class Hipbone.Model extends Backbone.Model
     else
       @store(hashes)
 
-    @initializeMapping()
-    @initializeValidation()
-    @initializeComputedAttribute()
+    @initializeFilter(options.filters)
+    @initializeMapping(options.mappings, options.polymorphics)
+    @initializeValidation(options.validations)
+    @initializeComputedAttribute(options.computedAttributes)
     super
+
+  url: (options) ->
+    queryParams = @filterJSON(options)
+    url = super
+    url = "#{url}?#{$.param(queryParams)}" unless _.isEmpty(queryParams)
+    url
 
   get: (attribute) ->
     if @mappings[attribute] or _.contains(@polymorphics, attribute)
