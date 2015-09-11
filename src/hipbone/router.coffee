@@ -1,34 +1,22 @@
-class Hipbone.Router extends Backbone.Router
+Module = require "./module"
+
+module.exports = class Router extends Backbone.Router
+
+  _.extend(this, Module)
+
+  @include require "./router/url"
+  @include require "./router/matches"
 
   constructor: (options={}) ->
-    @matches = {}
+    @initializeMatches(options.matches)
     super
 
-  buildUrl: (name, params) ->
-    Hipbone.app.routes[@matches[name]]::buildUrl(params)
-
-  matchUrl: (name) ->
-    Hipbone.app.routes[@matches[name]]::matchUrl
-
-  match: (name) ->
-    @matches[name] = "#{_.string.capitalize(name)}Route"
-    url = @matchUrl(name)
-
-    @route url, name, ->
-      @params = Hipbone.history.parameters()
-      for param, index in url.match(/:\w+/g) || [] when arguments[index]
-        @params[param.substring(1)] = _.parse(arguments[index])
-      @route = new Hipbone.app.routes[@matches[name]](@params)
-
   navigate: (fragment, options={}) ->
-    fragment = @buildUrl(fragment, options) if @matches[fragment]
-    anchor = $("<a>").attr("href", fragment).get(0)
-    anchor.search = $.param(options.params) if options.params
-    fragment = anchor.pathname + anchor.search
+    fragment = @urlFragment(fragment, options.params)
 
     if options.reload
-      Hipbone.history.reload(fragment)
+      Hipbone.app.history.reload(fragment)
     else if options.load
-      Hipbone.history.loadUrl(fragment)
+      Hipbone.app.history.loadUrl(fragment)
     else
       super(fragment, options)

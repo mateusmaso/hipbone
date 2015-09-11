@@ -1,82 +1,26 @@
-class Hipbone.Route extends Hipbone.Module
+Module = require "./module"
 
-  @include Hipbone.Accessor
+module.exports = class Route extends Module
+
+  @registerModule "Route"
+
   @include Backbone.Events
+  @include require "./route/url"
+  @include require "./route/view"
+  @include require "./route/title"
+  @include require "./route/store"
+  @include require "./route/active"
+  @include require "./route/populate"
+  @include require "./route/parameters"
 
-  hashName: "route"
-
-  constructor: (params={}) ->
-    params = _.defaults({}, @parse(params), @defaults)
-    hashes = @hashes(params)
-    path = Hipbone.history.location.pathname
-
-    if Hipbone.app.identityMap.find(path) and not Hipbone.history.popstate
-      hashes = _.without(hashes, path)
-
-    if route = Hipbone.app.identityMap.findAll(hashes)[0]
-      route.set(params)
-      route.display()
-      return route
-    else
-      @store(hashes)
-
+  constructor: (params={}, options={}) ->
+    return route if route = @initializeStore(options.hashName, params)
     @cid = _.uniqueId('route')
-    @initializeAccessor(accessorsName: "params", accessors: params)
+    @initializeView(options.templateName, options.contentTemplateName)
+    @initializeParameters(params, options.paramsDefaults)
     @initialize(params)
-    @populate()
-
-  initialize: ->
-
-  setAccessor: ->
-    Hipbone.Accessor.setAccessor.apply(this, arguments)
+    @on("all", => @store())
+    @prepare()
     @store()
 
-  fetch: ->
-
-  context: ->
-
-  transition: ->
-
-  populate: ->
-    @prepare().done => @display()
-
-  display: ->
-    if @transition() isnt false
-      document.title = @title()
-      @render()
-
-  prepare: ->
-    $.when(@fetch())
-
-  parse: (params={}) ->
-    params
-
-  hashes: (params={}) ->
-    hashes = []
-    hashes.push(@cid) if @cid
-    hashes.push(Hipbone.history.location.pathname)
-    hashes
-
-  buildUrl: (params={}) ->
-
-  title: ->
-    Hipbone.app.title
-
-  content: ->
-    Hipbone.app.appView.template(@contentName, @context())
-
-  render: ->
-    @element ||= @content()
-
-    Hipbone.app.appView.templateName = @templateName
-    Hipbone.app.appView.set(@context())
-
-    if Hipbone.app.appView.content isnt @element
-      Hipbone.app.appView.setContent(null)
-      Hipbone.app.appView.$el.children().detach()
-      Hipbone.app.appView.render()
-      Hipbone.app.appView.setContent(@element)
-
-  store: (hashes) ->
-    hashes ||= @hashes(@params)
-    Hipbone.app.identityMap.storeAll(hashes, this)
+  initialize: (params={}) ->

@@ -6,9 +6,9 @@ module.exports = function(grunt) {
         files: [
           {
             expand: true,
-            cwd: 'coffee',
+            cwd: 'todomvc',
             src: ['**/*.coffee'],
-            dest: 'js/',
+            dest: 'temp/',
             ext: '.js'
           }
         ]
@@ -17,15 +17,16 @@ module.exports = function(grunt) {
     concat: {
       dist: {
         src: [
-          'js/todomvc.js',
-          'js/initializers/*.js',
-          'js/locales/*.js',
-          'js/models/*.js',
-          'js/collections/*.js',
-          'js/routes/*.js',
-          'js/views/*.js'
+          'temp/todomvc.js',
+          'temp/initializers/*.js',
+          'temp/locales/*.js',
+          'temp/models/*.js',
+          'temp/collections/*.js',
+          'temp/routes/*.js',
+          'temp/views/*.js',
+          'temp/templates.js'
         ],
-        dest: 'application.js'
+        dest: 'todomvc.js'
       }
     },
     handlebars: {
@@ -37,15 +38,15 @@ module.exports = function(grunt) {
           }
         },
         files: {
-          "js/templates.js": ["coffee/templates/*.hbs"]
+          "temp/templates.js": ["todomvc/templates/*.hbs"]
         }
       }
     }
   });
 
-  grunt.loadNpmTasks('grunt-contrib-handlebars');
   grunt.loadNpmTasks('grunt-contrib-coffee');
+  grunt.loadNpmTasks('grunt-contrib-handlebars');
   grunt.loadNpmTasks('grunt-contrib-concat');
 
-  grunt.registerTask('default', ['handlebars', 'coffee', 'concat']);
+  grunt.registerTask('default', ['coffee', 'handlebars', 'concat']);
 };

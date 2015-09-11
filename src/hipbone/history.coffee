@@ -1,4 +1,10 @@
-class Hipbone.History extends Backbone.History
+Module = require "./module"
+
+module.exports = class History extends Backbone.History
+
+  _.extend(this, Module)
+
+  @registerModule "History"
 
   route: (route, callback) ->
     @handlers.push(route: route, callback: callback)
@@ -30,5 +36,3 @@ class Hipbone.History extends Backbone.History
     @popstate = true
     super
     @popstate = false
-
-Hipbone.history = Backbone.history = new Hipbone.History

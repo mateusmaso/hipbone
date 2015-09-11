@@ -1,4 +1,8 @@
-class Hipbone.Storage extends Hipbone.Module
+Module = require "./module"
+
+module.exports = class Storage extends Module
+
+  @registerModule "Storage"
 
   match: (regex) ->
     matches = {}

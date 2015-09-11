@@ -1,0 +1,7 @@
+{{#unless "editing" bind=true}}
+  <input class="toggle" type="checkbox" {{if "todo.completed" bindAttr=true then="checked"}}>
+  <label>{{todo.text}}</label>
+  <button class="destroy"></button>
+{{else}}
+  <input class="edit" value="{{todo.text}}" hb-autofocus>
+{{/unless}}

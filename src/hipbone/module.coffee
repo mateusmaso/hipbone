@@ -1,6 +1,13 @@
-class Hipbone.Module
+module.exports = class Module
 
+  modules = []
   moduleKeywords = ['included', 'extended']
+
+  moduleName: "Module"
+
+  @registerModule: (name) ->
+    @::moduleName = name
+    modules[name] = this
 
   @include: (modules...) ->
     for module in modules
@@ -11,7 +18,3 @@ class Hipbone.Module
     for module in modules
       @[name] = method for name, method of module when name not in moduleKeywords
       module.extended.apply(this) if module.extended
-
-for module in ['Model', 'Collection', 'Router', 'View', 'History']
-  Backbone[module] = _.extend(Backbone[module], Hipbone.Module)
-  Backbone[module]:: = _.extend(Backbone[module]::, Hipbone.Module::)

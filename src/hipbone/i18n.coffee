@@ -1,7 +1,12 @@
-class Hipbone.I18n extends Hipbone.Module
+Module = require "./module"
 
-  constructor: (locale, splitter) ->
+module.exports = class I18n extends Module
+
+  @registerModule "I18n"
+
+  constructor: (locale, locales={}, splitter) ->
     @locale = locale
+    @locales = locales
     @splitter = splitter || /{{\w+}}/g
 
   interpolate: (text, values={}) ->
@@ -18,7 +23,7 @@ class Hipbone.I18n extends Hipbone.Module
     else
       key = "#{key}.other"
 
-    _.path(@locale, key)
+    _.path(@locales[@locale], key)
 
   inflector: (key, gender) ->
     if gender is 'm'
@@ -28,7 +33,7 @@ class Hipbone.I18n extends Hipbone.Module
     else
       key = "#{key}.neutral"
 
-    _.path(@locale, key)
+    _.path(@locales[@locale], key)
 
   translate: (key, options={}) ->
     if _.has(options, 'count')
@@ -36,7 +41,7 @@ class Hipbone.I18n extends Hipbone.Module
     else if _.has(options, 'gender')
       text = @inflector(key, options.gender)
     else
-      text = _.path(@locale, key)
+      text = _.path(@locales[@locale], key)
 
     @interpolate(text, options)
 

@@ -1,42 +1,39 @@
-class Hipbone.Application extends Hipbone.Module
+Module = require "./module"
 
-  @include Hipbone.Ajax
-  @include Hipbone.Accessor
+module.exports = class Application extends Module
+
+  @registerModule "Application"
+
   @include Backbone.Events
-
-  locales: {}
-
-  initializers: []
+  @include require "./application/ajax"
+  @include require "./application/models"
+  @include require "./application/routes"
+  @include require "./application/views"
+  @include require "./application/templates"
+  @include require "./application/collections"
+  @include require "./application/state"
+  @include require "./application/locales"
+  @include require "./application/initializers"
 
   constructor: (options={}) ->
     Hipbone.app = this
-
-    @views ||= options.views || {}
-    @title ||= options.title || 'App'
-    @locale ||= options.local || 'en'
-    @models ||= options.models || {}
-    @assets ||= options.assets || {}
-    @routes ||= options.routes || {}
-    @matches ||= options.matches || []
-    @templates ||= options.templates || {}
-    @collections ||= options.collections || {}
-    @templatePath ||= options.templatePath || ''
-
-    @locales = options.locales if options.locales
-    @initializers = options.initializers if options.initializers
-
-    @i18n = new Hipbone.I18n(@locales[@locale])
-    @router = new Hipbone.Router(matches: @matches)
-    @storage = new Hipbone.Storage
     @identityMap = new Hipbone.IdentityMap
-
-    @initializeAccessor(accessorsName: "attributes", accessors: options.attributes)
-    @initializeAjax(options.host, options.headers)
+    @initializeState(options.state, _.extend(title: "App", assets: {}, options.stateDefaults))
+    @initializeTemplates(options.templatePath, options.templates)
+    @initializeViews(options.views)
+    @initializeModels(options.models)
+    @initializeRoutes(options.routes)
+    @initializeCollections(options.collections)
+    @initializeLocales(options.locales, options.locale)
+    @initializeAjax(options.ajaxHost, options.ajaxHeaders)
+    @initializeInitializers(options.initializers)
+    @history = Backbone.history = new Hipbone.History
+    @router = new Hipbone.Router
+    @storage = new Hipbone.Storage
+    @runInitializers(options)
     @initialize(options)
 
-    initializer.apply(this, [options]) for initializer in @initializers
-
-  initialize: ->
+  initialize: (options={}) ->
 
   run: ->
     @trigger('run')

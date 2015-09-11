@@ -21,39 +21,28 @@ module.exports = function(grunt) {
             expand: true,
             cwd: 'spec',
             src: ['**/*.coffee'],
-            dest: 'spec/',
-            ext: '.spec.js'
+            dest: 'spec/temp/',
+            ext: '.js'
           },
           {
             expand: true,
             cwd: 'src',
             src: ['**/*.coffee'],
-            dest: 'lib/',
+            dest: 'temp/',
             ext: '.js'
           }
         ]
       }
     },
-    concat: {
+    browserify: {
       options: {
         banner: '<%= meta.banner %>'
       },
       dist: {
-        src: [
-          'lib/hipbone.js',
-          'lib/hipbone/ajax.js',
-          'lib/hipbone/module.js',
-          'lib/hipbone/mapping.js',
-          'lib/hipbone/accessor.js',
-          'lib/hipbone/validation.js',
-          'lib/hipbone/filter.js',
-          'lib/hipbone/mapping.js',
-          'lib/hipbone/pagination.js',
-          'lib/hipbone/computed_attribute.js',
-          'lib/hipbone/model.js',
-          'lib/**/*.js'
-        ],
-        dest: 'dist/<%= pkg.name %>.js'
+        files: {
+          'dist/<%= pkg.name %>.js': ['temp/**/*.js'],
+          'spec/index.js': ['spec/temp/**/*.js']
+        }
       }
     },
     uglify: {
@@ -78,19 +67,19 @@ module.exports = function(grunt) {
         files: ['spec/**/*.coffee', 'src/**/*.coffee'],
         tasks: 'coffee'
       },
-      concat: {
-        files: ['lib/**/*.js'],
-        tasks: ['concat', 'uglify']
+      browserify: {
+        files: ['tmp/**/*.js'],
+        tasks: ['browserify', 'uglify']
       }
     },
     clean: ['dist']
   });
 
   grunt.loadNpmTasks('grunt-mocha');
+  grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-coffee');
   grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-contrib-concat');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
-  grunt.registerTask('default', ['coffee', 'concat', 'uglify', 'mocha', 'watch']);
+  grunt.registerTask('default', ['coffee', 'browserify', 'uglify', 'mocha']);
 };

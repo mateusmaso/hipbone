@@ -1,4 +1,8 @@
-class Hipbone.IdentityMap extends Hipbone.Module
+Module = require "./module"
+
+module.exports = class IdentityMap extends Module
+
+  @registerModule "IdentityMap"
 
   constructor: ->
     @instances = {}
@@ -29,3 +33,6 @@ class Hipbone.IdentityMap extends Hipbone.Module
 
   deleteAll: (keys) ->
     @delete(key) for key in keys
+
+  clear: ->
+    @deleteAll(_.keys(@instances))

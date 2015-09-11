@@ -1,92 +1,58 @@
-class Hipbone.Collection extends Backbone.Collection
+Model = require "./model"
+Module = require "./module"
 
-  @include Hipbone.Accessor
-  @include Hipbone.Filter
-  @include Hipbone.Pagination
+module.exports = class Collection extends Backbone.Collection
 
-  model: Hipbone.Model
+  _.extend(this, Module)
 
-  hashName: "collection"
+  @registerModule "Collection"
+
+  @include require "./collection/sync"
+  @include require "./collection/meta"
+  @include require "./collection/store"
+  @include require "./collection/parent"
+  @include require "./collection/filters"
+  @include require "./collection/populate"
+  @include require "./collection/pagination"
+  @include require "./collection/dynamic_model"
+
+  model: Model
 
   constructor: (models, options={}) ->
     unless _.isArray(models)
       options = models || {}
       models = undefined
 
-    hashes = @hashes(models, options)
-
-    if collection = Hipbone.app.identityMap.findAll(hashes)[0]
-      collection.set(models, options) if models
-      collection.setMeta(options.meta) if options.meta
-      collection.parent = options.parent if options.parent
-      return collection
-    else
-      @store(hashes)
-
-    @cid = _.uniqueId('col')
-    @parent = options.parent
-    @initializeAccessor(accessorName: "meta", accessorsName: "meta", accessorEvent: "change:meta", accessors: options.meta)
-    @initializeFilter(options.filters)
+    return collection if collection = @initializeStore(options.hashName, models, options)
+    @cid = _.uniqueId('collection')
+    @initializeMeta(options.meta, options.metaDefaults)
+    @initializeParent(options.parent)
+    @initializeFilters(options.filters)
     @initializePagination(options.pagination)
     super
     @on("add remove reset sort", => @trigger("update", this))
+    @on("all", => @store())
+    @store()
 
   _prepareModel: (attributes, options={}) ->
-    unless @_isModel(attributes)
-      attributes = new (Hipbone.app.models[@parseModelType(attributes)] || @model)(attributes, options)
+    @prepareDynamicModel(attributes, options)
     super
 
   modelId: (attributes) ->
-    if @model and @_isModel(@model::)
-      Model = @model
-    else
-      Model = Hipbone.app.models[@parseModelType(attributes)]
-
-    if attributes[Model::idAttribute]
-      "#{attributes[Model::typeAttribute]}-#{attributes[Model::idAttribute]}"
-    else
-      super
+    @dynamicModelId(attributes) || super
 
   url: (options) ->
-    queryParams = @filterJSON(options)
-    url = if @parent then @parent.url(options) + @urlRoot else @urlRoot
-    url = "#{url}?#{$.param(queryParams)}" unless _.isEmpty(queryParams)
+    query = @toJSONFilters(options)
+    url = @parentUrl(options)
+    url = "#{url}?#{$.param(query)}" unless _.isEmpty(query)
     url
-
-  set: (models, options={}) ->
-    super(models, options)
-    @store()
-
-  setAccessor: ->
-    Hipbone.Accessor.setAccessor.apply(this, arguments)
-    @store()
 
   toJSON: (options={}) ->
     json = super
-    json = _.extend(_.deepClone(@meta), length: @length, cid: @cid, models: json) unless options.sync
+    json = _.extend(cid: @cid, length: @length, meta: @meta.toJSON(), models: json) unless options.sync
     json
 
-  hashes: (models, options={}) ->
-    hashes = []
-    hashes.push(@cid) if @cid
-    hashes.push("#{@hashName}-#{options.parent.cid}") if options.parent?.cid
-    hashes
-
   parse: (response={}) ->
-    @synced = Date.now()
-    @setMeta(response.meta)
+    @didSync()
+    @meta.set(response.meta)
     response.models || response
-
-  parseModelType: (attributes={}) ->
-    attributes.type
-
-  prepare: ->
-    $.when(@synced || @fetch())
-
-  unsync: ->
-    delete @synced
-    @trigger('unsync', this)
-
-  store: (hashes) ->
-    hashes ||= @hashes(@models, parent: @parent, meta: @meta)
-    Hipbone.app.identityMap.storeAll(hashes, this)
