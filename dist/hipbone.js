@@ -27,7 +27,7 @@
 
 }).call(this);
 
-},{"./hipbone/application":2,"./hipbone/collection":22,"./hipbone/history":31,"./hipbone/i18n":32,"./hipbone/identity_map":33,"./hipbone/model":34,"./hipbone/module":43,"./hipbone/route":44,"./hipbone/router":52,"./hipbone/storage":55,"./hipbone/view":57}],2:[function(require,module,exports){
+},{"./hipbone/application":2,"./hipbone/collection":22,"./hipbone/history":32,"./hipbone/i18n":33,"./hipbone/identity_map":34,"./hipbone/model":35,"./hipbone/module":44,"./hipbone/route":45,"./hipbone/router":53,"./hipbone/storage":56,"./hipbone/view":58}],2:[function(require,module,exports){
 (function() {
   var Application, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -69,16 +69,15 @@
       this.initializeState(options.state, _.extend({
         title: "App",
         assets: {}
-      }, options.stateDefaults));
+      }, options.defaults));
       this.initializeTemplates(options.templatePath, options.templates);
       this.initializeViews(options.views);
       this.initializeModels(options.models);
       this.initializeRoutes(options.routes);
       this.initializeCollections(options.collections);
-      this.initializeLocales(options.locales, options.locale);
-      this.initializeAjax(options.ajaxHost, options.ajaxHeaders);
+      this.initializeLocales(options.locale, options.locales);
+      this.initializeAjax(options.host, options.headers);
       this.initializeInitializers(options.initializers);
-      this.history = Backbone.history = new Hipbone.History;
       this.router = new Hipbone.Router;
       this.storage = new Hipbone.Storage;
       this.runInitializers(options);
@@ -101,7 +100,7 @@
 
 }).call(this);
 
-},{"./application/ajax":3,"./application/collections":4,"./application/initializers":5,"./application/locales":16,"./application/models":17,"./application/routes":18,"./application/state":19,"./application/templates":20,"./application/views":21,"./module":43}],3:[function(require,module,exports){
+},{"./application/ajax":3,"./application/collections":4,"./application/initializers":5,"./application/locales":16,"./application/models":17,"./application/routes":18,"./application/state":19,"./application/templates":20,"./application/views":21,"./module":44}],3:[function(require,module,exports){
 (function() {
   var slice = [].slice;
 
@@ -113,8 +112,8 @@
       if (headers == null) {
         headers = {};
       }
-      this.ajaxHost || (this.ajaxHost = host);
-      return this.ajaxHeaders || (this.ajaxHeaders = headers);
+      this.host || (this.host = host);
+      return this.headers = _.extend({}, this.headers, headers);
     },
     ajax: function(options) {
       if (options == null) {
@@ -135,25 +134,32 @@
       })(this));
       return xhr;
     },
-    ajaxSettings: function(options) {
-      var header, ref, value;
-      if (options == null) {
-        options = {};
-      }
-      options.url = this.ajaxHost + options.url;
-      if (options.type === 'POST') {
-        options.dataType = 'json';
-        options.contentType = 'application/json';
-        options.data = JSON.stringify(options.data);
-      }
-      options.headers || (options.headers = {});
-      ref = this.ajaxHeaders;
+    ajaxUrl: function(url) {
+      return "" + this.host + url;
+    },
+    ajaxHeaders: function() {
+      var header, headers, ref, value;
+      headers = {};
+      ref = this.headers;
       for (header in ref) {
         value = ref[header];
         if (_.isFunction(value)) {
           value = value.apply(this);
         }
-        options.headers[header] = value;
+        headers[header] = value;
+      }
+      return headers;
+    },
+    ajaxSettings: function(options) {
+      if (options == null) {
+        options = {};
+      }
+      options.url = this.ajaxUrl(options.url);
+      options.headers = _.extend({}, options.headers, this.ajaxHeaders());
+      if (options.type === 'POST') {
+        options.dataType = 'json';
+        options.contentType = 'application/json';
+        options.data = JSON.stringify(options.data);
       }
       options.beforeSend = _.catenate(function(xhr, settings) {
         if (settings == null) {
@@ -298,15 +304,17 @@
     return this.on("run", function() {
       var key, ref, results, view;
       Handlebars.parseHTML(document.body.childNodes);
-      ref = this.identityMap.match(/view/);
-      results = [];
-      for (key in ref) {
-        view = ref[key];
-        if (view instanceof this.views.ApplicationView) {
-          results.push(this.appView = view);
+      if (this.views.ApplicationView) {
+        ref = this.identityMap.match(/view/);
+        results = [];
+        for (key in ref) {
+          view = ref[key];
+          if (view instanceof this.views.ApplicationView) {
+            results.push(this.appView = view);
+          }
         }
+        return results;
       }
-      return results;
     });
   };
 
@@ -462,10 +470,17 @@
 },{}],14:[function(require,module,exports){
 (function() {
   module.exports = function() {
+    if (!(Backbone.history instanceof Hipbone.History)) {
+      Backbone.history = new Hipbone.History;
+    }
+    this.history = Backbone.history;
     return this.on("run", function() {
-      return this.trigger("start", this.history.start({
-        pushState: true
-      }));
+      if (!Backbone.History.started) {
+        this.history.start({
+          pushState: true
+        });
+      }
+      return this.trigger("start");
     });
   };
 
@@ -589,7 +604,7 @@
       if (defaults == null) {
         defaults = {};
       }
-      State.prototype.defaults = defaults;
+      State.prototype.defaults = this.defaults || (this.defaults = defaults);
       this.state = new State(state);
       return this.listenTo(this.state, "all", (function(_this) {
         return function() {
@@ -607,7 +622,7 @@
 
 }).call(this);
 
-},{"./../model":34}],20:[function(require,module,exports){
+},{"./../model":35}],20:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeTemplates: function(templatePath, templates) {
@@ -683,7 +698,7 @@
 
     Collection.include(require("./collection/pagination"));
 
-    Collection.include(require("./collection/dynamic_model"));
+    Collection.include(require("./collection/polymorphic"));
 
     Collection.prototype.model = Model;
 
@@ -700,7 +715,7 @@
         return collection;
       }
       this.cid = _.uniqueId('collection');
-      this.initializeMeta(options.meta, options.metaDefaults);
+      this.initializeMeta(options.meta, options.defaults);
       this.initializeParent(options.parent);
       this.initializeFilters(options.filters);
       this.initializePagination(options.pagination);
@@ -719,15 +734,18 @@
     }
 
     Collection.prototype._prepareModel = function(attributes, options) {
+      var model;
       if (options == null) {
         options = {};
       }
-      this.prepareDynamicModel(attributes, options);
-      return Collection.__super__._prepareModel.apply(this, arguments);
+      if (model = this.preparePolymorphic(attributes, options)) {
+        attributes = model;
+      }
+      return Collection.__super__._prepareModel.call(this, attributes, options);
     };
 
     Collection.prototype.modelId = function(attributes) {
-      return this.dynamicModelId(attributes) || Collection.__super__.modelId.apply(this, arguments);
+      return void 0;
     };
 
     Collection.prototype.url = function(options) {
@@ -762,7 +780,9 @@
         response = {};
       }
       this.didSync();
-      this.meta.set(response.meta);
+      if (response.meta) {
+        this.meta.set(response.meta);
+      }
       return response.models || response;
     };
 
@@ -772,16 +792,30 @@
 
 }).call(this);
 
-},{"./collection/dynamic_model":23,"./collection/filters":24,"./collection/meta":25,"./collection/pagination":26,"./collection/parent":27,"./collection/populate":28,"./collection/store":29,"./collection/sync":30,"./model":34,"./module":43}],23:[function(require,module,exports){
+},{"./collection/filters":24,"./collection/meta":25,"./collection/pagination":26,"./collection/parent":27,"./collection/polymorphic":28,"./collection/populate":29,"./collection/store":30,"./collection/sync":31,"./model":35,"./module":44}],23:[function(require,module,exports){
 (function() {
   module.exports = {
     prepareDynamicModel: function(attributes, options) {
+      var Model;
       if (options == null) {
         options = {};
       }
       if (!this._isModel(attributes)) {
-        return attributes = new (Hipbone.app.models[this.parseModelType(attributes)] || this.model)(attributes, options);
+        Model = this.dynamicModel(attributes);
+        return attributes = new Model(attributes, options);
       }
+    },
+    dynamicModel: function(attributes) {
+      if (attributes == null) {
+        attributes = {};
+      }
+      return Hipbone.app.models[this.parseModelType(attributes)] || this.model;
+    },
+    parseModelId: function(attributes) {
+      if (attributes == null) {
+        attributes = {};
+      }
+      return attributes.id;
     },
     parseModelType: function(attributes) {
       if (attributes == null) {
@@ -790,17 +824,12 @@
       return attributes.type;
     },
     dynamicModelId: function(attributes) {
-      var Model;
       if (attributes == null) {
         attributes = {};
       }
-      if (this.model && this._isModel(this.model.prototype)) {
-        Model = this.model;
-      } else {
-        Model = Hipbone.app.models[this.parseModelType(attributes)];
-      }
-      if (attributes[Model.prototype.idAttribute]) {
-        return attributes[Model.prototype.typeAttribute] + "-" + attributes[Model.prototype.idAttribute];
+      console.log(attributes);
+      if (this.parseModelId(attributes)) {
+        return (this.parseModelType(attributes)) + "-" + (this.parseModelId(attributes));
       }
     }
   };
@@ -868,7 +897,7 @@
       if (defaults == null) {
         defaults = {};
       }
-      Meta.prototype.defaults = defaults;
+      Meta.prototype.defaults = this.defaults || (this.defaults = defaults);
       this.meta = new Meta(meta);
       return this.listenTo(this.meta, "all", (function(_this) {
         return function() {
@@ -882,7 +911,7 @@
 
 }).call(this);
 
-},{"./../model":34}],26:[function(require,module,exports){
+},{"./../model":35}],26:[function(require,module,exports){
 (function() {
   module.exports = {
     initializePagination: function(pagination) {
@@ -977,6 +1006,34 @@
 },{}],28:[function(require,module,exports){
 (function() {
   module.exports = {
+    preparePolymorphic: function(attributes, options) {
+      var Model, i, len, ref;
+      if (options == null) {
+        options = {};
+      }
+      if (_.isArray(this.model) && !this._isModel(attributes)) {
+        ref = this.model;
+        for (i = 0, len = ref.length; i < len; i++) {
+          Model = ref[i];
+          if (Model === Hipbone.app.models[this.polymorphicType(attributes)]) {
+            return new Model(attributes, options);
+          }
+        }
+      }
+    },
+    polymorphicType: function(attributes) {
+      if (attributes == null) {
+        attributes = {};
+      }
+      return attributes.type;
+    }
+  };
+
+}).call(this);
+
+},{}],29:[function(require,module,exports){
+(function() {
+  module.exports = {
     populated: function(name) {
       return this.synced;
     },
@@ -990,7 +1047,7 @@
 
 }).call(this);
 
-},{}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeStore: function(hashName, models, options) {
@@ -1038,7 +1095,7 @@
 
 }).call(this);
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 (function() {
   module.exports = {
     unsync: function() {
@@ -1053,7 +1110,7 @@
 
 }).call(this);
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 (function() {
   var History, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1129,7 +1186,7 @@
 
 }).call(this);
 
-},{"./module":43}],32:[function(require,module,exports){
+},{"./module":44}],33:[function(require,module,exports){
 (function() {
   var I18n, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1210,7 +1267,7 @@
 
 }).call(this);
 
-},{"./module":43}],33:[function(require,module,exports){
+},{"./module":44}],34:[function(require,module,exports){
 (function() {
   var IdentityMap, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1234,15 +1291,15 @@
       for (key in ref) {
         instance = ref[key];
         if (regex.test(key)) {
-          matches[key] = instance.value;
+          matches[key] = instance;
         }
       }
       return matches;
     };
 
     IdentityMap.prototype.find = function(key) {
-      var ref, value;
-      if (value = (ref = this.instances[key]) != null ? ref.value : void 0) {
+      var value;
+      if (value = this.instances[key]) {
         this.store(key, value);
       }
       return value;
@@ -1261,25 +1318,18 @@
     };
 
     IdentityMap.prototype.store = function(key, value, options) {
-      var defaults;
       if (options == null) {
         options = {};
       }
-      defaults = {
-        value: value
-      };
-      return this.instances[key] = _.extend(defaults, options);
+      return this.instances[key] = value;
     };
 
-    IdentityMap.prototype.storeAll = function(keys, value, options) {
+    IdentityMap.prototype.storeAll = function(keys, value) {
       var i, key, len, results;
-      if (options == null) {
-        options = {};
-      }
       results = [];
       for (i = 0, len = keys.length; i < len; i++) {
         key = keys[i];
-        results.push(this.store(key, value, options));
+        results.push(this.store(key, value));
       }
       return results;
     };
@@ -1308,7 +1358,7 @@
 
 }).call(this);
 
-},{"./module":43}],34:[function(require,module,exports){
+},{"./module":44}],35:[function(require,module,exports){
 (function() {
   var Model, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1322,8 +1372,6 @@
     _.extend(Model, Module);
 
     Model.registerModule("Model");
-
-    Model.include(require("./model/type"));
 
     Model.include(require("./model/sync"));
 
@@ -1352,8 +1400,7 @@
       if (model = this.initializeStore(options.hashName, attributes, options)) {
         return model;
       }
-      this.initializeType(options.type, options.typeAttribute);
-      this.initializeMappings(options.mappings, options.polymorphics);
+      this.initializeMappings(options.mappings);
       this.initializeValidations(options.validations);
       this.initializeComputedAttributes(options.computedAttributes);
       Model.__super__.constructor.apply(this, arguments);
@@ -1387,7 +1434,6 @@
         attributes = {};
         attributes[attribute] = value;
       }
-      this.setType(attributes);
       this.setMappings(attributes, options);
       this.setNestedAttributes(attributes, options);
       Model.__super__.set.call(this, attributes, options);
@@ -1407,9 +1453,9 @@
       computedAttributes = options.computedAttributes || _.keys(this.computedAttributes);
       json = _.deepClone(Model.__super__.toJSON.apply(this, arguments));
       if (!options.sync) {
-        json = _.extend(json, {
+        json = _.extend({
           cid: this.cid
-        }, this.toJSONComputedAttributes(computedAttributes), this.toJSONMappings(mappings));
+        }, json, this.toJSONComputedAttributes(computedAttributes), this.toJSONMappings(mappings));
       }
       return json;
     };
@@ -1428,7 +1474,7 @@
 
 }).call(this);
 
-},{"./model/computed_attributes":35,"./model/mappings":36,"./model/nested_attributes":37,"./model/populate":38,"./model/store":39,"./model/sync":40,"./model/type":41,"./model/validations":42,"./module":43}],35:[function(require,module,exports){
+},{"./model/computed_attributes":36,"./model/mappings":37,"./model/nested_attributes":38,"./model/populate":39,"./model/store":40,"./model/sync":41,"./model/validations":43,"./module":44}],36:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeComputedAttributes: function(computedAttributes) {
@@ -1459,6 +1505,9 @@
     },
     toJSONComputedAttributes: function(computedAttributes) {
       var computedAttribute, i, json, len;
+      if (computedAttributes == null) {
+        computedAttributes = [];
+      }
       json = {};
       for (i = 0, len = computedAttributes.length; i < len; i++) {
         computedAttribute = computedAttributes[i];
@@ -1470,34 +1519,48 @@
 
 }).call(this);
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 (function() {
   module.exports = {
-    initializeMappings: function(mappings, polymorphics) {
+    initializeMappings: function(mappings) {
       if (mappings == null) {
         mappings = {};
       }
-      if (polymorphics == null) {
-        polymorphics = [];
-      }
       this.transients = {};
-      this.mappings = _.extend({}, this.mappings, mappings);
-      return this.polymorphics = _.union([], this.polymorphics, polymorphics);
+      return this.mappings = _.extend({}, this.mappings, mappings);
     },
     mappingIdAttribute: function(mapping) {
-      return mapping + "_id";
+      return mapping + "_" + (this.parseMappingIdAttribute(mapping));
     },
     mappingTypeAttribute: function(mapping) {
-      return mapping + "_type";
+      return mapping + "_" + (this.parseMappingTypeAttribute(mapping));
+    },
+    parseMappingIdAttribute: function(mapping) {
+      return "id";
+    },
+    parseMappingTypeAttribute: function(mapping) {
+      return "type";
+    },
+    parseMappingId: function(mapping, attributes) {
+      if (attributes == null) {
+        attributes = {};
+      }
+      return attributes[this.parseMappingIdAttribute(mapping)];
+    },
+    parseMappingType: function(mapping, attributes) {
+      if (attributes == null) {
+        attributes = {};
+      }
+      return attributes[this.parseMappingTypeAttribute(mapping)];
     },
     getMapping: function(mapping) {
       var attributes, collection, id, model, type;
       type = this.mappings[mapping];
-      if (Hipbone.app.models[type] || _.contains(this.polymorphics, mapping)) {
+      if (Hipbone.app.models[type]) {
         id = this.get(this.mappingIdAttribute(mapping));
         type = this.get(this.mappingTypeAttribute(mapping)) || type;
         attributes = {};
-        attributes[Hipbone.app.models[type].prototype.idAttribute] = id;
+        attributes[this.parseMappingIdAttribute(mapping)] = id;
         if (id) {
           model = new Hipbone.app.models[type](attributes);
         }
@@ -1519,7 +1582,7 @@
       } else if (value instanceof Hipbone.Collection) {
         collection = value;
         collection.setParent(this);
-      } else if (Hipbone.app.models[type] || _.contains(this.polymorphics, mapping)) {
+      } else if (Hipbone.app.models[type]) {
         type = this.parseMappingType(mapping, value) || type;
         if (value) {
           model = new Hipbone.app.models[type](value, options);
@@ -1537,9 +1600,9 @@
         }));
       }
       if (model) {
-        this.set(this.mappingIdAttribute(mapping), model.id);
-        if (_.contains(this.polymorphics, mapping)) {
-          this.set(this.mappingTypeAttribute(mapping), model.type);
+        this.set(this.mappingIdAttribute(mapping), this.parseMappingId(mapping, model.attributes));
+        if (_.isArray(this.mappings[mapping])) {
+          this.set(this.mappingTypeAttribute(mapping), this.parseMappingType(mapping, model.attributes));
         }
         if (model.isNew()) {
           this.transients[mapping] = model;
@@ -1558,7 +1621,7 @@
       if (attributes == null) {
         attributes = {};
       }
-      ref = _.pick(attributes, _.keys(this.mappings), this.polymorphics);
+      ref = _.pick(attributes, _.keys(this.mappings));
       results = [];
       for (attribute in ref) {
         value = ref[attribute];
@@ -1569,14 +1632,11 @@
       }
       return results;
     },
-    parseMappingType: function(mapping, attributes) {
-      if (attributes == null) {
-        attributes = {};
-      }
-      return attributes.type;
-    },
     toJSONMappings: function(mappings) {
       var json, mapping, options, ref;
+      if (mappings == null) {
+        mappings = {};
+      }
       json = {};
       for (mapping in mappings) {
         options = mappings[mapping];
@@ -1588,19 +1648,18 @@
 
 }).call(this);
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 (function() {
   module.exports = {
     getNestedAttribute: function(attribute) {
       return _.path(this.attributes, attribute);
     },
     setNestedAttribute: function(attribute, value, options) {
-      var i, len, nestedAttributes, path, previousAttribute, ref, results;
+      var i, len, nestedAttributes, path, paths, previousAttribute, ref, results;
       if (options == null) {
         options = {};
       }
-      value = attributes[attribute];
-      delete attributes[attribute];
+      paths = attribute.split(".");
       if (!_.isEqual(this.get(attribute), value)) {
         nestedAttributes = {};
         nestedAttributes[attribute] = value;
@@ -1649,9 +1708,9 @@
 
 }).call(this);
 
-},{}],38:[function(require,module,exports){
-arguments[4][28][0].apply(exports,arguments)
-},{"dup":28}],39:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
+arguments[4][29][0].apply(exports,arguments)
+},{"dup":29}],40:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeStore: function(hashName, attributes, options) {
@@ -1691,9 +1750,9 @@ arguments[4][28][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],40:[function(require,module,exports){
-arguments[4][30][0].apply(exports,arguments)
-},{"dup":30}],41:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
+arguments[4][31][0].apply(exports,arguments)
+},{"dup":31}],42:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeType: function(type, attribute) {
@@ -1716,7 +1775,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeValidations: function(validations) {
@@ -1757,7 +1816,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 (function() {
   var Module,
     slice = [].slice,
@@ -1827,7 +1886,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],44:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 (function() {
   var Module, Route,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1892,7 +1951,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./module":43,"./route/active":45,"./route/parameters":46,"./route/populate":47,"./route/store":48,"./route/title":49,"./route/url":50,"./route/view":51}],45:[function(require,module,exports){
+},{"./module":44,"./route/active":46,"./route/parameters":47,"./route/populate":48,"./route/store":49,"./route/title":50,"./route/url":51,"./route/view":52}],46:[function(require,module,exports){
 (function() {
   module.exports = {
     beforeActive: function() {
@@ -1908,7 +1967,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],46:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 (function() {
   var Model, Parameters,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1961,7 +2020,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./../model":34}],47:[function(require,module,exports){
+},{"./../model":35}],48:[function(require,module,exports){
 (function() {
   module.exports = {
     populated: function(name) {
@@ -1977,7 +2036,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeStore: function(hashName, params) {
@@ -2019,7 +2078,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],49:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 (function() {
   module.exports = {
     title: function() {
@@ -2032,7 +2091,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeUrl: function(url) {
@@ -2051,7 +2110,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeView: function(templateName, contentTemplateName) {
@@ -2079,7 +2138,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],52:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 (function() {
   var Module, Router,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -2124,7 +2183,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./module":43,"./router/matches":53,"./router/url":54}],53:[function(require,module,exports){
+},{"./module":44,"./router/matches":54,"./router/url":55}],54:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeMatches: function(matches) {
@@ -2155,7 +2214,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],54:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 (function() {
   module.exports = {
     url: function(name, params) {
@@ -2177,7 +2236,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],55:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 (function() {
   var Module, Storage,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -2188,11 +2247,14 @@ arguments[4][30][0].apply(exports,arguments)
   module.exports = Storage = (function(superClass) {
     extend(Storage, superClass);
 
-    function Storage() {
-      return Storage.__super__.constructor.apply(this, arguments);
-    }
-
     Storage.registerModule("Storage");
+
+    function Storage(prefix) {
+      if (prefix == null) {
+        prefix = "hipbone_";
+      }
+      this.prefix = prefix;
+    }
 
     Storage.prototype.match = function(regex) {
       var key, matches, value;
@@ -2200,7 +2262,7 @@ arguments[4][30][0].apply(exports,arguments)
       for (key in localStorage) {
         value = localStorage[key];
         if (regex.test(key)) {
-          matches[key] = JSON.parse(value);
+          matches[key.replace(this.prefix, "")] = JSON.parse(value);
         }
       }
       return matches;
@@ -2208,17 +2270,29 @@ arguments[4][30][0].apply(exports,arguments)
 
     Storage.prototype.get = function(key) {
       var value;
-      if (value = localStorage[key]) {
+      if (value = localStorage["" + this.prefix + key]) {
         return _.parse(value);
       }
     };
 
     Storage.prototype.set = function(key, value) {
-      return localStorage.setItem(key, JSON.stringify(value));
+      return localStorage.setItem("" + this.prefix + key, JSON.stringify(value));
     };
 
     Storage.prototype.unset = function(key) {
-      return localStorage.removeItem(key);
+      return localStorage.removeItem("" + this.prefix + key);
+    };
+
+    Storage.prototype.clear = function() {
+      var key, ref, regex, results, value;
+      regex = new RegExp(this.prefix);
+      ref = this.match(regex);
+      results = [];
+      for (key in ref) {
+        value = ref[key];
+        results.push(this.unset(key));
+      }
+      return results;
     };
 
     return Storage;
@@ -2227,7 +2301,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./module":43}],56:[function(require,module,exports){
+},{"./module":44}],57:[function(require,module,exports){
 (function() {
   var sync;
 
@@ -2245,7 +2319,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],57:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 (function() {
   var Module, View,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -2307,7 +2381,7 @@ arguments[4][30][0].apply(exports,arguments)
       this.initializeBooleans(options.booleans);
       this.initializeElements(options.elementName, options.elements);
       this.initializeTemplate(options.templateName);
-      this.initializeProperties(properties);
+      this.initializeProperties(properties, options.defaults);
       this.initializeClassNameBindings(options.classNameBindings);
       View.__super__.constructor.apply(this, arguments);
       this.on("change", (function(_this) {
@@ -2377,7 +2451,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./module":43,"./view/attribute":58,"./view/booleans":59,"./view/bubble":60,"./view/class_name_bindings":62,"./view/content":63,"./view/context":64,"./view/elements":65,"./view/lifecycle":66,"./view/populate":67,"./view/properties":68,"./view/store":69,"./view/template":70,"./view/update":71,"./view/view_selector":72}],58:[function(require,module,exports){
+},{"./module":44,"./view/attribute":59,"./view/booleans":60,"./view/bubble":61,"./view/class_name_bindings":63,"./view/content":64,"./view/context":65,"./view/elements":66,"./view/lifecycle":67,"./view/populate":68,"./view/properties":69,"./view/store":70,"./view/template":71,"./view/update":72,"./view/view_selector":73}],59:[function(require,module,exports){
 (function() {
   module.exports = {
     setAttribute: function(attribute, value) {
@@ -2396,7 +2470,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],59:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 (function() {
   module.exports = {
     included: function() {
@@ -2422,7 +2496,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],60:[function(require,module,exports){
+},{}],61:[function(require,module,exports){
 (function() {
   var slice = [].slice;
 
@@ -2437,7 +2511,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],61:[function(require,module,exports){
+},{}],62:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeClassBindings: function() {
@@ -2471,7 +2545,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],62:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeClassNameBindings: function() {
@@ -2505,7 +2579,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],63:[function(require,module,exports){
+},{}],64:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeContent: function(content, container) {
@@ -2525,7 +2599,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],64:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeContext: function() {
@@ -2577,7 +2651,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],65:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 (function() {
   module.exports = {
     included: function() {
@@ -2601,7 +2675,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],66:[function(require,module,exports){
+},{}],67:[function(require,module,exports){
 (function() {
   module.exports = {
     insert: function() {},
@@ -2634,7 +2708,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],67:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 (function() {
   module.exports = {
     initializePopulate: function(background) {
@@ -2675,14 +2749,37 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],68:[function(require,module,exports){
+},{}],69:[function(require,module,exports){
 (function() {
+  var Model, Properties,
+    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  Model = require("./../model");
+
+  Properties = (function(superClass) {
+    extend(Properties, superClass);
+
+    function Properties() {
+      return Properties.__super__.constructor.apply(this, arguments);
+    }
+
+    Properties.registerModule("Properties");
+
+    return Properties;
+
+  })(Model);
+
   module.exports = {
-    initializeProperties: function(properties) {
+    initializeProperties: function(properties, defaults) {
       if (properties == null) {
         properties = {};
       }
-      this.props = this.properties = new Hipbone.Model(properties);
+      if (defaults == null) {
+        defaults = {};
+      }
+      Properties.prototype.defaults = this.defaults || (this.defaults = defaults);
+      this.props = this.properties = new Properties(properties);
       return this.listenTo(this.props, "change", (function(_this) {
         return function() {
           return _this.trigger("change");
@@ -2699,7 +2796,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],69:[function(require,module,exports){
+},{"./../model":35}],70:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeStore: function(hashName, properties) {
@@ -2737,7 +2834,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],70:[function(require,module,exports){
+},{}],71:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeTemplate: function(templateName) {
@@ -2758,7 +2855,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],71:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 (function() {
   module.exports = {
     update: function(options) {
@@ -2783,7 +2880,7 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],72:[function(require,module,exports){
+},{}],73:[function(require,module,exports){
 (function() {
   module.exports = {
     assignViewFor: function(element) {
@@ -2798,4 +2895,4 @@ arguments[4][30][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72]);
+},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73]);

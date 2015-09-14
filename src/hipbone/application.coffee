@@ -18,16 +18,15 @@ module.exports = class Application extends Module
   constructor: (options={}) ->
     Hipbone.app = this
     @identityMap = new Hipbone.IdentityMap
-    @initializeState(options.state, _.extend(title: "App", assets: {}, options.stateDefaults))
+    @initializeState(options.state, _.extend(title: "App", assets: {}, options.defaults))
     @initializeTemplates(options.templatePath, options.templates)
     @initializeViews(options.views)
     @initializeModels(options.models)
     @initializeRoutes(options.routes)
     @initializeCollections(options.collections)
-    @initializeLocales(options.locales, options.locale)
-    @initializeAjax(options.ajaxHost, options.ajaxHeaders)
+    @initializeLocales(options.locale, options.locales)
+    @initializeAjax(options.host, options.headers)
     @initializeInitializers(options.initializers)
-    @history = Backbone.history = new Hipbone.History
     @router = new Hipbone.Router
     @storage = new Hipbone.Storage
     @runInitializers(options)

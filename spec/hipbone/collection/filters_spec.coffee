@@ -1,5 +1,12 @@
 module.exports = ->
   describe "filters", ->
-    # it "should be in query url params", ->
-    #   readerAnnotations = new App.ReaderAnnotations
-    #   chai.expect(readerAnnotations.url()).to.be.equal("/annotations?reader=true")
+    class ReaderAnnotation extends Hipbone.Model
+    class ReaderAnnotations extends Hipbone.Collection
+      model: ReaderAnnotation
+      urlRoot: "/annotations"
+      filters:
+        reader: true
+
+    it "should be in query url params", ->
+      readerAnnotations = new ReaderAnnotations
+      chai.expect(readerAnnotations.url()).to.be.equal("/annotations?reader=true")

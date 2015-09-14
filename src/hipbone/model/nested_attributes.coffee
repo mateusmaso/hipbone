@@ -4,8 +4,7 @@ module.exports =
     _.path(@attributes, attribute)
 
   setNestedAttribute: (attribute, value, options={}) ->
-    value = attributes[attribute]
-    delete attributes[attribute]
+    paths = attribute.split(".")
 
     unless _.isEqual(@get(attribute), value)
       nestedAttributes = {}

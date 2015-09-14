@@ -9,11 +9,11 @@ module.exports = class IdentityMap extends Module
 
   match: (regex) ->
     matches = {}
-    matches[key] = instance.value for key, instance of @instances when regex.test(key)
+    matches[key] = instance for key, instance of @instances when regex.test(key)
     matches
 
   find: (key) ->
-    @store(key, value) if value = @instances[key]?.value
+    @store(key, value) if value = @instances[key]
     value
 
   findAll: (keys) ->
@@ -22,11 +22,10 @@ module.exports = class IdentityMap extends Module
     values
 
   store: (key, value, options={}) ->
-    defaults = value: value
-    @instances[key] = _.extend(defaults, options)
+    @instances[key] = value
 
-  storeAll: (keys, value, options={}) ->
-    @store(key, value, options) for key in keys
+  storeAll: (keys, value) ->
+    @store(key, value) for key in keys
 
   delete: (key) ->
     delete @instances[key]

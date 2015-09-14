@@ -30,7 +30,7 @@ module.exports = class View extends Backbone.View
     @initializeBooleans(options.booleans)
     @initializeElements(options.elementName, options.elements)
     @initializeTemplate(options.templateName)
-    @initializeProperties(properties)
+    @initializeProperties(properties, options.defaults)
     @initializeClassNameBindings(options.classNameBindings)
     super
     @on("change", => @update())

@@ -6,7 +6,6 @@ module.exports = class Model extends Backbone.Model
 
   @registerModule "Model"
 
-  @include require "./model/type"
   @include require "./model/sync"
   @include require "./model/store"
   @include require "./model/mappings"
@@ -19,8 +18,7 @@ module.exports = class Model extends Backbone.Model
 
   constructor: (attributes={}, options={}) ->
     return model if model = @initializeStore(options.hashName, attributes, options)
-    @initializeType(options.type, options.typeAttribute)
-    @initializeMappings(options.mappings, options.polymorphics)
+    @initializeMappings(options.mappings)
     @initializeValidations(options.validations)
     @initializeComputedAttributes(options.computedAttributes)
     super
@@ -43,7 +41,6 @@ module.exports = class Model extends Backbone.Model
       attributes = {}
       attributes[attribute] = value
 
-    @setType(attributes)
     @setMappings(attributes, options)
     @setNestedAttributes(attributes, options)
     super(attributes, options)
@@ -54,7 +51,7 @@ module.exports = class Model extends Backbone.Model
     mappingOptions.sync = options.sync for mapping, mappingOptions of mappings
     computedAttributes = options.computedAttributes || _.keys(@computedAttributes)
     json = _.deepClone(super)
-    json = _.extend(json, cid: @cid, @toJSONComputedAttributes(computedAttributes), @toJSONMappings(mappings)) unless options.sync
+    json = _.extend(cid: @cid, json, @toJSONComputedAttributes(computedAttributes), @toJSONMappings(mappings)) unless options.sync
     json
 
   parse: (response={}) ->

@@ -2,4 +2,6 @@ module.exports = ->
 
   @on "run", ->
     Handlebars.parseHTML(document.body.childNodes)
-    @appView = view for key, view of @identityMap.match(/view/) when view instanceof @views.ApplicationView
+
+    if @views.ApplicationView
+      @appView = view for key, view of @identityMap.match(/view/) when view instanceof @views.ApplicationView

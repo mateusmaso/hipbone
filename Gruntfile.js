@@ -64,11 +64,11 @@ module.exports = function(grunt) {
     },
     watch: {
       coffee: {
-        files: ['spec/**/*.coffee', 'src/**/*.coffee'],
+        files: ['src/**/*.coffee', 'spec/**/*.coffee'],
         tasks: 'coffee'
       },
       browserify: {
-        files: ['tmp/**/*.js'],
+        files: ['tmp/**/*.js', 'spec/tmp/**/*.js'],
         tasks: ['browserify', 'uglify']
       }
     },

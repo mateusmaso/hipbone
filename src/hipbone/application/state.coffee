@@ -7,7 +7,7 @@ class State extends Model
 module.exports =
 
   initializeState: (state={}, defaults={}) ->
-    State::defaults = defaults
+    State::defaults = @defaults ||= defaults
     @state = new State(state)
     @listenTo @state, "all", => @trigger.apply(this, arguments)
 

@@ -1,8 +1,8 @@
 module.exports =
 
   initializeAjax: (host="", headers={}) ->
-    @ajaxHost ||= host
-    @ajaxHeaders ||= headers
+    @host ||= host
+    @headers = _.extend({}, @headers, headers)
 
   ajax: (options={}) ->
     @ajaxHandle(Backbone.ajax(@ajaxSettings(options)))
@@ -12,18 +12,24 @@ module.exports =
     xhr.fail => @trigger("ajaxError", arguments...)
     xhr
 
+  ajaxUrl: (url) ->
+    "#{@host}#{url}"
+
+  ajaxHeaders: ->
+    headers = {}
+    for header, value of @headers
+      value = value.apply(this) if _.isFunction(value)
+      headers[header] = value
+    headers
+
   ajaxSettings: (options={}) ->
-    options.url = @ajaxHost + options.url
+    options.url = @ajaxUrl(options.url)
+    options.headers = _.extend({}, options.headers, @ajaxHeaders())
 
     if options.type is 'POST'
       options.dataType = 'json'
       options.contentType = 'application/json'
       options.data = JSON.stringify(options.data)
-
-    options.headers ||= {}
-    for header, value of @ajaxHeaders
-      value = value.apply(this) if _.isFunction(value)
-      options.headers[header] = value
 
     options.beforeSend = _.catenate (xhr, settings={}) ->
       xhr.settings = settings

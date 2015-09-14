@@ -14,7 +14,7 @@ module.exports = class Collection extends Backbone.Collection
   @include require "./collection/filters"
   @include require "./collection/populate"
   @include require "./collection/pagination"
-  @include require "./collection/dynamic_model"
+  @include require "./collection/polymorphic"
 
   model: Model
 
@@ -25,7 +25,7 @@ module.exports = class Collection extends Backbone.Collection
 
     return collection if collection = @initializeStore(options.hashName, models, options)
     @cid = _.uniqueId('collection')
-    @initializeMeta(options.meta, options.metaDefaults)
+    @initializeMeta(options.meta, options.defaults)
     @initializeParent(options.parent)
     @initializeFilters(options.filters)
     @initializePagination(options.pagination)
@@ -35,11 +35,11 @@ module.exports = class Collection extends Backbone.Collection
     @store()
 
   _prepareModel: (attributes, options={}) ->
-    @prepareDynamicModel(attributes, options)
-    super
+    attributes = model if model = @preparePolymorphic(attributes, options)
+    super(attributes, options)
 
   modelId: (attributes) ->
-    @dynamicModelId(attributes) || super
+    undefined
 
   url: (options) ->
     query = @toJSONFilters(options)
@@ -54,5 +54,5 @@ module.exports = class Collection extends Backbone.Collection
 
   parse: (response={}) ->
     @didSync()
-    @meta.set(response.meta)
+    @meta.set(response.meta) if response.meta
     response.models || response

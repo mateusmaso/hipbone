@@ -13,7 +13,7 @@ module.exports =
     method = @[method] unless _.isFunction(method)
     method.apply(this, [value]) if method
 
-  toJSONComputedAttributes: (computedAttributes) ->
+  toJSONComputedAttributes: (computedAttributes=[]) ->
     json = {}
     json[computedAttribute] = @getComputedAttribute(computedAttribute) for computedAttribute in computedAttributes
     json

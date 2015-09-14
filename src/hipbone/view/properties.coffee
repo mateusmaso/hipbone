@@ -1,7 +1,14 @@
+Model = require "./../model"
+
+class Properties extends Model
+
+  @registerModule "Properties"
+
 module.exports =
 
-  initializeProperties: (properties={}) ->
-    @props = @properties = new Hipbone.Model(properties)
+  initializeProperties: (properties={}, defaults={}) ->
+    Properties::defaults = @defaults ||= defaults
+    @props = @properties = new Properties(properties)
     @listenTo @props, "change", => @trigger("change")
 
   get: ->
