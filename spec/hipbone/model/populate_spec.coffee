@@ -1,11 +1,18 @@
 module.exports = ->
   describe "populate", ->
     it "should populate", ->
-      model = new Hipbone.Model
-      model.urlRoot = "/populate"
-      chai.expect(model.prepare().state()).to.be.equal("rejected")
+      deferred = $.Deferred()
+      class Model extends Hipbone.Model
+        populate: -> deferred.resolve()
+      model = new Model
+      model.prepare()
+      chai.expect(deferred).to.be.fulfilled
 
     it "should not populate", ->
-      model = new Hipbone.Model
+      deferred = $.Deferred()
+      class Model extends Hipbone.Model
+        populate: -> deferred.resolve()
+      model = new Model
       model.didSync()
-      chai.expect(model.prepare().state()).to.be.equal("resolved")
+      model.prepare()
+      chai.expect(deferred).to.not.be.fulfilled

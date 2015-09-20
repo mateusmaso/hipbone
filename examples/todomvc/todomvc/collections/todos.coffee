@@ -7,3 +7,5 @@ class TodoMVC.Todos extends Hipbone.Collection
 
   completed: ->
     @filter (todo) -> todo.get("completed")
+
+  @register "Todos"

@@ -5,8 +5,6 @@ module.exports = class Collection extends Backbone.Collection
 
   _.extend(this, Module)
 
-  @registerModule "Collection"
-
   @include require "./collection/sync"
   @include require "./collection/meta"
   @include require "./collection/store"
@@ -23,12 +21,12 @@ module.exports = class Collection extends Backbone.Collection
       options = models || {}
       models = undefined
 
-    return collection if collection = @initializeStore(options.hashName, models, options)
+    return collection if collection = @initializeStore(models, options)
     @cid = _.uniqueId('collection')
-    @initializeMeta(options.meta, options.defaults)
+    @initializeMeta(options.meta)
     @initializeParent(options.parent)
-    @initializeFilters(options.filters)
-    @initializePagination(options.pagination)
+    @initializeFilters()
+    @initializePagination()
     super
     @on("add remove reset sort", => @trigger("update", this))
     @on("all", => @store())
@@ -56,3 +54,5 @@ module.exports = class Collection extends Backbone.Collection
     @didSync()
     @meta.set(response.meta) if response.meta
     response.models || response
+
+  @register "Collection"

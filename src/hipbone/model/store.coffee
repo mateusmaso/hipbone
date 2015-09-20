@@ -1,10 +1,17 @@
+IdentityMap = require "./../identity_map"
+
 module.exports =
 
-  initializeStore: (hashName, attributes={}, options={}) ->
-    @hashName = hashName || _.string.dasherize(@moduleName).substring(1)
+  included: ->
+    @::identityMap ||= new IdentityMap
+
+  registered: ->
+    @::hashName = _.string.dasherize(@::moduleName).substring(1)
+
+  initializeStore: (attributes={}, options={}) ->
     hashes = @hashes(attributes)
 
-    if model = Hipbone.app.identityMap.findAll(hashes)[0]
+    if model = @identityMap.findAll(hashes)[0]
       model.set(attributes, options)
       model
     else
@@ -19,4 +26,4 @@ module.exports =
 
   store: (hashes) ->
     hashes ||= @hashes(@attributes)
-    Hipbone.app.identityMap.storeAll(hashes, this)
+    @identityMap.storeAll(hashes, this)

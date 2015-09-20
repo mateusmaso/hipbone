@@ -1,9 +1,13 @@
 module.exports =
 
   preparePolymorphic: (attributes, options={}) ->
-    if _.isArray(@model) and not @_isModel(attributes)
-      for Model in @model when Model is Hipbone.app.models[@polymorphicType(attributes)]
+    if not @_isModel(attributes) and _.isArray(@model)
+      for Model in @model when Model::moduleName is @polymorphicType(attributes)
+        delete attributes[@polymorphicTypeAttribute(attributes)]
         return new Model(attributes, options)
 
   polymorphicType: (attributes={}) ->
-    attributes.type
+    attributes[@polymorphicTypeAttribute(attributes)]
+
+  polymorphicTypeAttribute: (attributes={}) ->
+    "type"

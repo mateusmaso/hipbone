@@ -4,8 +4,6 @@ module.exports = class Model extends Backbone.Model
 
   _.extend(this, Module)
 
-  @registerModule "Model"
-
   @include require "./model/sync"
   @include require "./model/store"
   @include require "./model/mappings"
@@ -17,16 +15,16 @@ module.exports = class Model extends Backbone.Model
   cidPrefix: "model"
 
   constructor: (attributes={}, options={}) ->
-    return model if model = @initializeStore(options.hashName, attributes, options)
-    @initializeMappings(options.mappings)
-    @initializeValidations(options.validations)
-    @initializeComputedAttributes(options.computedAttributes)
+    return model if model = @initializeStore(attributes, options)
+    @initializeMappings()
+    @initializeValidations()
+    @initializeComputedAttributes()
     super
     @on("all", => @store())
     @store()
 
   get: (attribute) ->
-    if @mappings[attribute] or _.contains(@polymorphics, attribute)
+    if @mappings[attribute]
       @getMapping(attribute)
     else if @computedAttributes[attribute]
       @getComputedAttribute(attribute)
@@ -57,3 +55,5 @@ module.exports = class Model extends Backbone.Model
   parse: (response={}) ->
     @didSync()
     response
+
+  @register "Model"

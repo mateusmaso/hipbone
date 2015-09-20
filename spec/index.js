@@ -10,36 +10,69 @@
 
 (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
 
+  module.exports = function() {
+    return describe("ajax", function() {
+      it("should prepend url with host", function() {
+        var Application, app;
+        Application = (function(superClass) {
+          extend(Application, superClass);
+
+          function Application() {
+            return Application.__super__.constructor.apply(this, arguments);
+          }
+
+          Application.prototype.host = "/api/v1";
+
+          return Application;
+
+        })(Hipbone.Application);
+        app = new Application;
+        return chai.expect(app.ajaxUrl("/ping")).to.be.equal("/api/v1/ping");
+      });
+      return it("should add headers", function() {
+        var Application, app;
+        Application = (function(superClass) {
+          extend(Application, superClass);
+
+          function Application() {
+            return Application.__super__.constructor.apply(this, arguments);
+          }
+
+          Application.prototype.headers = {
+            "X-CSRF-Token": "abc",
+            "X-Auth-Token": function() {
+              return this.get("authToken");
+            }
+          };
+
+          return Application;
+
+        })(Hipbone.Application);
+        app = new Application({
+          authToken: 123
+        });
+        return chai.expect(app.ajaxHeaders()).to.be.deep.equal({
+          "X-Auth-Token": 123,
+          "X-CSRF-Token": "abc"
+        });
+      });
+    });
+  };
 
 }).call(this);
 
 },{}],2:[function(require,module,exports){
 (function() {
   module.exports = function() {
-    return describe("ajax", function() {
-      it("should prepend url with host", function() {
+    return describe("parse body", function() {
+      return it("should parse view elements", function() {
         var app;
-        app = new Hipbone.Application({
-          host: "/api/v1"
-        });
-        return chai.expect(app.ajaxUrl("/ping")).to.be.equal("/api/v1/ping");
-      });
-      return it("should add headers", function() {
-        var app;
-        app = new Hipbone.Application({
-          headers: {
-            "X-CSRF-Token": "abcdefg",
-            "X-Auth-Token": function() {
-              return this.authToken;
-            }
-          }
-        });
-        app.authToken = 123;
-        return chai.expect(app.ajaxHeaders()).to.be.deep.equal({
-          "X-Auth-Token": 123,
-          "X-CSRF-Token": "abcdefg"
-        });
+        $("#fixtures").append("<hb-view id='test'></hb-view>");
+        app = new Hipbone.Application;
+        return chai.should($("#fixtures").find("#test")[0].hipboneView).exist;
       });
     });
   };
@@ -47,136 +80,6 @@
 }).call(this);
 
 },{}],3:[function(require,module,exports){
-(function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
-
-  module.exports = function() {
-    return describe("collections", function() {
-      it("should store collections inside app scope as default", function() {
-        var App, app;
-        App = (function(superClass) {
-          extend(App, superClass);
-
-          function App() {
-            return App.__super__.constructor.apply(this, arguments);
-          }
-
-          return App;
-
-        })(Hipbone.Application);
-        App.Collection = (function(superClass) {
-          extend(Collection, superClass);
-
-          function Collection() {
-            return Collection.__super__.constructor.apply(this, arguments);
-          }
-
-          return Collection;
-
-        })(Hipbone.Collection);
-        app = new App;
-        return chai.expect(app.collections.Collection).to.be.equal(App.Collection);
-      });
-      return it("should store specified collections", function() {
-        var Collection, app;
-        Collection = (function(superClass) {
-          extend(Collection, superClass);
-
-          function Collection() {
-            return Collection.__super__.constructor.apply(this, arguments);
-          }
-
-          return Collection;
-
-        })(Hipbone.Collection);
-        app = new Hipbone.Application({
-          collections: {
-            Collection: Collection
-          }
-        });
-        return chai.expect(app.collections.Collection).to.be.deep.equal(Collection);
-      });
-    });
-  };
-
-}).call(this);
-
-},{}],4:[function(require,module,exports){
-(function() {
-  module.exports = function() {
-    return describe("link bridge", function() {
-      return it("TODO", function() {});
-    });
-  };
-
-}).call(this);
-
-},{}],5:[function(require,module,exports){
-(function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
-
-  module.exports = function() {
-    return describe("parse body", function() {
-      it("should parse view elements", function() {
-        var OtherView, app, initialized;
-        $("#fixtures").append("<hb-other></hb-other>");
-        initialized = false;
-        OtherView = (function(superClass) {
-          extend(OtherView, superClass);
-
-          function OtherView() {
-            return OtherView.__super__.constructor.apply(this, arguments);
-          }
-
-          OtherView.prototype.initialize = function() {
-            return initialized = true;
-          };
-
-          return OtherView;
-
-        })(Hipbone.View);
-        app = new Hipbone.Application({
-          views: {
-            OtherView: OtherView
-          }
-        });
-        app.run();
-        return chai.expect(initialized).to.be["true"];
-      });
-      return it("should detect application view", function() {
-        var ApplicationView, app, appView;
-        $("#fixtures").append("<hb-application></hb-application>");
-        appView = null;
-        ApplicationView = (function(superClass) {
-          extend(ApplicationView, superClass);
-
-          function ApplicationView() {
-            return ApplicationView.__super__.constructor.apply(this, arguments);
-          }
-
-          ApplicationView.prototype.initialize = function() {
-            return appView = this;
-          };
-
-          return ApplicationView;
-
-        })(Hipbone.View);
-        app = new Hipbone.Application({
-          views: {
-            ApplicationView: ApplicationView
-          }
-        });
-        app.run();
-        return chai.expect(app.appView).to.be.equal(appView);
-      });
-    });
-  };
-
-}).call(this);
-
-},{}],6:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("parse model", function() {
@@ -201,48 +104,7 @@
 
 }).call(this);
 
-},{}],7:[function(require,module,exports){
-(function() {
-  module.exports = function() {
-    return describe("prevent form", function() {
-      return it("TODO", function() {});
-    });
-  };
-
-}).call(this);
-
-},{}],8:[function(require,module,exports){
-(function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
-
-  module.exports = function() {
-    return describe("register elements", function() {
-      return it("should register views", function() {
-        var TestView, app;
-        TestView = (function(superClass) {
-          extend(TestView, superClass);
-
-          function TestView() {
-            return TestView.__super__.constructor.apply(this, arguments);
-          }
-
-          return TestView;
-
-        })(Hipbone.View);
-        app = new Hipbone.Application({
-          views: {
-            TestView: TestView
-          }
-        });
-        return chai.should(Handlebars.elements.test).exist;
-      });
-    });
-  };
-
-}).call(this);
-
-},{}],9:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -252,62 +114,60 @@
       it("should get asset path", function() {
         var app;
         app = new Hipbone.Application({
-          state: {
-            assets: {
-              foo: "bar"
-            }
+          assets: {
+            foo: "bar"
           }
         });
         return chai.expect(Handlebars.compile("{{asset 'foo'}}")()).to.be.equal("bar");
       });
       it("should translate key", function() {
-        var app;
-        app = new Hipbone.Application({
-          locales: {
+        var Application, app;
+        Application = (function(superClass) {
+          extend(Application, superClass);
+
+          function Application() {
+            return Application.__super__.constructor.apply(this, arguments);
+          }
+
+          Application.prototype.locales = {
             en: {
               foo: {
                 other: "{{count}} bars"
               }
             }
-          }
-        });
+          };
+
+          return Application;
+
+        })(Hipbone.Application);
+        app = new Application;
         return chai.expect(Handlebars.compile("{{t 'foo' count=3}}")()).to.be.equal("3 bars");
       });
       it("should route url", function() {
-        var TestRoute, app;
-        TestRoute = (function(superClass) {
-          extend(TestRoute, superClass);
-
-          function TestRoute() {
-            return TestRoute.__super__.constructor.apply(this, arguments);
-          }
-
-          TestRoute.prototype.url = "test";
-
-          TestRoute.prototype.toURL = function() {
+        var app;
+        app = new Hipbone.Application;
+        app.router.match("test", {
+          route: Hipbone.Route,
+          url: "test",
+          toURL: function() {
             return "/test";
-          };
-
-          return TestRoute;
-
-        })(Hipbone.Route);
-        app = new Hipbone.Application({
-          routes: {
-            TestRoute: TestRoute
           }
         });
-        app.run();
-        app.router.match("test");
         return chai.expect(Handlebars.compile("{{url 'test'}}")()).to.be.equal("/test");
       });
       it("should format string", function() {
+        var app;
+        app = new Hipbone.Application;
         return chai.expect(Handlebars.compile("{{fmt '%@' 123}}")()).to.be.equal("123");
       });
       it("should eval expression", function() {
+        var app;
+        app = new Hipbone.Application;
         return chai.expect(Handlebars.compile("{{eval '1 + 1'}}")()).to.be.equal("2");
       });
       it("#each should work with collection", function() {
-        var collection;
+        var app, collection;
+        app = new Hipbone.Application;
         collection = new Hipbone.Collection([
           {
             text: "hello"
@@ -320,7 +180,8 @@
         })).to.be.equal("helloworld");
       });
       return it("#if should work with collection", function() {
-        var collection;
+        var app, collection;
+        app = new Hipbone.Application;
         collection = new Hipbone.Collection([]);
         return chai.expect(Handlebars.compile("{{#if collection}}coco{{/if}}")({
           collection: collection.toJSON()
@@ -331,39 +192,7 @@
 
 }).call(this);
 
-},{}],10:[function(require,module,exports){
-(function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
-
-  module.exports = function() {
-    return describe("register modules", function() {
-      return it("should register", function() {
-        var Test, app, test;
-        Test = (function(superClass) {
-          extend(Test, superClass);
-
-          function Test() {
-            return Test.__super__.constructor.apply(this, arguments);
-          }
-
-          return Test;
-
-        })(Hipbone.Model);
-        app = new Hipbone.Application({
-          models: {
-            Test: Test
-          }
-        });
-        test = new Test;
-        return chai.expect(test.moduleName).to.be.equal("Test");
-      });
-    });
-  };
-
-}).call(this);
-
-},{}],11:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("start history", function() {
@@ -378,25 +207,7 @@
 
 }).call(this);
 
-},{}],12:[function(require,module,exports){
-(function() {
-  module.exports = function() {
-    return describe("sync", function() {
-      return it("should extend ajax settings", function() {
-        var model, settings;
-        model = new Hipbone.Model({
-          id: 1
-        });
-        model.urlRoot = "/model";
-        settings = Backbone.sync("read", model).settings;
-        return chai.expect([settings.url, settings.sync]).to.be.deep.equal(["/api/v1/model/1", true]);
-      });
-    });
-  };
-
-}).call(this);
-
-},{}],13:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -404,54 +215,101 @@
   module.exports = function() {
     return describe("initializers", function() {
       it("should extend and run initializers with options as default", function() {
-        var App, app, initializer;
-        App = (function(superClass) {
-          extend(App, superClass);
+        var Application, app, initializers;
+        initializers = [];
+        initializers.push(function() {
+          return this.get("output").push("foo");
+        });
+        initializers.push(function(options) {
+          if (options.bar) {
+            return this.get("output").push("bar");
+          }
+        });
+        Application = (function(superClass) {
+          extend(Application, superClass);
 
-          function App() {
-            return App.__super__.constructor.apply(this, arguments);
+          function Application() {
+            return Application.__super__.constructor.apply(this, arguments);
           }
 
-          App.prototype.output = [];
+          Application.prototype.initializers = initializers;
 
-          App.prototype.initializers = [
-            function() {
-              return this.output.push("foo");
-            }
-          ];
-
-          return App;
+          return Application;
 
         })(Hipbone.Application);
-        initializer = function(options) {
-          if (options == null) {
-            options = {};
-          }
-          if (options.bar) {
-            return this.output.push("bar");
-          }
-        };
-        app = new App({
-          bar: true,
-          initializers: [initializer]
+        app = new Application({
+          output: []
+        }, {
+          bar: true
         });
-        return chai.expect(app.output).to.be.deep.equal(["foo", "bar"]);
+        return chai.expect(app.get("output")).to.be.deep.equal(["foo", "bar"]);
       });
-      require("./initializers/sync_spec").apply(this);
-      require("./initializers/register_modules_spec").apply(this);
-      require("./initializers/register_elements_spec").apply(this);
-      require("./initializers/register_helpers_spec").apply(this);
       require("./initializers/parse_body_spec").apply(this);
       require("./initializers/parse_model_spec").apply(this);
-      require("./initializers/link_bridge_spec").apply(this);
-      require("./initializers/prevent_form_spec").apply(this);
-      return require("./initializers/start_history_spec").apply(this);
+      require("./initializers/start_history_spec").apply(this);
+      return require("./initializers/register_helpers_spec").apply(this);
     });
   };
 
 }).call(this);
 
-},{"./initializers/link_bridge_spec":4,"./initializers/parse_body_spec":5,"./initializers/parse_model_spec":6,"./initializers/prevent_form_spec":7,"./initializers/register_elements_spec":8,"./initializers/register_helpers_spec":9,"./initializers/register_modules_spec":10,"./initializers/start_history_spec":11,"./initializers/sync_spec":12}],14:[function(require,module,exports){
+},{"./initializers/parse_body_spec":2,"./initializers/parse_model_spec":3,"./initializers/register_helpers_spec":4,"./initializers/start_history_spec":5}],7:[function(require,module,exports){
+(function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  module.exports = function() {
+    return describe("locale", function() {
+      it("should initialize i18n with english locale as default", function() {
+        var Application, app;
+        Application = (function(superClass) {
+          extend(Application, superClass);
+
+          function Application() {
+            return Application.__super__.constructor.apply(this, arguments);
+          }
+
+          Application.prototype.locales = {
+            en: {
+              hello: "Hello"
+            }
+          };
+
+          return Application;
+
+        })(Hipbone.Application);
+        app = new Application;
+        return chai.expect(app.i18n.translate("hello")).to.be.equal("Hello");
+      });
+      return it("should initialize i18n with specified locale", function() {
+        var Application, app;
+        Application = (function(superClass) {
+          extend(Application, superClass);
+
+          function Application() {
+            return Application.__super__.constructor.apply(this, arguments);
+          }
+
+          Application.prototype.locales = {
+            "pt-BR": {
+              hello: "Olá"
+            }
+          };
+
+          return Application;
+
+        })(Hipbone.Application);
+        app = new Application({}, {
+          locale: "pt-BR"
+        });
+        return chai.expect(app.i18n.translate("hello")).to.be.equal("Olá");
+      });
+    });
+  };
+
+}).call(this);
+
+},{}],8:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("locales", function() {
@@ -483,131 +341,31 @@
 
 }).call(this);
 
-},{}],15:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
-  module.exports = function() {
-    return describe("models", function() {
-      it("should store models inside app scope as default", function() {
-        var App, app;
-        App = (function(superClass) {
-          extend(App, superClass);
-
-          function App() {
-            return App.__super__.constructor.apply(this, arguments);
-          }
-
-          return App;
-
-        })(Hipbone.Application);
-        App.Model = (function(superClass) {
-          extend(Model, superClass);
-
-          function Model() {
-            return Model.__super__.constructor.apply(this, arguments);
-          }
-
-          return Model;
-
-        })(Hipbone.Model);
-        app = new App;
-        return chai.expect(app.models.Model).to.be.equal(App.Model);
-      });
-      return it("should store specified models", function() {
-        var Model, app;
-        Model = (function(superClass) {
-          extend(Model, superClass);
-
-          function Model() {
-            return Model.__super__.constructor.apply(this, arguments);
-          }
-
-          return Model;
-
-        })(Hipbone.Model);
-        app = new Hipbone.Application({
-          models: {
-            Model: Model
-          }
-        });
-        return chai.expect(app.models.Model).to.be.deep.equal(Model);
-      });
-    });
-  };
-
-}).call(this);
-
-},{}],16:[function(require,module,exports){
-(function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
-
-  module.exports = function() {
-    return describe("routes", function() {
-      it("should store routes inside app scope as default", function() {
-        var App, app;
-        App = (function(superClass) {
-          extend(App, superClass);
-
-          function App() {
-            return App.__super__.constructor.apply(this, arguments);
-          }
-
-          return App;
-
-        })(Hipbone.Application);
-        App.Route = (function(superClass) {
-          extend(Route, superClass);
-
-          function Route() {
-            return Route.__super__.constructor.apply(this, arguments);
-          }
-
-          return Route;
-
-        })(Hipbone.Route);
-        app = new App;
-        return chai.expect(app.routes.Route).to.be.equal(App.Route);
-      });
-      return it("should store specified routes", function() {
-        var Route, app;
-        Route = (function(superClass) {
-          extend(Route, superClass);
-
-          function Route() {
-            return Route.__super__.constructor.apply(this, arguments);
-          }
-
-          return Route;
-
-        })(Hipbone.Route);
-        app = new Hipbone.Application({
-          routes: {
-            Route: Route
-          }
-        });
-        return chai.expect(app.routes.Route).to.be.deep.equal(Route);
-      });
-    });
-  };
-
-}).call(this);
-
-},{}],17:[function(require,module,exports){
-(function() {
   module.exports = function() {
     return describe("state", function() {
       it("should initialize state and defaults", function() {
-        var app;
-        app = new Hipbone.Application({
-          defaults: {
-            bar: 2
-          },
-          state: {
-            foo: 1
+        var Application, app;
+        Application = (function(superClass) {
+          extend(Application, superClass);
+
+          function Application() {
+            return Application.__super__.constructor.apply(this, arguments);
           }
+
+          Application.prototype.defaults = {
+            bar: 2
+          };
+
+          return Application;
+
+        })(Hipbone.Application);
+        app = new Application({
+          foo: 1
         });
         return chai.expect([app.state.get("foo"), app.state.get("bar")]).to.be.deep.equal([1, 2]);
       });
@@ -639,223 +397,76 @@
 
 }).call(this);
 
-},{}],18:[function(require,module,exports){
-(function() {
-  module.exports = function() {
-    return describe("templates", function() {
-      return it("should initialize templates and get template from path", function() {
-        var app;
-        app = new Hipbone.Application({
-          templatePath: "root_path/",
-          templates: {
-            "root_path/path/to/foo": Handlebars.compile("foo")
-          }
-        });
-        return chai.expect(app.getTemplate("path/to/foo")()).to.be.deep.equal("foo");
-      });
-    });
-  };
-
-}).call(this);
-
-},{}],19:[function(require,module,exports){
-(function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
-
-  module.exports = function() {
-    return describe("views", function() {
-      it("should store views inside app scope as default", function() {
-        var App, app;
-        App = (function(superClass) {
-          extend(App, superClass);
-
-          function App() {
-            return App.__super__.constructor.apply(this, arguments);
-          }
-
-          return App;
-
-        })(Hipbone.Application);
-        App.View = (function(superClass) {
-          extend(View, superClass);
-
-          function View() {
-            return View.__super__.constructor.apply(this, arguments);
-          }
-
-          return View;
-
-        })(Hipbone.View);
-        app = new App;
-        return chai.expect(app.views.View).to.be.equal(App.View);
-      });
-      return it("should store specified views", function() {
-        var View, app;
-        View = (function(superClass) {
-          extend(View, superClass);
-
-          function View() {
-            return View.__super__.constructor.apply(this, arguments);
-          }
-
-          return View;
-
-        })(Hipbone.View);
-        app = new Hipbone.Application({
-          views: {
-            View: View
-          }
-        });
-        return chai.expect(app.views.View).to.be.deep.equal(View);
-      });
-    });
-  };
-
-}).call(this);
-
-},{}],20:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("Application", function() {
       require("./application/ajax_spec").apply(this);
-      require("./application/models_spec").apply(this);
-      require("./application/routes_spec").apply(this);
-      require("./application/views_spec").apply(this);
-      require("./application/templates_spec").apply(this);
-      require("./application/collections_spec").apply(this);
       require("./application/state_spec").apply(this);
-      require("./application/locales_spec").apply(this);
+      require("./application/locale_spec").apply(this);
       return require("./application/initializers_spec").apply(this);
     });
   };
 
 }).call(this);
 
-},{"./application/ajax_spec":2,"./application/collections_spec":3,"./application/initializers_spec":13,"./application/locales_spec":14,"./application/models_spec":15,"./application/routes_spec":16,"./application/state_spec":17,"./application/templates_spec":18,"./application/views_spec":19}],21:[function(require,module,exports){
-(function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
-
-  module.exports = function() {
-    return describe("dynamic model", function() {
-      var Annotations, AuthorAnnotation, ReaderAnnotation;
-      ReaderAnnotation = (function(superClass) {
-        extend(ReaderAnnotation, superClass);
-
-        function ReaderAnnotation() {
-          return ReaderAnnotation.__super__.constructor.apply(this, arguments);
-        }
-
-        return ReaderAnnotation;
-
-      })(Hipbone.Model);
-      AuthorAnnotation = (function(superClass) {
-        extend(AuthorAnnotation, superClass);
-
-        function AuthorAnnotation() {
-          return AuthorAnnotation.__super__.constructor.apply(this, arguments);
-        }
-
-        return AuthorAnnotation;
-
-      })(Hipbone.Model);
-      Annotations = (function(superClass) {
-        extend(Annotations, superClass);
-
-        function Annotations() {
-          return Annotations.__super__.constructor.apply(this, arguments);
-        }
-
-        return Annotations;
-
-      })(Hipbone.Collection);
-      before(function() {
-        return this.app = new Hipbone.Application({
-          models: {
-            ReaderAnnotation: ReaderAnnotation,
-            AuthorAnnotation: AuthorAnnotation
-          },
-          collections: {
-            Annotations: Annotations
-          }
-        });
-      });
-      return it("should set model", function() {
-        var annotation1, annotation2, annotations;
-        annotation1 = new AuthorAnnotation({
-          id: 1
-        });
-        annotation2 = new ReaderAnnotation({
-          id: 1
-        });
-        annotations = new Annotations([annotation1, annotation2]);
-        console.log(window.annotations = annotations);
-        return chai.expect(annotations.map(function(annotation) {
-          return annotation.id;
-        })).to.be.deep.equal([1, 1]);
-      });
-    });
-  };
-
-}).call(this);
-
-},{}],22:[function(require,module,exports){
+},{"./application/ajax_spec":1,"./application/initializers_spec":6,"./application/locale_spec":7,"./application/state_spec":9}],11:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
   module.exports = function() {
     return describe("filters", function() {
-      var ReaderAnnotation, ReaderAnnotations;
-      ReaderAnnotation = (function(superClass) {
-        extend(ReaderAnnotation, superClass);
-
-        function ReaderAnnotation() {
-          return ReaderAnnotation.__super__.constructor.apply(this, arguments);
-        }
-
-        return ReaderAnnotation;
-
-      })(Hipbone.Model);
-      ReaderAnnotations = (function(superClass) {
-        extend(ReaderAnnotations, superClass);
-
-        function ReaderAnnotations() {
-          return ReaderAnnotations.__super__.constructor.apply(this, arguments);
-        }
-
-        ReaderAnnotations.prototype.model = ReaderAnnotation;
-
-        ReaderAnnotations.prototype.urlRoot = "/annotations";
-
-        ReaderAnnotations.prototype.filters = {
-          reader: true
-        };
-
-        return ReaderAnnotations;
-
-      })(Hipbone.Collection);
       return it("should be in query url params", function() {
-        var readerAnnotations;
-        readerAnnotations = new ReaderAnnotations;
-        return chai.expect(readerAnnotations.url()).to.be.equal("/annotations?reader=true");
+        var Collection, collection;
+        Collection = (function(superClass) {
+          extend(Collection, superClass);
+
+          function Collection() {
+            return Collection.__super__.constructor.apply(this, arguments);
+          }
+
+          Collection.prototype.urlRoot = "/models";
+
+          Collection.prototype.filters = {
+            filter: true
+          };
+
+          return Collection;
+
+        })(Hipbone.Collection);
+        collection = new Collection;
+        return chai.expect(collection.url()).to.be.equal("/models?filter=true");
       });
     });
   };
 
 }).call(this);
 
-},{}],23:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 (function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
   module.exports = function() {
     return describe("meta", function() {
       it("should initialize meta and defaults", function() {
-        var collection;
-        collection = new Hipbone.Collection([], {
-          defaults: {
+        var Collection, collection;
+        Collection = (function(superClass) {
+          extend(Collection, superClass);
+
+          function Collection() {
+            return Collection.__super__.constructor.apply(this, arguments);
+          }
+
+          Collection.prototype.defaults = {
             max: 50
-          },
+          };
+
+          return Collection;
+
+        })(Hipbone.Collection);
+        collection = new Collection({
           meta: {
             count: 10
           }
@@ -881,130 +492,110 @@
 
 }).call(this);
 
-},{}],24:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
   module.exports = function() {
     return describe("pagination", function() {
-      var ReaderAnnotation, ReaderAnnotations;
-      ReaderAnnotation = (function(superClass) {
-        extend(ReaderAnnotation, superClass);
-
-        function ReaderAnnotation() {
-          return ReaderAnnotation.__super__.constructor.apply(this, arguments);
-        }
-
-        return ReaderAnnotation;
-
-      })(Hipbone.Model);
-      ReaderAnnotations = (function(superClass) {
-        extend(ReaderAnnotations, superClass);
-
-        function ReaderAnnotations() {
-          return ReaderAnnotations.__super__.constructor.apply(this, arguments);
-        }
-
-        ReaderAnnotations.prototype.urlRoot = "/annotations";
-
-        ReaderAnnotations.prototype.pagination = {
-          offset: 0,
-          limit: 10
-        };
-
-        return ReaderAnnotations;
-
-      })(Hipbone.Collection);
       before(function() {
-        return this.readerAnnotations = new ReaderAnnotations;
+        var Collection;
+        Collection = (function(superClass) {
+          extend(Collection, superClass);
+
+          function Collection() {
+            return Collection.__super__.constructor.apply(this, arguments);
+          }
+
+          Collection.prototype.urlRoot = "/models";
+
+          Collection.prototype.pagination = {
+            offset: 0,
+            limit: 10
+          };
+
+          return Collection;
+
+        })(Hipbone.Collection);
+        return this.collection = new Collection;
       });
       it("should increment pagination", function() {
-        this.readerAnnotations.incrementPagination();
-        return chai.expect(this.readerAnnotations.url({
+        this.collection.incrementPagination();
+        return chai.expect(this.collection.url({
           paginate: true
-        })).to.be.equal("/annotations?limit=10&offset=10");
+        })).to.be.equal("/models?limit=10&offset=10");
       });
       it("should decrement pagination", function() {
-        this.readerAnnotations.decrementPagination();
-        return chai.expect(this.readerAnnotations.url({
+        this.collection.decrementPagination();
+        return chai.expect(this.collection.url({
           paginate: true
-        })).to.be.equal("/annotations?limit=10&offset=0");
+        })).to.be.equal("/models?limit=10&offset=0");
       });
       return it("should fetch only models since beginning", function() {
-        this.readerAnnotations.incrementPagination();
-        this.readerAnnotations.incrementPagination();
-        return chai.expect(this.readerAnnotations.url()).to.be.equal("/annotations?limit=30&offset=0");
+        this.collection.incrementPagination();
+        this.collection.incrementPagination();
+        return chai.expect(this.collection.url()).to.be.equal("/models?limit=30&offset=0");
       });
     });
   };
 
 }).call(this);
 
-},{}],25:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
   module.exports = function() {
     return describe("parent", function() {
-      var Annotation, Annotations, Page;
-      Page = (function(superClass) {
-        extend(Page, superClass);
-
-        function Page() {
-          return Page.__super__.constructor.apply(this, arguments);
-        }
-
-        Page.prototype.urlRoot = "/pages";
-
-        return Page;
-
-      })(Hipbone.Model);
-      Annotation = (function(superClass) {
-        extend(Annotation, superClass);
-
-        function Annotation() {
-          return Annotation.__super__.constructor.apply(this, arguments);
-        }
-
-        return Annotation;
-
-      })(Hipbone.Model);
-      Annotations = (function(superClass) {
-        extend(Annotations, superClass);
-
-        function Annotations() {
-          return Annotations.__super__.constructor.apply(this, arguments);
-        }
-
-        Annotations.prototype.model = Annotation;
-
-        Annotations.prototype.urlRoot = "/annotations";
-
-        return Annotations;
-
-      })(Hipbone.Collection);
       before(function() {
-        this.page = new Page({
+        var Collection, Model;
+        Model = (function(superClass) {
+          extend(Model, superClass);
+
+          function Model() {
+            return Model.__super__.constructor.apply(this, arguments);
+          }
+
+          Model.prototype.urlRoot = "/url";
+
+          return Model;
+
+        })(Hipbone.Model);
+        Collection = (function(superClass) {
+          extend(Collection, superClass);
+
+          function Collection() {
+            return Collection.__super__.constructor.apply(this, arguments);
+          }
+
+          Collection.prototype.model = Model;
+
+          Collection.prototype.urlRoot = "/models";
+
+          return Collection;
+
+        })(Hipbone.Collection);
+        this.model = new Model({
           id: 1
         });
-        return this.annotations = new Annotations([], {
-          parent: this.page
+        return this.collection = new Collection({
+          parent: this.model
         });
       });
       it("should initialize", function() {
-        return chai.expect(this.annotations.parent).to.be.equal(this.page);
+        return chai.expect(this.collection.parent).to.be.equal(this.model);
       });
       return it("should compose url", function() {
-        return chai.expect(this.annotations.url()).to.be.equal("/pages/1/annotations");
+        return chai.expect(this.collection.url()).to.be.equal("/url/1/models");
       });
     });
   };
 
 }).call(this);
 
-},{}],26:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -1019,6 +610,8 @@
           return ReaderAnnotation.__super__.constructor.apply(this, arguments);
         }
 
+        ReaderAnnotation.register("ReaderAnnotation");
+
         return ReaderAnnotation;
 
       })(Hipbone.Model);
@@ -1028,6 +621,8 @@
         function AuthorAnnotation() {
           return AuthorAnnotation.__super__.constructor.apply(this, arguments);
         }
+
+        AuthorAnnotation.register("AuthorAnnotation");
 
         return AuthorAnnotation;
 
@@ -1041,20 +636,11 @@
 
         Annotations.prototype.model = [ReaderAnnotation, AuthorAnnotation];
 
+        Annotations.register("Annotations");
+
         return Annotations;
 
       })(Hipbone.Collection);
-      before(function() {
-        return this.app = new Hipbone.Application({
-          models: {
-            ReaderAnnotation: ReaderAnnotation,
-            AuthorAnnotation: AuthorAnnotation
-          },
-          collections: {
-            Annotations: Annotations
-          }
-        });
-      });
       it("should set model", function() {
         var annotation1, annotation2, annotations;
         annotation1 = new AuthorAnnotation({
@@ -1088,52 +674,86 @@
 
 }).call(this);
 
-},{}],27:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
   module.exports = function() {
     return describe("populate", function() {
       it("should populate", function() {
-        var collection;
-        collection = new Hipbone.Collection;
-        collection.urlRoot = "/populate";
-        return chai.expect(collection.prepare().state()).to.be.equal("rejected");
+        var Collection, collection, deferred;
+        deferred = $.Deferred();
+        Collection = (function(superClass) {
+          extend(Collection, superClass);
+
+          function Collection() {
+            return Collection.__super__.constructor.apply(this, arguments);
+          }
+
+          Collection.prototype.populate = function() {
+            return deferred.resolve();
+          };
+
+          return Collection;
+
+        })(Hipbone.Collection);
+        collection = new Collection;
+        collection.prepare();
+        return chai.expect(deferred).to.be.fulfilled;
       });
       return it("should not populate", function() {
-        var collection;
-        collection = new Hipbone.Collection;
+        var Collection, collection, deferred;
+        deferred = $.Deferred();
+        Collection = (function(superClass) {
+          extend(Collection, superClass);
+
+          function Collection() {
+            return Collection.__super__.constructor.apply(this, arguments);
+          }
+
+          Collection.prototype.populate = function() {
+            return deferred.resolve();
+          };
+
+          return Collection;
+
+        })(Hipbone.Collection);
+        collection = new Collection;
         collection.didSync();
-        return chai.expect(collection.prepare().state()).to.be.equal("resolved");
+        collection.prepare();
+        return chai.expect(deferred).to.not.be.fulfilled;
       });
     });
   };
 
 }).call(this);
 
-},{}],28:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("store", function() {
       it("should be equal with parent", function() {
         var collection, model;
         model = new Hipbone.Model;
-        collection = new Hipbone.Collection([], {
+        collection = new Hipbone.Collection({
           parent: model
         });
-        return chai.expect(collection).to.be.equal(new Hipbone.Collection([], {
+        return chai.expect(collection).to.be.equal(new Hipbone.Collection({
           parent: model
         }));
       });
       return it("should be different without parent", function() {
         var collection;
-        collection = new Hipbone.Collection([]);
-        return chai.expect(collection).to.not.be.equal(new Hipbone.Collection([]));
+        collection = new Hipbone.Collection;
+        return chai.expect(collection).to.not.be.equal(new Hipbone.Collection);
       });
     });
   };
 
 }).call(this);
 
-},{}],29:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("sync", function() {
@@ -1162,11 +782,8 @@
 
 }).call(this);
 
-},{}],30:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 (function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
-
   module.exports = function() {
     return describe("Collection", function() {
       require("./collection/sync_spec").apply(this);
@@ -1178,31 +795,8 @@
       require("./collection/pagination_spec").apply(this);
       require("./collection/polymorphic_spec").apply(this);
       return describe("json", function() {
-        var Page, Pages;
-        Page = (function(superClass) {
-          extend(Page, superClass);
-
-          function Page() {
-            return Page.__super__.constructor.apply(this, arguments);
-          }
-
-          return Page;
-
-        })(Hipbone.Model);
-        Pages = (function(superClass) {
-          extend(Pages, superClass);
-
-          function Pages() {
-            return Pages.__super__.constructor.apply(this, arguments);
-          }
-
-          Pages.prototype.model = Page;
-
-          return Pages;
-
-        })(Hipbone.Collection);
         before(function() {
-          return this.pages = new Pages([
+          return this.collection = new Hipbone.Collection([
             {
               id: 1
             }, {
@@ -1215,26 +809,26 @@
           });
         });
         it("should include by default cid, meta and helpers", function() {
-          return chai.expect(this.pages.toJSON()).to.be.deep.equal({
-            cid: this.pages.cid,
+          return chai.expect(this.collection.toJSON()).to.be.deep.equal({
+            cid: this.collection.cid,
             length: 2,
             meta: {
-              cid: this.pages.meta.cid,
+              cid: this.collection.meta.cid,
               count: 10
             },
             models: [
               {
-                cid: this.pages.at(0).cid,
+                cid: this.collection.at(0).cid,
                 id: 1
               }, {
-                cid: this.pages.at(1).cid,
+                cid: this.collection.at(1).cid,
                 id: 2
               }
             ]
           });
         });
         return it("should behave as backbone when sync", function() {
-          return chai.expect(this.pages.toJSON({
+          return chai.expect(this.collection.toJSON({
             sync: true
           })).to.be.deep.equal([
             {
@@ -1250,17 +844,7 @@
 
 }).call(this);
 
-},{"./collection/filters_spec":22,"./collection/meta_spec":23,"./collection/pagination_spec":24,"./collection/parent_spec":25,"./collection/polymorphic_spec":26,"./collection/populate_spec":27,"./collection/store_spec":28,"./collection/sync_spec":29}],31:[function(require,module,exports){
-(function() {
-  module.exports = function() {
-    return describe("History", function() {
-      return it("TODO", function() {});
-    });
-  };
-
-}).call(this);
-
-},{}],32:[function(require,module,exports){
+},{"./collection/filters_spec":11,"./collection/meta_spec":12,"./collection/pagination_spec":13,"./collection/parent_spec":14,"./collection/polymorphic_spec":15,"./collection/populate_spec":16,"./collection/store_spec":17,"./collection/sync_spec":18}],20:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("I18n", function() {
@@ -1326,7 +910,7 @@
 
 }).call(this);
 
-},{}],33:[function(require,module,exports){
+},{}],21:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("Identity Map", function() {
@@ -1363,51 +947,44 @@
 
 }).call(this);
 
-},{}],34:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
   module.exports = function() {
     return describe("computed attributes", function() {
-      var Book;
-      Book = (function(superClass) {
-        extend(Book, superClass);
-
-        function Book() {
-          return Book.__super__.constructor.apply(this, arguments);
-        }
-
-        Book.prototype.defaults = {
-          title: "Untitled",
-          author: "Unknown"
-        };
-
-        Book.prototype.computedAttributes = {
-          full_title: "fullTitle"
-        };
-
-        Book.prototype.fullTitle = function() {
-          return (this.get("title")) + " by " + (this.get("author"));
-        };
-
-        return Book;
-
-      })(Hipbone.Model);
       return it("should get attribute", function() {
-        var book;
-        book = new Book({
-          title: "Hipbone",
-          author: "Mateus"
+        var Model, model;
+        Model = (function(superClass) {
+          extend(Model, superClass);
+
+          function Model() {
+            return Model.__super__.constructor.apply(this, arguments);
+          }
+
+          Model.prototype.computedAttributes = {
+            description: "description"
+          };
+
+          Model.prototype.description = function() {
+            return "Title: " + (this.get("title"));
+          };
+
+          return Model;
+
+        })(Hipbone.Model);
+        model = new Model({
+          title: "Hipbone"
         });
-        return chai.expect(book.get("full_title")).to.be.equal("Hipbone by Mateus");
+        return chai.expect(model.get("description")).to.be.equal("Title: Hipbone");
       });
     });
   };
 
 }).call(this);
 
-},{}],35:[function(require,module,exports){
+},{}],23:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -1423,8 +1000,12 @@
         }
 
         Book.prototype.mappings = {
-          pages: "Pages"
+          pages: function() {
+            return Pages;
+          }
         };
+
+        Book.register("Book");
 
         return Book;
 
@@ -1437,9 +1018,15 @@
         }
 
         Page.prototype.mappings = {
-          book: "Book",
-          top_annotation: ["ReaderAnnotation"]
+          book: function() {
+            return Book;
+          },
+          top_annotation: function() {
+            return [ReaderAnnotation];
+          }
         };
+
+        Page.register("Page");
 
         return Page;
 
@@ -1453,6 +1040,8 @@
 
         Pages.prototype.model = Page;
 
+        Pages.register("Pages");
+
         return Pages;
 
       })(Hipbone.Collection);
@@ -1463,22 +1052,12 @@
           return ReaderAnnotation.__super__.constructor.apply(this, arguments);
         }
 
+        ReaderAnnotation.register("ReaderAnnotation");
+
         return ReaderAnnotation;
 
       })(Hipbone.Model);
       describe("model", function() {
-        before(function() {
-          return this.app = new Hipbone.Application({
-            models: {
-              Book: Book,
-              Page: Page,
-              ReaderAnnotation: ReaderAnnotation
-            },
-            collections: {
-              Pages: Pages
-            }
-          });
-        });
         it("should be null by default", function() {
           var page;
           page = new Page;
@@ -1492,7 +1071,7 @@
           page = new Page({
             book_id: 1
           });
-          return chai.expect(page.get("book")).to.equal(book);
+          return chai.expect(page.get("book")).to.be.equal(book);
         });
         it("should map for transient", function() {
           var book, page;
@@ -1500,7 +1079,7 @@
           page = new Page({
             book: book
           });
-          return chai.expect(page.get("book")).to.equal(book);
+          return chai.expect(page.get("book")).to.be.equal(book);
         });
         return it("should parse object", function() {
           var page;
@@ -1509,7 +1088,7 @@
               id: 1
             }
           });
-          return chai.expect(page.get("book").id).to.equal(1);
+          return chai.expect(page.get("book").id).to.be.equal(1);
         });
       });
       describe("polymorphic", function() {
@@ -1527,7 +1106,7 @@
             top_annotation_id: 1,
             top_annotation_type: "ReaderAnnotation"
           });
-          return chai.expect(page.get("top_annotation")).to.equal(annotation);
+          return chai.expect(page.get("top_annotation")).to.be.equal(annotation);
         });
         it("should map for transient", function() {
           var annotation, page;
@@ -1537,7 +1116,7 @@
           page = new Page({
             top_annotation: annotation
           });
-          return chai.expect(page.get("top_annotation")).to.equal(annotation);
+          return chai.expect(page.get("top_annotation")).to.be.equal(annotation);
         });
         return it("should parse object", function() {
           var page;
@@ -1547,7 +1126,7 @@
               type: "ReaderAnnotation"
             }
           });
-          return chai.expect(page.get("top_annotation").id).to.equal(1);
+          return chai.expect(page.get("top_annotation").id).to.be.equal(1);
         });
       });
       return describe("collection", function() {
@@ -1591,7 +1170,7 @@
 
 }).call(this);
 
-},{}],36:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("nested attributes", function() {
@@ -1636,28 +1215,62 @@
 
 }).call(this);
 
-},{}],37:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 (function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
   module.exports = function() {
     return describe("populate", function() {
       it("should populate", function() {
-        var model;
-        model = new Hipbone.Model;
-        model.urlRoot = "/populate";
-        return chai.expect(model.prepare().state()).to.be.equal("rejected");
+        var Model, deferred, model;
+        deferred = $.Deferred();
+        Model = (function(superClass) {
+          extend(Model, superClass);
+
+          function Model() {
+            return Model.__super__.constructor.apply(this, arguments);
+          }
+
+          Model.prototype.populate = function() {
+            return deferred.resolve();
+          };
+
+          return Model;
+
+        })(Hipbone.Model);
+        model = new Model;
+        model.prepare();
+        return chai.expect(deferred).to.be.fulfilled;
       });
       return it("should not populate", function() {
-        var model;
-        model = new Hipbone.Model;
+        var Model, deferred, model;
+        deferred = $.Deferred();
+        Model = (function(superClass) {
+          extend(Model, superClass);
+
+          function Model() {
+            return Model.__super__.constructor.apply(this, arguments);
+          }
+
+          Model.prototype.populate = function() {
+            return deferred.resolve();
+          };
+
+          return Model;
+
+        })(Hipbone.Model);
+        model = new Model;
         model.didSync();
-        return chai.expect(model.prepare().state()).to.be.equal("resolved");
+        model.prepare();
+        return chai.expect(deferred).to.not.be.fulfilled;
       });
     });
   };
 
 }).call(this);
 
-},{}],38:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("store", function() {
@@ -1666,7 +1279,7 @@
         model = new Hipbone.Model({
           id: 1
         });
-        return chai.expect(model).to.equal(new Hipbone.Model({
+        return chai.expect(model).to.be.equal(new Hipbone.Model({
           id: 1
         }));
       });
@@ -1680,7 +1293,7 @@
 
 }).call(this);
 
-},{}],39:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("sync", function() {
@@ -1709,70 +1322,61 @@
 
 }).call(this);
 
-},{}],40:[function(require,module,exports){
-(function() {
-  module.exports = function() {
-    return describe("type", function() {});
-  };
-
-}).call(this);
-
-},{}],41:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
   module.exports = function() {
     return describe("validations", function() {
-      var Page;
-      Page = (function(superClass) {
-        extend(Page, superClass);
-
-        function Page() {
-          return Page.__super__.constructor.apply(this, arguments);
-        }
-
-        Page.prototype.defaults = {
-          text: ""
-        };
-
-        Page.prototype.validations = {
-          text: function(text) {
-            return !_.string.isBlank(text);
-          }
-        };
-
-        return Page;
-
-      })(Hipbone.Model);
       before(function() {
-        return this.page = new Page;
+        var Model;
+        Model = (function(superClass) {
+          extend(Model, superClass);
+
+          function Model() {
+            return Model.__super__.constructor.apply(this, arguments);
+          }
+
+          Model.prototype.defaults = {
+            text: ""
+          };
+
+          Model.prototype.validations = {
+            text: function(text) {
+              return !_.string.isBlank(text);
+            }
+          };
+
+          return Model;
+
+        })(Hipbone.Model);
+        return this.model = new Model;
       });
       it("should be valid", function() {
-        this.page.set({
+        this.model.set({
           text: "teste"
         });
-        return chai.expect([this.page.isValid(), this.page.errors]).to.be.deep.equal([true, []]);
+        return chai.expect([this.model.isValid(), this.model.errors]).to.be.deep.equal([true, []]);
       });
       return it("should not be valid", function() {
-        this.page.set({
+        this.model.set({
           text: ""
         });
-        return chai.expect([this.page.isValid(), this.page.errors]).to.be.deep.equal([false, ["text"]]);
+        return chai.expect([this.model.isValid(), this.model.errors]).to.be.deep.equal([false, ["text"]]);
       });
     });
   };
 
 }).call(this);
 
-},{}],42:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
   module.exports = function() {
     return describe("Model", function() {
-      require("./model/type_spec").apply(this);
       require("./model/sync_spec").apply(this);
       require("./model/store_spec").apply(this);
       require("./model/mappings_spec").apply(this);
@@ -1790,7 +1394,9 @@
           }
 
           Book.prototype.mappings = {
-            pages: "Pages"
+            pages: function() {
+              return Pages;
+            }
           };
 
           Book.prototype.computedAttributes = {
@@ -1800,6 +1406,8 @@
           Book.prototype.fullTitle = function() {
             return (this.get("title")) + " by " + (this.get("author"));
           };
+
+          Book.register("Book");
 
           return Book;
 
@@ -1812,8 +1420,12 @@
           }
 
           Page.prototype.mappings = {
-            book: "Book"
+            book: function() {
+              return Book;
+            }
           };
+
+          Page.register("Page");
 
           return Page;
 
@@ -1827,28 +1439,23 @@
 
           Pages.prototype.model = Page;
 
+          Pages.register("Pages");
+
           return Pages;
 
         })(Hipbone.Collection);
         before(function() {
-          this.app = new Hipbone.Application({
-            models: {
-              Page: Page,
-              Book: Book
-            },
-            collections: {
-              Pages: Pages
-            }
-          });
+          Hipbone.Model.prototype.identityMap.clear();
+          Hipbone.Collection.prototype.identityMap.clear();
           return this.book = new Book({
-            id: 5,
+            id: 1,
             title: "Hipbone",
             author: "Mateus",
             pages: [
               {
-                book_id: 5
+                book_id: 1
               }, {
-                book_id: 5
+                book_id: 1
               }
             ]
           });
@@ -1856,7 +1463,7 @@
         it("should include by default cid and computed attributes", function() {
           return chai.expect(this.book.toJSON()).to.be.deep.equal({
             cid: this.book.cid,
-            id: 5,
+            id: 1,
             title: "Hipbone",
             author: "Mateus",
             full_title: "Hipbone by Mateus"
@@ -1866,7 +1473,7 @@
           return chai.expect(this.book.toJSON({
             sync: true
           })).to.be.deep.equal({
-            id: 5,
+            id: 1,
             title: "Hipbone",
             author: "Mateus"
           });
@@ -1882,7 +1489,7 @@
             }
           })).to.be.deep.equal({
             cid: this.book.cid,
-            id: 5,
+            id: 1,
             title: "Hipbone",
             author: "Mateus",
             full_title: "Hipbone by Mateus",
@@ -1896,22 +1503,22 @@
                 {
                   book: {
                     cid: this.book.cid,
-                    id: 5,
+                    id: 1,
                     title: "Hipbone",
                     author: "Mateus",
                     full_title: "Hipbone by Mateus"
                   },
-                  book_id: 5,
+                  book_id: 1,
                   cid: this.book.get("pages").at(0).cid
                 }, {
                   book: {
                     cid: this.book.cid,
-                    id: 5,
+                    id: 1,
                     title: "Hipbone",
                     author: "Mateus",
                     full_title: "Hipbone by Mateus"
                   },
-                  book_id: 5,
+                  book_id: 1,
                   cid: this.book.get("pages").at(1).cid
                 }
               ]
@@ -1924,117 +1531,349 @@
 
 }).call(this);
 
-},{"./model/computed_attributes_spec":34,"./model/mappings_spec":35,"./model/nested_attributes_spec":36,"./model/populate_spec":37,"./model/store_spec":38,"./model/sync_spec":39,"./model/type_spec":40,"./model/validations_spec":41}],43:[function(require,module,exports){
+},{"./model/computed_attributes_spec":22,"./model/mappings_spec":23,"./model/nested_attributes_spec":24,"./model/populate_spec":25,"./model/store_spec":26,"./model/sync_spec":27,"./model/validations_spec":28}],30:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
   module.exports = function() {
     return describe("Module", function() {
-      var Submodule, module;
-      Submodule = (function(superClass) {
-        extend(Submodule, superClass);
+      var Animal, Cow, Moo;
+      Moo = {
+        moo: function() {
+          return "mooh";
+        }
+      };
+      Animal = (function(superClass) {
+        extend(Animal, superClass);
 
-        function Submodule() {
-          return Submodule.__super__.constructor.apply(this, arguments);
+        function Animal() {
+          return Animal.__super__.constructor.apply(this, arguments);
         }
 
-        Submodule.registerModule("Submodule");
+        Animal.register("Animal");
 
-        return Submodule;
+        return Animal;
 
       })(Hipbone.Module);
-      module = {
-        foo: 123
-      };
+      Cow = (function(superClass) {
+        extend(Cow, superClass);
+
+        function Cow() {
+          return Cow.__super__.constructor.apply(this, arguments);
+        }
+
+        Cow.register("Cow");
+
+        return Cow;
+
+      })(Animal);
+      it("set module name", function() {
+        return chai.expect([Animal.prototype.moduleName, Cow.prototype.moduleName]).to.be.deep.equal(["Animal", "Cow"]);
+      });
+      it("register subclass", function() {
+        return chai.expect([_.contains(Animal.subclasses, Cow), _.keys(Cow.subclasses).length]).to.be.deep.equal([true, 0]);
+      });
       it("should include and call included", function() {
         var included;
         included = false;
-        module.included = function() {
+        Moo.included = function() {
           return included = true;
         };
-        Submodule.include(module);
-        return chai.expect([Submodule.prototype.foo, included]).to.be.deep.equal([123, true]);
+        Cow.include(Moo);
+        return chai.expect([Cow.prototype.moo(), included, _.contains(Cow.includedModules, Moo)]).to.be.deep.equal(["mooh", true, true]);
       });
       return it("should extend and call extended", function() {
         var extended;
         extended = false;
-        module.extended = function() {
+        Moo.extended = function() {
           return extended = true;
         };
-        Submodule.extend(module);
-        return chai.expect([Submodule.foo, extended]).to.be.deep.equal([123, true]);
+        Cow.extend(Moo);
+        return chai.expect([Cow.moo(), extended, _.contains(Cow.extendedModules, Moo)]).to.be.deep.equal(["mooh", true, true]);
       });
     });
   };
 
 }).call(this);
 
-},{}],44:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 (function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
   module.exports = function() {
-    return describe("active", function() {});
+    return describe("element", function() {
+      it("should append to element", function() {
+        var Route, element, elementRoot, route;
+        elementRoot = $("<element-root>")[0];
+        element = $("<element>")[0];
+        Route = (function(superClass) {
+          extend(Route, superClass);
+
+          function Route() {
+            return Route.__super__.constructor.apply(this, arguments);
+          }
+
+          Route.prototype.elementRoot = elementRoot;
+
+          Route.prototype.element = function() {
+            return element;
+          };
+
+          return Route;
+
+        })(Hipbone.Route);
+        route = new Route;
+        route.renderElement();
+        return chai.expect($(elementRoot).children().first()[0]).to.be.equal(element);
+      });
+      return it("should set content to view", function() {
+        var Route, element, route, view;
+        view = new Hipbone.View;
+        element = $("<element>")[0];
+        Route = (function(superClass) {
+          extend(Route, superClass);
+
+          function Route() {
+            return Route.__super__.constructor.apply(this, arguments);
+          }
+
+          Route.prototype.elementRoot = view.el;
+
+          Route.prototype.element = function() {
+            return element;
+          };
+
+          return Route;
+
+        })(Hipbone.Route);
+        route = new Route;
+        route.renderElement();
+        return chai.expect(view.$el.children().first()[0]).to.be.equal(element);
+      });
+    });
   };
 
 }).call(this);
 
-},{}],45:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 (function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
   module.exports = function() {
-    return describe("parameters", function() {});
+    return describe("parameters", function() {
+      it("should initialize state and defaults", function() {
+        var Route, route;
+        Route = (function(superClass) {
+          extend(Route, superClass);
+
+          function Route() {
+            return Route.__super__.constructor.apply(this, arguments);
+          }
+
+          Route.prototype.defaults = {
+            bar: 2
+          };
+
+          return Route;
+
+        })(Hipbone.Route);
+        route = new Route({
+          foo: 1
+        });
+        return chai.expect([route.params.get("foo"), route.params.get("bar")]).to.be.deep.equal([1, 2]);
+      });
+      it("should get/set", function() {
+        var route;
+        route = new Hipbone.Route;
+        route.set({
+          foo: 123
+        });
+        route.set("bar", 321);
+        return chai.expect([route.get("foo"), route.get("bar")]).to.be.deep.equal([123, 321]);
+      });
+      it("should listen to events", function() {
+        var changed, route;
+        changed = false;
+        route = new Hipbone.Route;
+        route.on("change", (function(_this) {
+          return function() {
+            return changed = true;
+          };
+        })(this));
+        route.set({
+          hello: "world"
+        });
+        return chai.expect(changed).to.be["true"];
+      });
+      return it("should parse", function() {
+        var Route, route;
+        Route = (function(superClass) {
+          extend(Route, superClass);
+
+          function Route() {
+            return Route.__super__.constructor.apply(this, arguments);
+          }
+
+          Route.prototype.parse = function(response) {
+            if (response == null) {
+              response = {};
+            }
+            if (response.id) {
+              response.id = "_id" + response.id;
+            }
+            return response;
+          };
+
+          return Route;
+
+        })(Hipbone.Route);
+        route = new Route({
+          id: 123
+        });
+        return chai.expect(route.get("id")).to.be.deep.equal("_id123");
+      });
+    });
   };
 
 }).call(this);
 
-},{}],46:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 (function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
   module.exports = function() {
-    return describe("populate", function() {});
+    return describe("populate", function() {
+      it("should populate", function() {
+        var Route, deferred, route;
+        deferred = $.Deferred();
+        Route = (function(superClass) {
+          extend(Route, superClass);
+
+          function Route() {
+            return Route.__super__.constructor.apply(this, arguments);
+          }
+
+          Route.prototype.populate = function() {
+            return deferred.resolve();
+          };
+
+          return Route;
+
+        })(Hipbone.Route);
+        route = new Route;
+        route.prepare();
+        return chai.expect(deferred).to.be.fulfilled;
+      });
+      return it("should not populate", function() {
+        var Route, deferred, route;
+        deferred = $.Deferred();
+        Route = (function(superClass) {
+          extend(Route, superClass);
+
+          function Route() {
+            return Route.__super__.constructor.apply(this, arguments);
+          }
+
+          Route.prototype.populated = function() {
+            return true;
+          };
+
+          Route.prototype.populate = function() {
+            return deferred.resolve();
+          };
+
+          return Route;
+
+        })(Hipbone.Route);
+        route = new Route;
+        route.prepare();
+        return chai.expect(deferred).to.not.be.fulfilled;
+      });
+    });
   };
 
 }).call(this);
 
-},{}],47:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 (function() {
   module.exports = function() {
-    return describe("store", function() {});
+    return describe("store", function() {
+      it("should be equal with same path and popstate", function() {
+        var route;
+        route = new Hipbone.Route({}, {
+          path: "/test"
+        });
+        return chai.expect(route).to.be.equal(new Hipbone.Route({}, {
+          path: "/test",
+          popstate: true
+        }));
+      });
+      return it("should be different with same path and no popstate", function() {
+        var route;
+        route = new Hipbone.Route({}, {
+          path: "/test2"
+        });
+        return chai.expect(route).to.not.equal(new Hipbone.Route({}, {
+          path: "/test2",
+          popstate: false
+        }));
+      });
+    });
   };
 
 }).call(this);
 
-},{}],48:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 (function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
   module.exports = function() {
-    return describe("title", function() {});
+    return describe("title", function() {
+      it("should set root title", function() {
+        var route;
+        route = new Hipbone.Route({}, {
+          titleRoot: "Test"
+        });
+        return chai.expect(route.title()).to.be.equal("Test");
+      });
+      return it("should work with subtitle", function() {
+        var Route, route;
+        Route = (function(superClass) {
+          extend(Route, superClass);
+
+          function Route() {
+            return Route.__super__.constructor.apply(this, arguments);
+          }
+
+          Route.prototype.subtitle = function() {
+            return "Foo";
+          };
+
+          return Route;
+
+        })(Hipbone.Route);
+        route = new Route({}, {
+          titleRoot: "Bar"
+        });
+        return chai.expect(route.title()).to.be.equal("Foo - Bar");
+      });
+    });
   };
 
 }).call(this);
 
-},{}],49:[function(require,module,exports){
-(function() {
-  module.exports = function() {
-    return describe("url", function() {});
-  };
-
-}).call(this);
-
-},{}],50:[function(require,module,exports){
-(function() {
-  module.exports = function() {
-    return describe("view", function() {});
-  };
-
-}).call(this);
-
-},{}],51:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("Route", function() {
-      require("./route/url_spec").apply(this);
-      require("./route/view_spec").apply(this);
       require("./route/title_spec").apply(this);
       require("./route/store_spec").apply(this);
-      require("./route/active_spec").apply(this);
+      require("./route/element_spec").apply(this);
       require("./route/populate_spec").apply(this);
       return require("./route/parameters_spec").apply(this);
     });
@@ -2042,17 +1881,93 @@
 
 }).call(this);
 
-},{"./route/active_spec":44,"./route/parameters_spec":45,"./route/populate_spec":46,"./route/store_spec":47,"./route/title_spec":48,"./route/url_spec":49,"./route/view_spec":50}],52:[function(require,module,exports){
+},{"./route/element_spec":31,"./route/parameters_spec":32,"./route/populate_spec":33,"./route/store_spec":34,"./route/title_spec":35}],37:[function(require,module,exports){
 (function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
   module.exports = function() {
-    return describe("matches", function() {});
+    return describe("matches", function() {
+      before(function() {
+        this.app = new Hipbone.Application;
+        return this.app.run();
+      });
+      return it("should trigger matched route with params", function() {
+        var BookRoute, route;
+        BookRoute = (function(superClass) {
+          extend(BookRoute, superClass);
+
+          function BookRoute() {
+            return BookRoute.__super__.constructor.apply(this, arguments);
+          }
+
+          BookRoute.prototype.element = function() {
+            return $("<div>")[0];
+          };
+
+          BookRoute.register("BookRoute");
+
+          return BookRoute;
+
+        })(Hipbone.Route);
+        this.app.router.match("book", {
+          route: BookRoute,
+          url: "books/:id",
+          toURL: function(params) {
+            if (params == null) {
+              params = {};
+            }
+            return "books/" + params.id;
+          }
+        });
+        this.app.router.history.loadUrl("/books/1");
+        route = this.app.router._route;
+        return chai.expect([route instanceof BookRoute, route.get("id")]).to.be.deep.equal([true, 1]);
+      });
+    });
   };
 
 }).call(this);
 
-},{}],53:[function(require,module,exports){
-arguments[4][49][0].apply(exports,arguments)
-},{"dup":49}],54:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
+(function() {
+  module.exports = function() {
+    return describe("url", function() {
+      before(function() {
+        this.app = new Hipbone.Application;
+        this.app.run();
+        return this.app.router.match("test", {
+          route: Hipbone.Route,
+          url: "/test-*foo",
+          toURL: function(params) {
+            if (params == null) {
+              params = {};
+            }
+            return "/test-" + params.foo;
+          }
+        });
+      });
+      it("should get route url", function() {
+        return chai.expect(this.app.router.url("test", {
+          foo: "bar"
+        })).to.be.equal("/test-bar");
+      });
+      it("should parse fragment with params", function() {
+        return chai.expect(this.app.router.urlFragment("/some/url", {
+          foo: "bar"
+        })).to.be.equal("/some/url?foo=bar");
+      });
+      return it("should parse route fragment with params", function() {
+        return chai.expect(this.app.router.urlFragment("test", {
+          foo: "bar"
+        })).to.be.equal("/test-bar?foo=bar");
+      });
+    });
+  };
+
+}).call(this);
+
+},{}],39:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("Router", function() {
@@ -2063,7 +1978,7 @@ arguments[4][49][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./router/matches_spec":52,"./router/url_spec":53}],55:[function(require,module,exports){
+},{"./router/matches_spec":37,"./router/url_spec":38}],40:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("Storage", function() {
@@ -2110,83 +2025,654 @@ arguments[4][49][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],56:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 (function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
   module.exports = function() {
-    return describe("attribute", function() {});
+    return describe("attributes", function() {
+      it("should be dasherized", function() {
+        var view;
+        view = new Hipbone.View({
+          fooBar: "bar"
+        });
+        return chai.expect(view.$el.attr("foo-bar")).to.be.equal("bar");
+      });
+      it("should add if class attribute", function() {
+        var View, view;
+        View = (function(superClass) {
+          extend(View, superClass);
+
+          function View() {
+            return View.__super__.constructor.apply(this, arguments);
+          }
+
+          View.prototype.className = "test";
+
+          return View;
+
+        })(Hipbone.View);
+        view = new View({
+          "class": "test-class"
+        });
+        return chai.expect(view.$el.attr("class")).to.be.equal("test test-class");
+      });
+      it("should not set boolean attribute if false", function() {
+        var View, view;
+        View = (function(superClass) {
+          extend(View, superClass);
+
+          function View() {
+            return View.__super__.constructor.apply(this, arguments);
+          }
+
+          View.prototype.defaults = {
+            test: false
+          };
+
+          View.register("View");
+
+          return View;
+
+        })(Hipbone.View);
+        view = new View;
+        return chai.expect(view.$el.attr("test")).to.be.equal(void 0);
+      });
+      it("should set boolean attribute empty if true", function() {
+        var View, view;
+        View = (function(superClass) {
+          extend(View, superClass);
+
+          function View() {
+            return View.__super__.constructor.apply(this, arguments);
+          }
+
+          View.prototype.defaults = {
+            test: false
+          };
+
+          View.register("View");
+
+          return View;
+
+        })(Hipbone.View);
+        view = new View({
+          test: true
+        });
+        return chai.expect(view.$el.attr("test")).to.be.equal("");
+      });
+      return it("should not set object attribute", function() {
+        var view;
+        view = new Hipbone.View({
+          object: {}
+        });
+        return chai.expect(view.$el.attr("object")).to.be.equal(void 0);
+      });
+    });
   };
 
 }).call(this);
 
-},{}],57:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 (function() {
   module.exports = function() {
-    return describe("booleans", function() {});
+    return describe("bubble", function() {
+      return it("should trigger and bubble DOM tree", function() {
+        var bubble, element, trigger, view;
+        bubble = trigger = false;
+        view = new Hipbone.View;
+        element = $("<element>");
+        element.append(view.el);
+        element.on("didBubble", function() {
+          return bubble = true;
+        });
+        view.on("didBubble", function() {
+          return trigger = true;
+        });
+        view.bubble("didBubble");
+        return chai.expect([bubble, trigger]).to.be.deep.equal([true, true]);
+      });
+    });
   };
 
 }).call(this);
 
-},{}],58:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 (function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
   module.exports = function() {
-    return describe("bubble", function() {});
+    return describe("class name bindings", function() {
+      return it("should update bindings", function(done) {
+        var View, beforeUpdate, view;
+        View = (function(superClass) {
+          extend(View, superClass);
+
+          function View() {
+            return View.__super__.constructor.apply(this, arguments);
+          }
+
+          View.prototype.classNameBindings = {
+            "foo": function() {
+              return this.get("foo") !== "bar";
+            },
+            "foo-bar": function() {
+              return this.get("foo") === "bar";
+            }
+          };
+
+          return View;
+
+        })(Hipbone.View);
+        view = new View({
+          foo: ""
+        });
+        beforeUpdate = view.$el.attr("class");
+        view.set({
+          foo: "bar"
+        });
+        return _.defer(function() {
+          var afterUpdate;
+          afterUpdate = view.$el.attr("class");
+          chai.expect([beforeUpdate, afterUpdate]).to.be.deep.equal(["foo", "foo-bar"]);
+          return done();
+        });
+      });
+    });
   };
 
 }).call(this);
 
-},{}],59:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 (function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
   module.exports = function() {
-    return describe("class name bindings", function() {});
+    return describe("content", function() {
+      it("should append content to element", function() {
+        var element, view;
+        element = $("<element>")[0];
+        view = new Hipbone.View;
+        view.setContent(element);
+        return chai.expect(view.$el.children().last()[0]).to.be.equal(element);
+      });
+      return it("should append content to container", function() {
+        var View, element, view;
+        element = $("<element>")[0];
+        View = (function(superClass) {
+          extend(View, superClass);
+
+          function View() {
+            return View.__super__.constructor.apply(this, arguments);
+          }
+
+          View.prototype.container = "#container";
+
+          View.prototype.templateName = "view";
+
+          View.prototype.templates = {
+            view: Handlebars.compile("<div id='container'></div>")
+          };
+
+          return View;
+
+        })(Hipbone.View);
+        view = new View;
+        view.setContent(element);
+        return chai.expect(view.$("#container").children().first()[0]).to.be.equal(element);
+      });
+    });
   };
 
 }).call(this);
 
-},{}],60:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 (function() {
   module.exports = function() {
-    return describe("content", function() {});
+    return describe("context", function() {
+      it("should present context", function() {
+        var collection, model, view;
+        model = new Hipbone.Model({
+          text: "test"
+        });
+        collection = new Hipbone.Collection([model]);
+        view = new Hipbone.View({
+          model: model,
+          collection: collection,
+          foo: "bar"
+        });
+        view.context = function() {
+          return {
+            fooUpcase: this.get("foo").toUpperCase()
+          };
+        };
+        return chai.expect(view.presentContext(view.context())).to.be.deep.equal({
+          collection: {
+            cid: collection.cid,
+            length: 1,
+            meta: {
+              cid: collection.meta.cid
+            },
+            models: [
+              {
+                cid: model.cid,
+                text: "test"
+              }
+            ]
+          },
+          foo: "bar",
+          fooUpcase: "BAR",
+          loading: false,
+          model: {
+            cid: model.cid,
+            text: "test"
+          }
+        });
+      });
+      return it("should merge context", function() {
+        var object, object2, view;
+        object = {
+          one: {
+            two: {
+              three: 123
+            }
+          }
+        };
+        object2 = {
+          one: {
+            two: {
+              three: 321
+            }
+          }
+        };
+        view = new Hipbone.View({
+          object: object
+        });
+        view.mergeContext({
+          object: object2
+        });
+        return chai.expect(view._context.object).to.be.equal(object);
+      });
+    });
   };
 
 }).call(this);
 
-},{}],61:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 (function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
   module.exports = function() {
-    return describe("context", function() {});
+    return describe("elements", function() {
+      it("should register element", function() {
+        var ElementView;
+        ElementView = (function(superClass) {
+          extend(ElementView, superClass);
+
+          function ElementView() {
+            return ElementView.__super__.constructor.apply(this, arguments);
+          }
+
+          ElementView.prototype.defaults = {
+            foo: "",
+            bar: false
+          };
+
+          ElementView.register("ElementView");
+
+          return ElementView;
+
+        })(Hipbone.View);
+        return chai.expect([ElementView.prototype.elementName, ElementView.prototype.booleans]).to.be.deep.equal(["element", ["bar"]]);
+      });
+      it("should have hipboneView assigned", function() {
+        var view;
+        view = new Hipbone.View;
+        return chai.expect(view.el.hipboneView).to.be.equal(view);
+      });
+      it("should get selector", function() {
+        var View, view;
+        View = (function(superClass) {
+          extend(View, superClass);
+
+          function View() {
+            return View.__super__.constructor.apply(this, arguments);
+          }
+
+          View.prototype.elements = {
+            foo: ".bar"
+          };
+
+          return View;
+
+        })(Hipbone.View);
+        view = new View;
+        return chai.expect([view.getSelector(".foo"), view.getSelector("foo")]).to.be.deep.equal([".foo", ".bar"]);
+      });
+      return it("should get $view", function() {
+        var View, barView, view;
+        View = (function(superClass) {
+          extend(View, superClass);
+
+          function View() {
+            return View.__super__.constructor.apply(this, arguments);
+          }
+
+          View.prototype.elements = {
+            foo: ".bar"
+          };
+
+          return View;
+
+        })(Hipbone.View);
+        view = new View;
+        barView = new Hipbone.View({
+          "class": "bar"
+        });
+        view.$el.append(barView.el);
+        return chai.expect(view.$view("foo")).to.be.equal(barView);
+      });
+    });
   };
 
 }).call(this);
 
-},{}],62:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 (function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
   module.exports = function() {
-    return describe("elements", function() {});
+    return describe("lifecycle", function() {
+      it("should insert", function(done) {
+        var inserted, view;
+        inserted = false;
+        view = new Hipbone.View;
+        view.on("insert", function() {
+          return inserted = true;
+        });
+        view.$el.appendTo("#fixtures");
+        return _.defer(function() {
+          chai.expect(inserted).to.be["true"];
+          return done();
+        });
+      });
+      it("should detach", function(done) {
+        var detached, view;
+        detached = false;
+        view = new Hipbone.View;
+        view.on("detach", function() {
+          return detached = true;
+        });
+        view.$el.appendTo("#fixtures");
+        view.$el.remove();
+        return _.defer(function() {
+          chai.expect(detached).to.be["true"];
+          return done();
+        });
+      });
+      it("should change", function(done) {
+        var changed, view;
+        changed = false;
+        view = new Hipbone.View;
+        view.on("change", function() {
+          return changed = true;
+        });
+        view.$el.appendTo("#fixtures");
+        view.$el.attr("foo", "bar");
+        return _.defer(function() {
+          chai.expect(changed).to.be["true"];
+          return done();
+        });
+      });
+      it("should change props", function(done) {
+        var View, view;
+        View = (function(superClass) {
+          extend(View, superClass);
+
+          function View() {
+            return View.__super__.constructor.apply(this, arguments);
+          }
+
+          View.prototype.defaults = {
+            fooBar: false
+          };
+
+          View.register("View");
+
+          return View;
+
+        })(Hipbone.View);
+        view = new View;
+        view.$el.appendTo("#fixtures");
+        view.$el.attr("foo-bar", "");
+        return _.defer(function() {
+          chai.expect(view.get("fooBar")).to.be["true"];
+          return done();
+        });
+      });
+      return it("should not change internal props", function(done) {
+        var View, view;
+        View = (function(superClass) {
+          extend(View, superClass);
+
+          function View() {
+            return View.__super__.constructor.apply(this, arguments);
+          }
+
+          View.prototype.internals = ["foo"];
+
+          View.prototype.defaults = {
+            fooBar: false
+          };
+
+          View.register("View");
+
+          return View;
+
+        })(Hipbone.View);
+        view = new View;
+        view.$el.appendTo("#fixtures");
+        view.$el.on("change", function() {
+          return console.log(arguments);
+        });
+        view.$el.attr("foo-bar", "");
+        return _.defer(function() {
+          chai.expect(view.get("fooBar")).to.be["true"];
+          return done();
+        });
+      });
+    });
   };
 
 }).call(this);
 
-},{}],63:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 (function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
   module.exports = function() {
-    return describe("lifecycle", function() {});
+    return describe("populate", function() {
+      it("should populate", function() {
+        var View, deferred, view;
+        deferred = $.Deferred();
+        View = (function(superClass) {
+          extend(View, superClass);
+
+          function View() {
+            return View.__super__.constructor.apply(this, arguments);
+          }
+
+          View.prototype.populate = function() {
+            return deferred.resolve();
+          };
+
+          return View;
+
+        })(Hipbone.View);
+        view = new View;
+        view.prepare();
+        return chai.expect(deferred).to.be.fulfilled;
+      });
+      it("should not populate", function() {
+        var View, deferred, view;
+        deferred = $.Deferred();
+        View = (function(superClass) {
+          extend(View, superClass);
+
+          function View() {
+            return View.__super__.constructor.apply(this, arguments);
+          }
+
+          View.prototype.populated = function() {
+            return true;
+          };
+
+          View.prototype.populate = function() {
+            return deferred.resolve();
+          };
+
+          return View;
+
+        })(Hipbone.View);
+        view = new View;
+        view.prepare();
+        return chai.expect(deferred).to.be.fulfilled;
+      });
+      it("should show loading when populating", function() {
+        var View, afterPopulate, beforePopulate, deferred, view;
+        deferred = $.Deferred();
+        View = (function(superClass) {
+          extend(View, superClass);
+
+          function View() {
+            return View.__super__.constructor.apply(this, arguments);
+          }
+
+          View.prototype.populate = function() {
+            return deferred;
+          };
+
+          return View;
+
+        })(Hipbone.View);
+        view = new View;
+        view.prepare();
+        beforePopulate = view.get("loading");
+        deferred.resolve();
+        afterPopulate = view.get("loading");
+        return chai.expect([beforePopulate, afterPopulate]).to.be.deep.equal([true, false]);
+      });
+      return it("should not show loading when populating but background", function() {
+        var View, afterPopulate, beforePopulate, deferred, view;
+        deferred = $.Deferred();
+        View = (function(superClass) {
+          extend(View, superClass);
+
+          function View() {
+            return View.__super__.constructor.apply(this, arguments);
+          }
+
+          View.prototype.background = true;
+
+          View.prototype.populate = function() {
+            return deferred;
+          };
+
+          return View;
+
+        })(Hipbone.View);
+        view = new View;
+        view.prepare();
+        beforePopulate = view.get("loading");
+        deferred.resolve();
+        afterPopulate = view.get("loading");
+        return chai.expect([beforePopulate, afterPopulate]).to.be.deep.equal([false, false]);
+      });
+    });
   };
 
 }).call(this);
 
-},{}],64:[function(require,module,exports){
-arguments[4][46][0].apply(exports,arguments)
-},{"dup":46}],65:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 (function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
   module.exports = function() {
-    return describe("properties", function() {});
+    return describe("properties", function() {
+      it("should initialize properties, internal and defaults", function() {
+        var View, view;
+        View = (function(superClass) {
+          extend(View, superClass);
+
+          function View() {
+            return View.__super__.constructor.apply(this, arguments);
+          }
+
+          View.prototype.internals = ["fooBar"];
+
+          View.prototype.defaults = {
+            bar: 2
+          };
+
+          return View;
+
+        })(Hipbone.View);
+        view = new View({
+          foo: 1,
+          fooBar: 1
+        });
+        return chai.expect([view.props.get("foo"), view.props.get("bar"), view.props.get("fooBar")]).to.be.deep.equal([1, 2, void 0]);
+      });
+      it("should get/set props", function() {
+        var view;
+        view = new Hipbone.View;
+        view.set({
+          foo: 123
+        });
+        view.set("bar", 321);
+        return chai.expect([view.get("foo"), view.get("bar")]).to.be.deep.equal([123, 321]);
+      });
+      return it("should listen to events", function() {
+        var changed, view;
+        changed = false;
+        view = new Hipbone.View;
+        view.on("change", (function(_this) {
+          return function() {
+            return changed = true;
+          };
+        })(this));
+        view.set({
+          hello: "world"
+        });
+        return chai.expect(changed).to.be["true"];
+      });
+    });
   };
 
 }).call(this);
 
-},{}],66:[function(require,module,exports){
-arguments[4][47][0].apply(exports,arguments)
-},{"dup":47}],67:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
+(function() {
+  module.exports = function() {
+    return describe("store", function() {
+      return it("should be different", function() {
+        var view;
+        view = new Hipbone.View;
+        return chai.expect(view).to.not.be.equal(new Hipbone.View);
+      });
+    });
+  };
+
+}).call(this);
+
+},{}],51:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("template", function() {});
@@ -2194,54 +2680,36 @@ arguments[4][47][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],68:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 (function() {
   module.exports = function() {
-    return describe("update", function() {});
+    return describe("templates", function() {});
   };
 
 }).call(this);
 
-},{}],69:[function(require,module,exports){
-(function() {
-  module.exports = function() {
-    return describe("view selector", function() {});
-  };
-
-}).call(this);
-
-},{}],70:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("View", function() {
       require("./view/store_spec").apply(this);
       require("./view/bubble_spec").apply(this);
-      require("./view/update_spec").apply(this);
       require("./view/content_spec").apply(this);
       require("./view/context_spec").apply(this);
-      require("./view/booleans_spec").apply(this);
-      require("./view/template_spec").apply(this);
       require("./view/populate_spec").apply(this);
       require("./view/elements_spec").apply(this);
-      require("./view/attribute_spec").apply(this);
+      require("./view/template_spec").apply(this);
       require("./view/lifecycle_spec").apply(this);
       require("./view/properties_spec").apply(this);
-      require("./view/view_selector_spec").apply(this);
       return require("./view/class_name_bindings_spec").apply(this);
     });
   };
 
 }).call(this);
 
-},{"./view/attribute_spec":56,"./view/booleans_spec":57,"./view/bubble_spec":58,"./view/class_name_bindings_spec":59,"./view/content_spec":60,"./view/context_spec":61,"./view/elements_spec":62,"./view/lifecycle_spec":63,"./view/populate_spec":64,"./view/properties_spec":65,"./view/store_spec":66,"./view/template_spec":67,"./view/update_spec":68,"./view/view_selector_spec":69}],71:[function(require,module,exports){
+},{"./view/bubble_spec":42,"./view/class_name_bindings_spec":43,"./view/content_spec":44,"./view/context_spec":45,"./view/elements_spec":46,"./view/lifecycle_spec":47,"./view/populate_spec":48,"./view/properties_spec":49,"./view/store_spec":50,"./view/template_spec":51}],54:[function(require,module,exports){
 (function() {
   if (navigator.userAgent.indexOf('PhantomJS') < 0) {
-    chai.Assertion.addProperty('model', function() {
-      return this._obj instanceof Hipbone.Model;
-    });
-    chai.Assertion.addProperty('collection', function() {
-      return this._obj instanceof Hipbone.Collection;
-    });
     describe("hipbone", function() {
       require("./hipbone/module_spec").apply(this);
       require("./hipbone/i18n_spec").apply(this);
@@ -2249,10 +2717,13 @@ arguments[4][47][0].apply(exports,arguments)
       require("./hipbone/storage_spec").apply(this);
       require("./hipbone/application_spec").apply(this);
       require("./hipbone/model_spec").apply(this);
-      return require("./hipbone/collection_spec").apply(this);
+      require("./hipbone/collection_spec").apply(this);
+      require("./hipbone/router_spec").apply(this);
+      require("./hipbone/route_spec").apply(this);
+      return require("./hipbone/view_spec").apply(this);
     });
   }
 
 }).call(this);
 
-},{"./hipbone/application_spec":20,"./hipbone/collection_spec":30,"./hipbone/i18n_spec":32,"./hipbone/identity_map_spec":33,"./hipbone/model_spec":42,"./hipbone/module_spec":43,"./hipbone/storage_spec":55}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71]);
+},{"./hipbone/application_spec":10,"./hipbone/collection_spec":19,"./hipbone/i18n_spec":20,"./hipbone/identity_map_spec":21,"./hipbone/model_spec":29,"./hipbone/module_spec":30,"./hipbone/route_spec":36,"./hipbone/router_spec":39,"./hipbone/storage_spec":40,"./hipbone/view_spec":53}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54]);

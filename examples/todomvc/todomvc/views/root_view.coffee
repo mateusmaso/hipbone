@@ -40,3 +40,5 @@ class TodoMVC.RootView extends Hipbone.View
     toDestroy = []
     toDestroy.push(todo) for todo in @get("todos").models when todo.get("completed")
     todo.destroy() for todo in toDestroy
+
+  @register "RootView"

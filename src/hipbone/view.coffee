@@ -4,35 +4,28 @@ module.exports = class View extends Backbone.View
 
   _.extend(this, Module)
 
-  @registerModule "View"
-
   @include Backbone.Events
   @include require "./view/store"
   @include require "./view/bubble"
-  @include require "./view/update"
   @include require "./view/content"
   @include require "./view/context"
-  @include require "./view/booleans"
-  @include require "./view/template"
   @include require "./view/populate"
   @include require "./view/elements"
-  @include require "./view/attribute"
+  @include require "./view/template"
   @include require "./view/lifecycle"
   @include require "./view/properties"
-  @include require "./view/view_selector"
   @include require "./view/class_name_bindings"
 
-  constructor: (properties={}, content, options={}) ->
-    return view if view = @initializeStore(options.hashName, properties)
+  constructor: (properties={}, options={}) ->
+    return view if view = @initializeStore(properties)
     @initializeContext()
-    @initializeContent(content, options.container)
-    @initializePopulate(options.background)
-    @initializeBooleans(options.booleans)
-    @initializeElements(options.elementName, options.elements)
-    @initializeTemplate(options.templateName)
-    @initializeProperties(properties, options.defaults)
-    @initializeClassNameBindings(options.classNameBindings)
-    super
+    @initializeContent(options.content)
+    @initializePopulate()
+    @initializeTemplate()
+    @initializeElements()
+    @initializeProperties(properties)
+    @initializeClassNameBindings()
+    super(options)
     @on("change", => @update())
     @on("all", => @store())
     @lifecycle()
@@ -42,20 +35,21 @@ module.exports = class View extends Backbone.View
 
   destroy: ->
 
-  _ensureElement: ->
-    super
-    @set(class: "#{@el.className} #{@get("class") || ''}")
-    @_setAttributes(@properties.attributes)
-    @assignViewFor(@el)
+  _setElement: ->
+    @defineElement(super)
 
   _setAttributes: (attributes={}) ->
-    @setAttribute(attribute, value) for attribute, value of attributes
+    super(@mergeAttributes(attributes))
 
   $: (selector) ->
     super(@getSelector(selector))
 
+  update: ->
+    @updateContextBindings()
+    @updateClassNameBindings()
+
   render: ->
-    @update(immediate: true)
+    @update()
     @renderTemplate()
     @renderContent()
 
@@ -65,3 +59,5 @@ module.exports = class View extends Backbone.View
   remove: ->
     @destroy()
     super
+
+  @register "View"

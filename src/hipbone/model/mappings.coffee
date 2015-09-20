@@ -1,14 +1,20 @@
 module.exports =
 
-  initializeMappings: (mappings={}) ->
+  initializeMappings: ->
     @transients = {}
-    @mappings = _.extend({}, @mappings, mappings)
+    @mappings ||= {}
 
   mappingIdAttribute: (mapping) ->
     "#{mapping}_#{@parseMappingIdAttribute(mapping)}"
 
   mappingTypeAttribute: (mapping) ->
     "#{mapping}_#{@parseMappingTypeAttribute(mapping)}"
+
+  mappingId: (mapping, attributes={}) ->
+    attributes[@mappingIdAttribute(mapping)]
+
+  mappingType: (mapping, attributes={}) ->
+    attributes[@mappingTypeAttribute(mapping)]
 
   parseMappingIdAttribute: (mapping) ->
     "id"
@@ -23,41 +29,45 @@ module.exports =
     attributes[@parseMappingTypeAttribute(mapping)]
 
   getMapping: (mapping) ->
-    type = @mappings[mapping]
+    Module = @mappings[mapping].apply(this)
+    if polymorphic = _.isArray(Module)
+      Module = Model for Model in Module when Model::moduleName is @mappingType(mapping, @attributes)
 
-    if Hipbone.app.models[type]
-      id = @get(@mappingIdAttribute(mapping))
-      type = @get(@mappingTypeAttribute(mapping)) || type
+    if Module.prototype instanceof Hipbone.Model
       attributes = {}
-      attributes[@parseMappingIdAttribute(mapping)] = id
-      model = new Hipbone.app.models[type](attributes) if id
-    else if Hipbone.app.collections[type]
-      collection = new Hipbone.app.collections[type](parent: this)
+      attributes[@parseMappingIdAttribute(mapping)] = id if id = @mappingId(mapping, @attributes)
+      model = new Module(attributes) unless _.isEmpty(attributes)
+    else if Module.prototype instanceof Hipbone.Collection
+      collection = new Module(parent: this)
 
     model || collection || @transients[mapping]
 
   setMapping: (mapping, value, options={}) ->
-    type = @mappings[mapping]
+    Module = @mappings[mapping].apply(this)
+    if polymorphic = _.isArray(Module) and value
+      Module = Model for Model in Module when Model::moduleName is @parseMappingType(mapping, value)
 
     if value instanceof Hipbone.Model
       model = value
     else if value instanceof Hipbone.Collection
       collection = value
       collection.setParent(this)
-    else if Hipbone.app.models[type]
-      type = @parseMappingType(mapping, value) || type
-      model = new Hipbone.app.models[type](value, options) if value
-    else if Hipbone.app.collections[type]
-      if _.isArray(value)
-        models = value
-      else if _.isObject(value)
-        meta = value.meta
-        models = value.models
-      collection = new Hipbone.app.collections[type](models, _.extend(options, parent: this, meta: meta))
+
+    if not model and not collection
+      if Module.prototype instanceof Hipbone.Model and value
+        delete value[@parseMappingTypeAttribute(mapping)]
+        model = new Module(value, options)
+      else if Module.prototype instanceof Hipbone.Collection
+        if _.isArray(value)
+          models = value
+        else if _.isObject(value)
+          meta = value.meta
+          models = value.models
+        collection = new Module(models, _.extend(options, parent: this, meta: meta))
 
     if model
       @set(@mappingIdAttribute(mapping), @parseMappingId(mapping, model.attributes))
-      @set(@mappingTypeAttribute(mapping), @parseMappingType(mapping, model.attributes)) if _.isArray(@mappings[mapping])
+      @set(@mappingTypeAttribute(mapping), model.moduleName) if polymorphic
       @transients[mapping] = model if model.isNew()
     else if collection
       @transients[mapping] = collection

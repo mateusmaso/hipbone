@@ -8,3 +8,5 @@ class TodoMVC.TodosView extends Hipbone.View
 
   initialize: ->
     @listenTo(@get("todos"), "update", @update)
+
+  @register "TodosView"

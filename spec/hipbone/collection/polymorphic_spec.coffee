@@ -1,12 +1,12 @@
 module.exports = ->
   describe "polymorphic", ->
     class ReaderAnnotation extends Hipbone.Model
+      @register "ReaderAnnotation"
     class AuthorAnnotation extends Hipbone.Model
+      @register "AuthorAnnotation"
     class Annotations extends Hipbone.Collection
       model: [ReaderAnnotation, AuthorAnnotation]
-
-    before ->
-      @app = new Hipbone.Application(models: {ReaderAnnotation: ReaderAnnotation, AuthorAnnotation: AuthorAnnotation}, collections: {Annotations: Annotations})
+      @register "Annotations"
 
     it "should set model", ->
       annotation1 = new AuthorAnnotation(id: 1)

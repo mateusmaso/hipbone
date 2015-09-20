@@ -1,18 +1,17 @@
 module.exports = ->
   describe "validations", ->
-    class Page extends Hipbone.Model
-      defaults:
-        text: ""
-      validations:
-        text: (text) -> not _.string.isBlank(text)
-
     before ->
-      @page = new Page
+      class Model extends Hipbone.Model
+        defaults:
+          text: ""
+        validations:
+          text: (text) -> not _.string.isBlank(text)
+      @model = new Model
 
     it "should be valid", ->
-      @page.set(text: "teste")
-      chai.expect([@page.isValid(), @page.errors]).to.be.deep.equal([true, []])
+      @model.set(text: "teste")
+      chai.expect([@model.isValid(), @model.errors]).to.be.deep.equal([true, []])
 
     it "should not be valid", ->
-      @page.set(text: "")
-      chai.expect([@page.isValid(), @page.errors]).to.be.deep.equal([false, ["text"]])
+      @model.set(text: "")
+      chai.expect([@model.isValid(), @model.errors]).to.be.deep.equal([false, ["text"]])

@@ -1,18 +1,16 @@
 module.exports = ->
   describe "parent", ->
-    class Page extends Hipbone.Model
-      urlRoot: "/pages"
-    class Annotation extends Hipbone.Model
-    class Annotations extends Hipbone.Collection
-      model: Annotation
-      urlRoot: "/annotations"
-
     before ->
-      @page = new Page(id: 1)
-      @annotations = new Annotations([], parent: @page)
+      class Model extends Hipbone.Model
+        urlRoot: "/url"
+      class Collection extends Hipbone.Collection
+        model: Model
+        urlRoot: "/models"
+      @model = new Model(id: 1)
+      @collection = new Collection(parent: @model)
 
     it "should initialize", ->
-      chai.expect(@annotations.parent).to.be.equal(@page)
+      chai.expect(@collection.parent).to.be.equal(@model)
 
     it "should compose url", ->
-      chai.expect(@annotations.url()).to.be.equal("/pages/1/annotations")
+      chai.expect(@collection.url()).to.be.equal("/url/1/models")

@@ -1,8 +1,13 @@
 module.exports =
 
-  initializeContent: (content, container) ->
+  initializeContent: (content) ->
     @content = content
-    @container = container
+    @container ||= undefined
+
+  setContent: (content) ->
+    if @content isnt content
+      @content = content
+      @renderContent()
 
   renderContent: ->
     if @content

@@ -1,14 +1,9 @@
 class TodoMVC.RootRoute extends Hipbone.Route
 
-  url: "*all"
-
-  templateName: "/application"
-
   initialize: ->
     @set(todos: app.get("todos"))
 
-  toURL: ->
-    "/"
-
-  content: ->
+  element: ->
     new TodoMVC.RootView(todos: @get("todos")).el
+
+  @register "RootRoute"

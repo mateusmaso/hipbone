@@ -1,7 +1,7 @@
 module.exports =
 
-  initializePagination: (pagination={}) ->
-    @pagination = _.extend({}, @pagination, pagination)
+  initializePagination: ->
+    @pagination ||= {}
     @paginationOffset = @pagination.offset
 
     @filters ||= {}

@@ -1,13 +1,10 @@
 module.exports = ->
   describe "computed attributes", ->
-    class Book extends Hipbone.Model
-      defaults:
-        title: "Untitled"
-        author: "Unknown"
-      computedAttributes:
-        full_title: "fullTitle"
-      fullTitle: -> "#{@get("title")} by #{@get("author")}"
-
     it "should get attribute", ->
-      book = new Book(title: "Hipbone", author: "Mateus")
-      chai.expect(book.get("full_title")).to.be.equal("Hipbone by Mateus")
+      class Model extends Hipbone.Model
+        computedAttributes:
+          description: "description"
+        description: ->
+          "Title: #{@get("title")}"
+      model = new Model(title: "Hipbone")
+      chai.expect(model.get("description")).to.be.equal("Title: Hipbone")

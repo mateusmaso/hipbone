@@ -1,8 +1,8 @@
 module.exports =
 
-  initializeAjax: (host="", headers={}) ->
-    @host ||= host
-    @headers = _.extend({}, @headers, headers)
+  initializeAjax: ->
+    @host ||= ""
+    @headers ||= {}
 
   ajax: (options={}) ->
     @ajaxHandle(Backbone.ajax(@ajaxSettings(options)))

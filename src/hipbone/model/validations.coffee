@@ -1,8 +1,8 @@
 module.exports =
 
-  initializeValidations: (validations={}) ->
+  initializeValidations: ->
     @errors = []
-    @validations = _.extend({}, @validations, validations)
+    @validations ||= {}
 
   hasErrors: (attributes=[]) ->
     if _.isEmpty(attributes)

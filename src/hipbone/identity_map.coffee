@@ -2,8 +2,6 @@ Module = require "./module"
 
 module.exports = class IdentityMap extends Module
 
-  @registerModule "IdentityMap"
-
   constructor: ->
     @instances = {}
 
@@ -35,3 +33,5 @@ module.exports = class IdentityMap extends Module
 
   clear: ->
     @deleteAll(_.keys(@instances))
+
+  @register "IdentityMap"

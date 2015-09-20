@@ -1,14 +1,18 @@
 module.exports =
 
-  initializePopulate: (background) ->
-    @background = false
+  initializePopulate: ->
+    @background ||= false
+    @defaults ||= {}
+    @defaults.loading = false
+    @internals ||= []
+    @internals.push("loading")
 
     populated = @populated
-    @populated = (name) ->
+    @populated = ->
       @background || populated.apply(this, arguments)
 
     populate = @populate
-    @populate = (name) ->
+    @populate = ->
       if @background
         populate.apply(this, arguments)
       else

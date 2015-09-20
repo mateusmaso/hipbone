@@ -1,24 +1,22 @@
 module.exports = ->
   describe "pagination", ->
-    class ReaderAnnotation extends Hipbone.Model
-    class ReaderAnnotations extends Hipbone.Collection
-      urlRoot: "/annotations"
-      pagination:
-        offset: 0
-        limit: 10
-
     before ->
-      @readerAnnotations = new ReaderAnnotations
+      class Collection extends Hipbone.Collection
+        urlRoot: "/models"
+        pagination:
+          offset: 0
+          limit: 10
+      @collection = new Collection
 
     it "should increment pagination", ->
-      @readerAnnotations.incrementPagination()
-      chai.expect(@readerAnnotations.url(paginate: true)).to.be.equal("/annotations?limit=10&offset=10")
+      @collection.incrementPagination()
+      chai.expect(@collection.url(paginate: true)).to.be.equal("/models?limit=10&offset=10")
 
     it "should decrement pagination", ->
-      @readerAnnotations.decrementPagination()
-      chai.expect(@readerAnnotations.url(paginate: true)).to.be.equal("/annotations?limit=10&offset=0")
+      @collection.decrementPagination()
+      chai.expect(@collection.url(paginate: true)).to.be.equal("/models?limit=10&offset=0")
 
     it "should fetch only models since beginning", ->
-      @readerAnnotations.incrementPagination()
-      @readerAnnotations.incrementPagination()
-      chai.expect(@readerAnnotations.url()).to.be.equal("/annotations?limit=30&offset=0")
+      @collection.incrementPagination()
+      @collection.incrementPagination()
+      chai.expect(@collection.url()).to.be.equal("/models?limit=30&offset=0")

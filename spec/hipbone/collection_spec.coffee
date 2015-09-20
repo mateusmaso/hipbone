@@ -10,24 +10,20 @@ module.exports = ->
     require("./collection/polymorphic_spec").apply(this)
 
     describe "json", ->
-      class Page extends Hipbone.Model
-      class Pages extends Hipbone.Collection
-        model: Page
-
       before ->
-        @pages = new Pages([{id: 1}, {id: 2}], meta: count: 10)
+        @collection = new Hipbone.Collection([{id: 1}, {id: 2}], meta: count: 10)
 
       it "should include by default cid, meta and helpers", ->
-        chai.expect(@pages.toJSON()).to.be.deep.equal
-          cid: @pages.cid
+        chai.expect(@collection.toJSON()).to.be.deep.equal
+          cid: @collection.cid
           length: 2
           meta:
-            cid: @pages.meta.cid
+            cid: @collection.meta.cid
             count: 10
           models: [
-            {cid: @pages.at(0).cid, id: 1},
-            {cid: @pages.at(1).cid, id: 2}
+            {cid: @collection.at(0).cid, id: 1},
+            {cid: @collection.at(1).cid, id: 2}
           ]
 
       it "should behave as backbone when sync", ->
-        chai.expect(@pages.toJSON(sync: true)).to.be.deep.equal([{id: 1}, {id: 2}])
+        chai.expect(@collection.toJSON(sync: true)).to.be.deep.equal([{id: 1}, {id: 2}])

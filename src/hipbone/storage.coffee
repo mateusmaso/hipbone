@@ -2,8 +2,6 @@ Module = require "./module"
 
 module.exports = class Storage extends Module
 
-  @registerModule "Storage"
-
   constructor: (prefix="hipbone_") ->
     @prefix = prefix
 
@@ -24,3 +22,5 @@ module.exports = class Storage extends Module
   clear: ->
     regex = new RegExp(@prefix)
     @unset(key) for key, value of @match(regex)
+
+  @register "Storage"

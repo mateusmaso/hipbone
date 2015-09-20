@@ -1,7 +1,7 @@
 module.exports =
 
-  initializeFilters: (filters={}) ->
-    @filters = _.extend({}, @filters, filters)
+  initializeFilters: ->
+    @filters ||= {}
 
   toJSONFilters: (options={}) ->
     json = {}

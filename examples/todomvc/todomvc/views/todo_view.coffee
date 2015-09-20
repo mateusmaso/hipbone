@@ -43,3 +43,5 @@ class TodoMVC.TodoView extends Hipbone.View
     return @removeTodo() if _.string.isBlank(@$("edit").val())
     @get("todo").set(text: @$("edit").val())
     @stopEditTodo()
+
+  @register "TodoView"

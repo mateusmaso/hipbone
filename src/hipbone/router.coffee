@@ -1,4 +1,5 @@
 Module = require "./module"
+History = require "./history"
 
 module.exports = class Router extends Backbone.Router
 
@@ -7,16 +8,24 @@ module.exports = class Router extends Backbone.Router
   @include require "./router/url"
   @include require "./router/matches"
 
+  history: Backbone.history = new History
+
   constructor: (options={}) ->
-    @initializeMatches(options.matches)
+    @title ||= options.title || "App"
+    @initializeMatches()
     super
 
   navigate: (fragment, options={}) ->
     fragment = @urlFragment(fragment, options.params)
 
     if options.reload
-      Hipbone.app.history.reload(fragment)
+      @history.reload(fragment)
     else if options.load
-      Hipbone.app.history.loadUrl(fragment)
+      @history.loadUrl(fragment)
     else
       super(fragment, options)
+
+  start: ->
+    @history.start(pushState: true) unless Backbone.History.started
+
+  @register "Router"

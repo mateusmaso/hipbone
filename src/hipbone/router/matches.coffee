@@ -1,15 +1,17 @@
 module.exports =
 
-  initializeMatches: (matches={}) ->
-    @matches = _.extend({}, @matches, matches)
+  initializeMatches: ->
+    @matches ||= {}
 
-  match: (name) ->
-    @matches[name] = "#{_.string.capitalize(name)}Route"
-    url = Hipbone.app.routes[@matches[name]]::url
+  match: (name, options={}) ->
+    @matches[name] = options
+    url = options.url
+    Route = options.route
 
     @route url, name, ->
-      params = Hipbone.app.history.parameters()
+      params = @history.parameters()
       for param, index in url.match(/:\w+/g) || [] when arguments[index]
         params[param.substring(1)] = _.parse(arguments[index])
-      route = new Hipbone.app.routes[@matches[name]](params)
-      route.active()
+
+      @_route = new Route(params, title: @title, path: @history.location.pathname, popstate: @history.popstate)
+      @_route.activate() if @_route.beforeActivate()

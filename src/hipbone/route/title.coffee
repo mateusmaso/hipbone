@@ -1,7 +1,18 @@
 module.exports =
 
-  title: ->
-    Hipbone.app.get("title")
+  initializeTitle: (titleRoot="") ->
+    @titleRoot ||= titleRoot
 
-  updateTitle: ->
+  subtitle: ->
+    ""
+
+  title: ->
+    subtitle = @subtitle()
+
+    if _.string.isBlank(subtitle)
+      @titleRoot
+    else
+      "#{subtitle} - #{@titleRoot}"
+
+  renderTitle: ->
     document.title = @title()

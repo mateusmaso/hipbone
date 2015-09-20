@@ -1,14 +1,7 @@
-Model = require "./../model"
-
-class State extends Model
-
-  @registerModule "State"
-
 module.exports =
 
-  initializeState: (state={}, defaults={}) ->
-    State::defaults = @defaults ||= defaults
-    @state = new State(state)
+  initializeState: (state={}) ->
+    @state = new (Hipbone.Model.define(defaults: @defaults))(state)
     @listenTo @state, "all", => @trigger.apply(this, arguments)
 
   get: ->

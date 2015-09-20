@@ -16,5 +16,5 @@ module.exports =
         @trigger("detach")
       change: (attribute, value) =>
         @change(attribute, value)
-        attribute = _.string.camelize(attribute)
-        @set(attribute, Handlebars.parseValue(value,  _.contains(@booleans, attribute)))
+        property = _.string.camelize(attribute)
+        @set(property, Handlebars.parseValue(value,  _.contains(@booleans, attribute))) unless _.contains(@internals, property)

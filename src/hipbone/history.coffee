@@ -4,8 +4,6 @@ module.exports = class History extends Backbone.History
 
   _.extend(this, Module)
 
-  @registerModule "History"
-
   route: (route, callback) ->
     @handlers.push(route: route, callback: callback)
 
@@ -36,3 +34,5 @@ module.exports = class History extends Backbone.History
     @popstate = true
     super
     @popstate = false
+
+  @register "History"

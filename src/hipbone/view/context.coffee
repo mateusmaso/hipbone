@@ -19,11 +19,8 @@ module.exports =
     context
 
   mergeContext: (context={}) ->
-    jsondiffpatch.config.objectHash = (object) -> object?.cid || object
     jsondiffpatch.patch(@_context, jsondiffpatch.diff(@_context, context))
 
-  updateContext: ->
-    @mergeContext(@presentContext(@context()))
-
   updateContextBindings: ->
+    @mergeContext(@presentContext(@context()))
     Platform.performMicrotaskCheckpoint()

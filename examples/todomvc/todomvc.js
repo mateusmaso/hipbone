@@ -9,9 +9,13 @@
       return TodoMVC.__super__.constructor.apply(this, arguments);
     }
 
+    TodoMVC.prototype.initializers = [];
+
+    TodoMVC.prototype.locales = {};
+
     TodoMVC.prototype.initialize = function() {
-      return this.set({
-        todos: new TodoMVC.Todos([
+      this.set({
+        todos: new TodoMVC.Todos(this.storage.get("todos") || [
           {
             text: "um"
           }, {
@@ -21,19 +25,20 @@
           }
         ])
       });
+      return this.listenTo(this.get("todos"), "update change", (function(_this) {
+        return function() {
+          return _this.storage.set("todos", _this.get("todos").toJSON({
+            sync: true
+          }));
+        };
+      })(this));
     };
+
+    TodoMVC.register("TodoMVC");
 
     return TodoMVC;
 
   })(Hipbone.Application);
-
-}).call(this);
-
-(function() {
-  TodoMVC.prototype.initializers.push(function() {
-    this.templates = HandlebarsTemplates;
-    return this.templatePath = "todomvc/templates";
-  });
 
 }).call(this);
 
@@ -63,9 +68,35 @@
 
 (function() {
   TodoMVC.prototype.initializers.push(function() {
-    this.router.match("completed");
-    this.router.match("active");
-    return this.router.match("root");
+    this.router.match("completed", {
+      route: TodoMVC.CompletedRoute,
+      url: "completed(/)",
+      toURL: function() {
+        return "/completed";
+      }
+    });
+    this.router.match("active", {
+      route: TodoMVC.CompletedRoute,
+      url: "active(/)",
+      toURL: function() {
+        return "/active";
+      }
+    });
+    return this.router.match("root", {
+      route: TodoMVC.RootRoute,
+      url: "*all",
+      toURL: function() {
+        return "/";
+      }
+    });
+  });
+
+}).call(this);
+
+(function() {
+  TodoMVC.prototype.initializers.push(function() {
+    Hipbone.View.prototype.templatePath = "todomvc/templates";
+    return Hipbone.View.prototype.templates = HandlebarsTemplates;
   });
 
 }).call(this);
@@ -94,6 +125,8 @@
     Todo.prototype.defaults = {
       completed: false
     };
+
+    Todo.register("Todo");
 
     return Todo;
 
@@ -126,6 +159,8 @@
       });
     };
 
+    Todos.register("Todos");
+
     return Todos;
 
   })(Hipbone.Collection);
@@ -143,25 +178,19 @@
       return ActiveRoute.__super__.constructor.apply(this, arguments);
     }
 
-    ActiveRoute.prototype.url = "active(/)";
-
-    ActiveRoute.prototype.templateName = "/application";
-
     ActiveRoute.prototype.initialize = function() {
       return this.set({
         todos: app.get("todos")
       });
     };
 
-    ActiveRoute.prototype.toURL = function() {
-      return "/active";
-    };
-
-    ActiveRoute.prototype.content = function() {
+    ActiveRoute.prototype.element = function() {
       return new TodoMVC.RootView({
         todos: this.get("todos")
       }).el;
     };
+
+    ActiveRoute.register("ActiveRoute");
 
     return ActiveRoute;
 
@@ -180,25 +209,19 @@
       return CompletedRoute.__super__.constructor.apply(this, arguments);
     }
 
-    CompletedRoute.prototype.url = "completed(/)";
-
-    CompletedRoute.prototype.templateName = "/application";
-
     CompletedRoute.prototype.initialize = function() {
       return this.set({
         todos: app.get("todos")
       });
     };
 
-    CompletedRoute.prototype.toURL = function() {
-      return "/completed";
-    };
-
-    CompletedRoute.prototype.content = function() {
+    CompletedRoute.prototype.element = function() {
       return new TodoMVC.RootView({
         todos: this.get("todos")
       }).el;
     };
+
+    CompletedRoute.register("CompletedRoute");
 
     return CompletedRoute;
 
@@ -217,50 +240,23 @@
       return RootRoute.__super__.constructor.apply(this, arguments);
     }
 
-    RootRoute.prototype.url = "*all";
-
-    RootRoute.prototype.templateName = "/application";
-
     RootRoute.prototype.initialize = function() {
       return this.set({
         todos: app.get("todos")
       });
     };
 
-    RootRoute.prototype.toURL = function() {
-      return "/";
-    };
-
-    RootRoute.prototype.content = function() {
+    RootRoute.prototype.element = function() {
       return new TodoMVC.RootView({
         todos: this.get("todos")
       }).el;
     };
 
+    RootRoute.register("RootRoute");
+
     return RootRoute;
 
   })(Hipbone.Route);
-
-}).call(this);
-
-(function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
-
-  TodoMVC.ApplicationView = (function(superClass) {
-    extend(ApplicationView, superClass);
-
-    function ApplicationView() {
-      return ApplicationView.__super__.constructor.apply(this, arguments);
-    }
-
-    ApplicationView.prototype.container = ".main";
-
-    ApplicationView.prototype.templateName = "/application";
-
-    return ApplicationView;
-
-  })(Hipbone.View);
 
 }).call(this);
 
@@ -350,6 +346,8 @@
       return results;
     };
 
+    RootView.register("RootView");
+
     return RootView;
 
   })(Hipbone.View);
@@ -437,6 +435,8 @@
       return this.stopEditTodo();
     };
 
+    TodoView.register("TodoView");
+
     return TodoView;
 
   })(Hipbone.View);
@@ -464,6 +464,8 @@
       return this.listenTo(this.get("todos"), "update", this.update);
     };
 
+    TodosView.register("TodosView");
+
     return TodosView;
 
   })(Hipbone.View);
@@ -471,15 +473,6 @@
 }).call(this);
 
 this["HandlebarsTemplates"] = this["HandlebarsTemplates"] || {};
-
-this["HandlebarsTemplates"]["todomvc/templates/application"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
-  this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  
-
-
-  return "<div class=\"main\"></div>\n";
-  });
 
 this["HandlebarsTemplates"]["todomvc/templates/root"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   this.compilerInfo = [4,'>= 1.0.0'];

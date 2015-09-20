@@ -1,19 +1,12 @@
 module.exports =
 
-  initializers: [
-    require("./initializers/sync"),
-    require("./initializers/register_modules"),
-    require("./initializers/register_elements"),
-    require("./initializers/register_helpers"),
-    require("./initializers/parse_body"),
-    require("./initializers/parse_model"),
-    require("./initializers/link_bridge"),
-    require("./initializers/prevent_form"),
-    require("./initializers/start_history")
-  ]
-
-  initializeInitializers: (initializers=[]) ->
-    @initializers.push(initializer) for initializer in initializers
+  initializeInitializers: ->
+    @initializers ||= []
+    @initializers.unshift(require("./initializers/parse_body"))
+    @initializers.unshift(require("./initializers/parse_model"))
+    @initializers.unshift(require("./initializers/link_bridge"))
+    @initializers.unshift(require("./initializers/prevent_form"))
+    @initializers.unshift(require("./initializers/register_helpers"))
 
   runInitializers: (options) ->
     initializer.apply(this, [options]) for initializer in @initializers

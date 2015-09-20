@@ -1,12 +1,5 @@
-Model = require "./../model"
-
-class Meta extends Model
-
-  @registerModule "Meta"
-
 module.exports =
 
-  initializeMeta: (meta={}, defaults={}) ->
-    Meta::defaults = @defaults ||= defaults
-    @meta = new Meta(meta)
+  initializeMeta: (meta={}) ->
+    @meta = new (Hipbone.Model.define(defaults: @defaults))(meta)
     @listenTo @meta, "all", (eventName, args...) => @trigger.apply(this, ["meta:#{eventName}", args...])

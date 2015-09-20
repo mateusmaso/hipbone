@@ -1,14 +1,8 @@
-Model = require "./../model"
-
-class Properties extends Model
-
-  @registerModule "Properties"
-
 module.exports =
 
-  initializeProperties: (properties={}, defaults={}) ->
-    Properties::defaults = @defaults ||= defaults
-    @props = @properties = new Properties(properties)
+  initializeProperties: (properties={}) ->
+    @internals ||= []
+    @props = @properties = new (Hipbone.Model.define(defaults: @defaults))(_.omit(properties, @internals))
     @listenTo @props, "change", => @trigger("change")
 
   get: ->
@@ -16,3 +10,16 @@ module.exports =
 
   set: ->
     @props.set.apply(@props, arguments)
+
+  mergeAttributes: (attributes={}) ->
+    for attribute, value of @properties.attributes when not _.contains(@internals, attribute)
+      attribute = _.string.dasherize(attribute)
+
+      if attribute is "class"
+        attributes[attribute] = "#{attributes[attribute]} #{value}".trim()
+      else if _.contains(@booleans, attribute)
+        attributes[attribute] = '' if value
+      else if not _.isObject(value)
+        attributes[attribute] = value
+
+    attributes

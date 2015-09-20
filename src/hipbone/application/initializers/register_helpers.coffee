@@ -1,15 +1,13 @@
 module.exports = ->
 
-  app = this
+  Handlebars.registerHelper 'asset', (asset, options={}) =>
+    @get("assets")[asset]
 
-  Handlebars.registerHelper 'asset', (asset, options={}) ->
-    app.get("assets")[asset]
+  Handlebars.registerHelper 't', (key, options={}) =>
+    @i18n.t(key, options.hash)
 
-  Handlebars.registerHelper 't', (key, options={}) ->
-    app.i18n.t(key, options.hash)
-
-  Handlebars.registerHelper 'url', (name, options={}) ->
-    app.router.url(name, options.hash)
+  Handlebars.registerHelper 'url', (name, options={}) =>
+    @router.url(name, options.hash)
 
   Handlebars.registerHelper 'fmt', (text, formats..., options={}) ->
     index = 0
@@ -20,7 +18,7 @@ module.exports = ->
 
   Handlebars.registerHelper 'template', (path, options={}) ->
     context = if _.isEmpty(options.hash) then this else options.hash
-    template = app.getTemplate(path)(context)
+    template = Hipbone.View::getTemplate(path)(context)
     if options.hash.unescape then template else new Handlebars.SafeString(template)
 
   eachHelper = Handlebars.helpers.each

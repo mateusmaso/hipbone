@@ -1,7 +1,7 @@
 module.exports =
 
-  initializeComputedAttributes: (computedAttributes={}) ->
-    @computedAttributes = _.extend({}, @computedAttributes, computedAttributes)
+  initializeComputedAttributes: ->
+    @computedAttributes ||= {}
 
   getComputedAttribute: (attribute) ->
     method = @computedAttributes[attribute]

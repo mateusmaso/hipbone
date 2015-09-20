@@ -1,7 +1,10 @@
 module.exports = ->
   describe "state", ->
     it "should initialize state and defaults", ->
-      app = new Hipbone.Application(defaults: {bar: 2}, state: {foo: 1})
+      class Application extends Hipbone.Application
+        defaults:
+          bar: 2
+      app = new Application(foo: 1)
       chai.expect([app.state.get("foo"), app.state.get("bar")]).to.be.deep.equal([1, 2])
 
     it "should get/set", ->

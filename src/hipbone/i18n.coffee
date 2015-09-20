@@ -2,8 +2,6 @@ Module = require "./module"
 
 module.exports = class I18n extends Module
 
-  @registerModule "I18n"
-
   constructor: (locale, locales={}, splitter) ->
     @locale = locale
     @locales = locales
@@ -46,3 +44,5 @@ module.exports = class I18n extends Module
     @interpolate(text, options)
 
   t: @::translate
+
+  @register "I18n"
