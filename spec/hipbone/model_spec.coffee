@@ -28,8 +28,8 @@ module.exports = ->
         @register "Pages"
 
       before ->
-        Hipbone.Model::identityMap.clear()
-        Hipbone.Collection::identityMap.clear()
+        Hipbone.Model.identityMap.clear()
+        Hipbone.Collection.identityMap.clear()
         @book = new Book(id: 1, title: "Hipbone", author: "Mateus", pages: [{book_id: 1}, {book_id: 1}])
 
       it "should include by default cid and computed attributes", ->

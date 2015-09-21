@@ -1,8 +1,10 @@
+Model = require "./../model"
+
 module.exports =
 
   initializeParameters: (params={}) ->
     @parse = _.bind(@parse, this)
-    @params = @parameters = new (Hipbone.Model.define(defaults: @defaults, parse: @parse))(params, parse: true)
+    @params = @parameters = new (Model.define(defaults: @defaults, parse: @parse))(params, parse: true)
     @listenTo @params, "all", => @trigger.apply(this, arguments)
 
   get: ->

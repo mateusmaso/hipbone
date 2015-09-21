@@ -1,3 +1,6 @@
+Model = require "./../model"
+Collection = require "./../collection"
+
 module.exports =
 
   initializeContext: ->
@@ -6,15 +9,16 @@ module.exports =
   context: ->
     {}
 
-  getContext: (context={}) ->
-    if _.isEmpty(context)
-      @_context
-    else
-      @presentContext(context)
+  getContext: (context={}, rootContext) ->
+    rootContext ||= @_context
+    context = if _.isEmpty(context) then rootContext else context
+    context.cid = @cid
+    context
 
   presentContext: (context={}) ->
+    context.cid = @cid
     for key, value of context = _.defaults(context, @properties.attributes)
-      if value instanceof Hipbone.Model or value instanceof Hipbone.Collection
+      if value instanceof Model or value instanceof Collection
         context[key] = value.toJSON()
     context
 

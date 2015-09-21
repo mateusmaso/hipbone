@@ -40,7 +40,7 @@ module.exports = class Collection extends Backbone.Collection
     undefined
 
   url: (options) ->
-    query = @toJSONFilters(options)
+    query = @getFilters(options)
     url = @parentUrl(options)
     url = "#{url}?#{$.param(query)}" unless _.isEmpty(query)
     url

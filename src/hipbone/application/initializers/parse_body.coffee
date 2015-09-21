@@ -1,3 +1,4 @@
 module.exports = ->
 
-  Handlebars.parseHTML(document.body.childNodes)
+  @on "run", ->
+    Handlebars.parseHTML(document.body.childNodes)

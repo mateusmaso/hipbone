@@ -27,13 +27,17 @@
 
 }).call(this);
 
-},{"./hipbone/application":2,"./hipbone/collection":14,"./hipbone/history":23,"./hipbone/i18n":24,"./hipbone/identity_map":25,"./hipbone/model":26,"./hipbone/module":34,"./hipbone/route":35,"./hipbone/router":41,"./hipbone/storage":44,"./hipbone/view":45}],2:[function(require,module,exports){
+},{"./hipbone/application":2,"./hipbone/collection":13,"./hipbone/history":22,"./hipbone/i18n":23,"./hipbone/identity_map":24,"./hipbone/model":25,"./hipbone/module":33,"./hipbone/route":34,"./hipbone/router":40,"./hipbone/storage":43,"./hipbone/view":44}],2:[function(require,module,exports){
 (function() {
-  var Application, Module,
+  var Application, Module, Router, Storage,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
   Module = require("./module");
+
+  Router = require("./router");
+
+  Storage = require("./storage");
 
   module.exports = Application = (function(superClass) {
     extend(Application, superClass);
@@ -61,10 +65,10 @@
       }, state));
       this.initializeLocale(options.locale);
       this.initializeInitializers();
-      this.router = new Hipbone.Router({
+      this.router = new Router({
         title: this.title
       });
-      this.storage = new Hipbone.Storage({
+      this.storage = new Storage({
         prefix: this.prefix
       });
       this.runInitializers(options);
@@ -78,8 +82,8 @@
     };
 
     Application.prototype.run = function() {
-      this.router.start();
-      return this.trigger("run");
+      this.trigger("run");
+      return this.router.start();
     };
 
     Application.register("Application");
@@ -90,7 +94,7 @@
 
 }).call(this);
 
-},{"./application/ajax":3,"./application/initializers":4,"./application/locale":11,"./application/state":13,"./module":34}],3:[function(require,module,exports){
+},{"./application/ajax":3,"./application/initializers":4,"./application/locale":11,"./application/state":12,"./module":33,"./router":40,"./storage":43}],3:[function(require,module,exports){
 (function() {
   var slice = [].slice;
 
@@ -205,13 +209,21 @@
 },{}],6:[function(require,module,exports){
 (function() {
   module.exports = function() {
-    return Handlebars.parseHTML(document.body.childNodes);
+    return this.on("run", function() {
+      return Handlebars.parseHTML(document.body.childNodes);
+    });
   };
 
 }).call(this);
 
 },{}],7:[function(require,module,exports){
 (function() {
+  var Collection, Model;
+
+  Model = require("./../../model");
+
+  Collection = require("./../../collection");
+
   module.exports = function() {
     var parseValue;
     parseValue = Handlebars.parseValue;
@@ -219,7 +231,7 @@
       return function(value, bool) {
         var model;
         value = parseValue.apply(_this, [value, bool]);
-        if (value && (model = Hipbone.Model.prototype.identityMap.find(value.cid) || Hipbone.Collection.prototype.identityMap.find(value.cid))) {
+        if (value && (model = Model.identityMap.find(value.cid) || Collection.identityMap.find(value.cid))) {
           value = model;
         }
         return value;
@@ -229,7 +241,7 @@
 
 }).call(this);
 
-},{}],8:[function(require,module,exports){
+},{"./../../collection":13,"./../../model":25}],8:[function(require,module,exports){
 (function() {
   module.exports = function() {
     var sync;
@@ -261,7 +273,10 @@
 
 },{}],10:[function(require,module,exports){
 (function() {
-  var slice = [].slice;
+  var View,
+    slice = [].slice;
+
+  View = require("./../../view");
 
   module.exports = function() {
     var eachHelper, ifHelper;
@@ -307,12 +322,12 @@
       return eval(javascript);
     });
     Handlebars.registerHelper('template', function(path, options) {
-      var context, template;
+      var template, view;
       if (options == null) {
         options = {};
       }
-      context = _.isEmpty(options.hash) ? this : options.hash;
-      template = Hipbone.View.prototype.getTemplate(path)(context);
+      view = View.identityMap.find(this.cid);
+      template = view.getTemplate(path)(view.getContext(options.hash, this));
       if (options.hash.unescape) {
         return template;
       } else {
@@ -346,8 +361,12 @@
 
 }).call(this);
 
-},{}],11:[function(require,module,exports){
+},{"./../../view":44}],11:[function(require,module,exports){
 (function() {
+  var I18n;
+
+  I18n = require("./../i18n");
+
   module.exports = {
     initializeLocale: function(locale) {
       if (locale == null) {
@@ -355,39 +374,24 @@
       }
       this.locale || (this.locale = locale);
       this.locales || (this.locales = {});
-      return this.i18n = new Hipbone.I18n(this.locale, this.locales);
+      return this.i18n = new I18n(this.locale, this.locales);
     }
   };
 
 }).call(this);
 
-},{}],12:[function(require,module,exports){
+},{"./../i18n":23}],12:[function(require,module,exports){
 (function() {
-  module.exports = {
-    locales: {},
-    initializeLocales: function(locale, locales) {
-      if (locale == null) {
-        locale = "en";
-      }
-      if (locales == null) {
-        locales = {};
-      }
-      this.locale || (this.locale = locale);
-      this.locales = _.extend({}, this.locales, locales);
-      return this.i18n = new Hipbone.I18n(this.locale, this.locales);
-    }
-  };
+  var Model;
 
-}).call(this);
+  Model = require("./../model");
 
-},{}],13:[function(require,module,exports){
-(function() {
   module.exports = {
     initializeState: function(state) {
       if (state == null) {
         state = {};
       }
-      this.state = new (Hipbone.Model.define({
+      this.state = new (Model.define({
         defaults: this.defaults
       }))(state);
       return this.listenTo(this.state, "all", (function(_this) {
@@ -406,7 +410,7 @@
 
 }).call(this);
 
-},{}],14:[function(require,module,exports){
+},{"./../model":25}],13:[function(require,module,exports){
 (function() {
   var Collection, Model, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -487,7 +491,7 @@
 
     Collection.prototype.url = function(options) {
       var query, url;
-      query = this.toJSONFilters(options);
+      query = this.getFilters(options);
       url = this.parentUrl(options);
       if (!_.isEmpty(query)) {
         url = url + "?" + ($.param(query));
@@ -531,13 +535,13 @@
 
 }).call(this);
 
-},{"./collection/filters":15,"./collection/meta":16,"./collection/pagination":17,"./collection/parent":18,"./collection/polymorphic":19,"./collection/populate":20,"./collection/store":21,"./collection/sync":22,"./model":26,"./module":34}],15:[function(require,module,exports){
+},{"./collection/filters":14,"./collection/meta":15,"./collection/pagination":16,"./collection/parent":17,"./collection/polymorphic":18,"./collection/populate":19,"./collection/store":20,"./collection/sync":21,"./model":25,"./module":33}],14:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeFilters: function() {
       return this.filters || (this.filters = {});
     },
-    toJSONFilters: function(options) {
+    getFilters: function(options) {
       var attribute, json, ref, value;
       if (options == null) {
         options = {};
@@ -559,16 +563,19 @@
 
 }).call(this);
 
-},{}],16:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 (function() {
-  var slice = [].slice;
+  var Model,
+    slice = [].slice;
+
+  Model = require("./../model");
 
   module.exports = {
     initializeMeta: function(meta) {
       if (meta == null) {
         meta = {};
       }
-      this.meta = new (Hipbone.Model.define({
+      this.meta = new (Model.define({
         defaults: this.defaults
       }))(meta);
       return this.listenTo(this.meta, "all", (function(_this) {
@@ -583,7 +590,7 @@
 
 }).call(this);
 
-},{}],17:[function(require,module,exports){
+},{"./../model":25}],16:[function(require,module,exports){
 (function() {
   module.exports = {
     initializePagination: function() {
@@ -602,7 +609,7 @@
           }
         }
       };
-      return this.filters.offset = function(options) {
+      this.filters.offset = function(options) {
         if (options == null) {
           options = {};
         }
@@ -614,6 +621,9 @@
           }
         }
       };
+      this.on("add", this.incrementCounter);
+      this.on("remove", this.decrementCounter);
+      return this.on("destroy", this.decrementCounter);
     },
     incrementPagination: function() {
       return this.paginationOffset = this.paginationOffset + this.pagination.limit;
@@ -636,12 +646,32 @@
     },
     getPaginationCount: function() {
       return this.meta.get('count');
+    },
+    incrementCounter: function(model, collection, options) {
+      if (options == null) {
+        options = {};
+      }
+      if (this.meta.has("count") && !options.parse) {
+        return this.meta.set({
+          count: this.meta.get("count") + 1
+        });
+      }
+    },
+    decrementCounter: function(model, collection, options) {
+      if (options == null) {
+        options = {};
+      }
+      if (this.meta.has("count") && !options.parse) {
+        return this.meta.set({
+          count: this.meta.get("count") - 1
+        });
+      }
     }
   };
 
 }).call(this);
 
-},{}],18:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeParent: function(parent) {
@@ -672,7 +702,7 @@
 
 }).call(this);
 
-},{}],19:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function() {
   module.exports = {
     preparePolymorphic: function(attributes, options) {
@@ -708,7 +738,7 @@
 
 }).call(this);
 
-},{}],20:[function(require,module,exports){
+},{}],19:[function(require,module,exports){
 (function() {
   module.exports = {
     populated: function(name) {
@@ -724,7 +754,7 @@
 
 }).call(this);
 
-},{}],21:[function(require,module,exports){
+},{}],20:[function(require,module,exports){
 (function() {
   var IdentityMap;
 
@@ -733,7 +763,7 @@
   module.exports = {
     included: function() {
       var base;
-      return (base = this.prototype).identityMap || (base.identityMap = new IdentityMap);
+      return this.identityMap = (base = this.prototype).identityMap || (base.identityMap = new IdentityMap);
     },
     registered: function() {
       return this.prototype.hashName = _.string.dasherize(this.prototype.moduleName).substring(1);
@@ -782,7 +812,7 @@
 
 }).call(this);
 
-},{"./../identity_map":25}],22:[function(require,module,exports){
+},{"./../identity_map":24}],21:[function(require,module,exports){
 (function() {
   module.exports = {
     unsync: function() {
@@ -797,7 +827,7 @@
 
 }).call(this);
 
-},{}],23:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
 (function() {
   var History, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -873,7 +903,7 @@
 
 }).call(this);
 
-},{"./module":34}],24:[function(require,module,exports){
+},{"./module":33}],23:[function(require,module,exports){
 (function() {
   var I18n, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -954,7 +984,7 @@
 
 }).call(this);
 
-},{"./module":34}],25:[function(require,module,exports){
+},{"./module":33}],24:[function(require,module,exports){
 (function() {
   var IdentityMap, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1045,7 +1075,7 @@
 
 }).call(this);
 
-},{"./module":34}],26:[function(require,module,exports){
+},{"./module":33}],25:[function(require,module,exports){
 (function() {
   var Model, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1161,7 +1191,7 @@
 
 }).call(this);
 
-},{"./model/computed_attributes":27,"./model/mappings":28,"./model/nested_attributes":29,"./model/populate":30,"./model/store":31,"./model/sync":32,"./model/validations":33,"./module":34}],27:[function(require,module,exports){
+},{"./model/computed_attributes":26,"./model/mappings":27,"./model/nested_attributes":28,"./model/populate":29,"./model/store":30,"./model/sync":31,"./model/validations":32,"./module":33}],26:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeComputedAttributes: function() {
@@ -1203,7 +1233,7 @@
 
 }).call(this);
 
-},{}],28:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeMappings: function() {
@@ -1257,7 +1287,7 @@
           }
         }
       }
-      if (Module.prototype instanceof Hipbone.Model) {
+      if (Module.prototype instanceof require("./../model")) {
         attributes = {};
         if (id = this.mappingId(mapping, this.attributes)) {
           attributes[this.parseMappingIdAttribute(mapping)] = id;
@@ -1265,7 +1295,7 @@
         if (!_.isEmpty(attributes)) {
           model = new Module(attributes);
         }
-      } else if (Module.prototype instanceof Hipbone.Collection) {
+      } else if (Module.prototype instanceof require("./../collection")) {
         collection = new Module({
           parent: this
         });
@@ -1286,17 +1316,17 @@
           }
         }
       }
-      if (value instanceof Hipbone.Model) {
+      if (value instanceof require("./../model")) {
         model = value;
-      } else if (value instanceof Hipbone.Collection) {
+      } else if (value instanceof require("./../collection")) {
         collection = value;
         collection.setParent(this);
       }
       if (!model && !collection) {
-        if (Module.prototype instanceof Hipbone.Model && value) {
+        if (Module.prototype instanceof require("./../model") && value) {
           delete value[this.parseMappingTypeAttribute(mapping)];
           model = new Module(value, options);
-        } else if (Module.prototype instanceof Hipbone.Collection) {
+        } else if (Module.prototype instanceof require("./../collection")) {
           if (_.isArray(value)) {
             models = value;
           } else if (_.isObject(value)) {
@@ -1358,7 +1388,7 @@
 
 }).call(this);
 
-},{}],29:[function(require,module,exports){
+},{"./../collection":13,"./../model":25}],28:[function(require,module,exports){
 (function() {
   module.exports = {
     getNestedAttribute: function(attribute) {
@@ -1418,9 +1448,9 @@
 
 }).call(this);
 
-},{}],30:[function(require,module,exports){
-arguments[4][20][0].apply(exports,arguments)
-},{"dup":20}],31:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
+arguments[4][19][0].apply(exports,arguments)
+},{"dup":19}],30:[function(require,module,exports){
 (function() {
   var IdentityMap;
 
@@ -1429,7 +1459,7 @@ arguments[4][20][0].apply(exports,arguments)
   module.exports = {
     included: function() {
       var base;
-      return (base = this.prototype).identityMap || (base.identityMap = new IdentityMap);
+      return this.identityMap = (base = this.prototype).identityMap || (base.identityMap = new IdentityMap);
     },
     registered: function() {
       return this.prototype.hashName = _.string.dasherize(this.prototype.moduleName).substring(1);
@@ -1470,9 +1500,9 @@ arguments[4][20][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./../identity_map":25}],32:[function(require,module,exports){
-arguments[4][22][0].apply(exports,arguments)
-},{"dup":22}],33:[function(require,module,exports){
+},{"./../identity_map":24}],31:[function(require,module,exports){
+arguments[4][21][0].apply(exports,arguments)
+},{"dup":21}],32:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeValidations: function() {
@@ -1510,13 +1540,13 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],34:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 (function() {
-  var Module, keywords, prepare,
+  var Module, keywords, prepare, store,
     slice = [].slice,
     indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
 
-  window._modules || (window._modules = {});
+  store = {};
 
   keywords = ['included', 'extended'];
 
@@ -1524,7 +1554,7 @@ arguments[4][22][0].apply(exports,arguments)
     var cid, superclass;
     superclass = module.__super__.constructor;
     cid = _.uniqueId("module");
-    _modules[cid] = module;
+    store[cid] = module;
     module.cid = cid;
     module.subclasses = [];
     module.includedModules = _.clone(superclass.includedModules || []);
@@ -1541,7 +1571,7 @@ arguments[4][22][0].apply(exports,arguments)
 
     Module.register = function(name) {
       var i, j, len, len1, module, ref, ref1, results;
-      if (_modules[this.cid] !== this) {
+      if (store[this.cid] !== this) {
         prepare(this);
       }
       this.prototype.moduleName = name;
@@ -1566,7 +1596,7 @@ arguments[4][22][0].apply(exports,arguments)
     Module.include = function() {
       var i, len, method, module, modules, name, results;
       modules = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-      if (_modules[this.cid] !== this) {
+      if (store[this.cid] !== this) {
         prepare(this);
       }
       results = [];
@@ -1594,7 +1624,7 @@ arguments[4][22][0].apply(exports,arguments)
     Module.extend = function() {
       var i, len, method, module, modules, name, results;
       modules = 1 <= arguments.length ? slice.call(arguments, 0) : [];
-      if (_modules[this.cid] !== this) {
+      if (store[this.cid] !== this) {
         prepare(this);
       }
       results = [];
@@ -1627,7 +1657,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],35:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 (function() {
   var Module, Route,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1698,7 +1728,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./module":34,"./route/element":36,"./route/parameters":37,"./route/populate":38,"./route/store":39,"./route/title":40}],36:[function(require,module,exports){
+},{"./module":33,"./route/element":35,"./route/parameters":36,"./route/populate":37,"./route/store":38,"./route/title":39}],35:[function(require,module,exports){
 (function() {
   var currentElement;
 
@@ -1725,15 +1755,19 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],37:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 (function() {
+  var Model;
+
+  Model = require("./../model");
+
   module.exports = {
     initializeParameters: function(params) {
       if (params == null) {
         params = {};
       }
       this.parse = _.bind(this.parse, this);
-      this.params = this.parameters = new (Hipbone.Model.define({
+      this.params = this.parameters = new (Model.define({
         defaults: this.defaults,
         parse: this.parse
       }))(params, {
@@ -1761,7 +1795,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],38:[function(require,module,exports){
+},{"./../model":25}],37:[function(require,module,exports){
 (function() {
   module.exports = {
     populated: function(name) {
@@ -1777,7 +1811,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],39:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 (function() {
   var IdentityMap;
 
@@ -1786,7 +1820,7 @@ arguments[4][22][0].apply(exports,arguments)
   module.exports = {
     included: function() {
       var base;
-      return (base = this.prototype).identityMap || (base.identityMap = new IdentityMap);
+      return this.identityMap = (base = this.prototype).identityMap || (base.identityMap = new IdentityMap);
     },
     registered: function() {
       return this.prototype.hashName = _.string.dasherize(this.prototype.moduleName).substring(1);
@@ -1834,7 +1868,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./../identity_map":25}],40:[function(require,module,exports){
+},{"./../identity_map":24}],39:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeTitle: function(titleRoot) {
@@ -1862,7 +1896,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],41:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 (function() {
   var History, Module, Router,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1907,11 +1941,13 @@ arguments[4][22][0].apply(exports,arguments)
     };
 
     Router.prototype.start = function() {
-      if (!Backbone.History.started) {
-        return this.history.start({
-          pushState: true
-        });
+      if (Backbone.History.started) {
+        return;
       }
+      this.history.start({
+        pushState: true
+      });
+      return this.trigger("start");
     };
 
     Router.register("Router");
@@ -1922,7 +1958,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./history":23,"./module":34,"./router/matches":42,"./router/url":43}],42:[function(require,module,exports){
+},{"./history":22,"./module":33,"./router/matches":41,"./router/url":42}],41:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeMatches: function() {
@@ -1960,7 +1996,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],43:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 (function() {
   module.exports = {
     url: function(name, params) {
@@ -1982,7 +2018,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],44:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 (function() {
   var Module, Storage,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -2047,7 +2083,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./module":34}],45:[function(require,module,exports){
+},{"./module":33}],44:[function(require,module,exports){
 (function() {
   var Module, View,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -2162,26 +2198,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./module":34,"./view/bubble":47,"./view/class_name_bindings":48,"./view/content":49,"./view/context":50,"./view/elements":51,"./view/lifecycle":52,"./view/populate":53,"./view/properties":54,"./view/store":55,"./view/template":56}],46:[function(require,module,exports){
-(function() {
-  module.exports = {
-    setAttribute: function(attribute, value) {
-      attribute = _.string.dasherize(attribute);
-      if (attribute === "class") {
-        return this.$el.addClass(value);
-      } else if (_.contains(this.booleans, attribute)) {
-        if (value) {
-          return this.$el.attr(attribute, '');
-        }
-      } else if (!_.isObject(value)) {
-        return this.$el.attr(attribute, value);
-      }
-    }
-  };
-
-}).call(this);
-
-},{}],47:[function(require,module,exports){
+},{"./module":33,"./view/bubble":45,"./view/class_name_bindings":46,"./view/content":47,"./view/context":48,"./view/elements":49,"./view/lifecycle":50,"./view/populate":51,"./view/properties":52,"./view/store":53,"./view/template":54}],45:[function(require,module,exports){
 (function() {
   var slice = [].slice;
 
@@ -2196,7 +2213,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],48:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeClassNameBindings: function() {
@@ -2230,7 +2247,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],49:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeContent: function(content) {
@@ -2256,8 +2273,14 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],50:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 (function() {
+  var Collection, Model;
+
+  Model = require("./../model");
+
+  Collection = require("./../collection");
+
   module.exports = {
     initializeContext: function() {
       return this._context = {};
@@ -2265,25 +2288,25 @@ arguments[4][22][0].apply(exports,arguments)
     context: function() {
       return {};
     },
-    getContext: function(context) {
+    getContext: function(context, rootContext) {
       if (context == null) {
         context = {};
       }
-      if (_.isEmpty(context)) {
-        return this._context;
-      } else {
-        return this.presentContext(context);
-      }
+      rootContext || (rootContext = this._context);
+      context = _.isEmpty(context) ? rootContext : context;
+      context.cid = this.cid;
+      return context;
     },
     presentContext: function(context) {
       var key, ref, value;
       if (context == null) {
         context = {};
       }
+      context.cid = this.cid;
       ref = context = _.defaults(context, this.properties.attributes);
       for (key in ref) {
         value = ref[key];
-        if (value instanceof Hipbone.Model || value instanceof Hipbone.Collection) {
+        if (value instanceof Model || value instanceof Collection) {
           context[key] = value.toJSON();
         }
       }
@@ -2303,7 +2326,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],51:[function(require,module,exports){
+},{"./../collection":13,"./../model":25}],49:[function(require,module,exports){
 (function() {
   var findBooleans;
 
@@ -2360,7 +2383,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],52:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 (function() {
   module.exports = {
     insert: function() {},
@@ -2396,7 +2419,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],53:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 (function() {
   module.exports = {
     initializePopulate: function() {
@@ -2441,15 +2464,19 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],54:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 (function() {
+  var Model;
+
+  Model = require("./../model");
+
   module.exports = {
     initializeProperties: function(properties) {
       if (properties == null) {
         properties = {};
       }
       this.internals || (this.internals = []);
-      this.props = this.properties = new (Hipbone.Model.define({
+      this.props = this.properties = new (Model.define({
         defaults: this.defaults
       }))(_.omit(properties, this.internals));
       return this.listenTo(this.props, "change", (function(_this) {
@@ -2492,7 +2519,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],55:[function(require,module,exports){
+},{"./../model":25}],53:[function(require,module,exports){
 (function() {
   var IdentityMap;
 
@@ -2501,7 +2528,7 @@ arguments[4][22][0].apply(exports,arguments)
   module.exports = {
     included: function() {
       var base;
-      return (base = this.prototype).identityMap || (base.identityMap = new IdentityMap);
+      return this.identityMap = (base = this.prototype).identityMap || (base.identityMap = new IdentityMap);
     },
     registered: function() {
       return this.prototype.hashName = _.string.dasherize(this.prototype.moduleName).substring(1);
@@ -2540,7 +2567,7 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./../identity_map":25}],56:[function(require,module,exports){
+},{"./../identity_map":24}],54:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeTemplate: function() {
@@ -2563,33 +2590,4 @@ arguments[4][22][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],57:[function(require,module,exports){
-(function() {
-  module.exports = {
-    initializeTemplates: function(templatePath, templateName, templates) {
-      if (templatePath == null) {
-        templatePath = "";
-      }
-      if (templates == null) {
-        templates = {};
-      }
-      this.templatePath || (this.templatePath = templatePath);
-      this.templateName || (this.templateName = templateName);
-      return this.templates = _.extend({}, this.templates, templates);
-    },
-    template: function(path, context) {
-      return $(Handlebars.parseHTML(this.getTemplate(path)(this.getContext(context))));
-    },
-    getTemplate: function(path) {
-      return this.templates["" + this.templatePath + path];
-    },
-    renderTemplate: function() {
-      if (this.templateName) {
-        return this.$el.html(this.template(this.templateName));
-      }
-    }
-  };
-
-}).call(this);
-
-},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57]);
+},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54]);

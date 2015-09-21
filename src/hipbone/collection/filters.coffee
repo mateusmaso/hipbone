@@ -3,7 +3,7 @@ module.exports =
   initializeFilters: ->
     @filters ||= {}
 
-  toJSONFilters: (options={}) ->
+  getFilters: (options={}) ->
     json = {}
     for attribute, value of @filters
       value = value.apply(this, [options]) if _.isFunction(value)

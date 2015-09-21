@@ -1,6 +1,6 @@
 module.exports = ->
   describe "parameters", ->
-    it "should initialize state and defaults", ->
+    it "should initialize params and defaults", ->
       class Route extends Hipbone.Route
         defaults:
           bar: 2

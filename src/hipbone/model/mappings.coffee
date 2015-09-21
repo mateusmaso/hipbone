@@ -33,11 +33,11 @@ module.exports =
     if polymorphic = _.isArray(Module)
       Module = Model for Model in Module when Model::moduleName is @mappingType(mapping, @attributes)
 
-    if Module.prototype instanceof Hipbone.Model
+    if Module.prototype instanceof require("./../model")
       attributes = {}
       attributes[@parseMappingIdAttribute(mapping)] = id if id = @mappingId(mapping, @attributes)
       model = new Module(attributes) unless _.isEmpty(attributes)
-    else if Module.prototype instanceof Hipbone.Collection
+    else if Module.prototype instanceof require("./../collection")
       collection = new Module(parent: this)
 
     model || collection || @transients[mapping]
@@ -47,17 +47,17 @@ module.exports =
     if polymorphic = _.isArray(Module) and value
       Module = Model for Model in Module when Model::moduleName is @parseMappingType(mapping, value)
 
-    if value instanceof Hipbone.Model
+    if value instanceof require("./../model")
       model = value
-    else if value instanceof Hipbone.Collection
+    else if value instanceof require("./../collection")
       collection = value
       collection.setParent(this)
 
     if not model and not collection
-      if Module.prototype instanceof Hipbone.Model and value
+      if Module.prototype instanceof require("./../model") and value
         delete value[@parseMappingTypeAttribute(mapping)]
         model = new Module(value, options)
-      else if Module.prototype instanceof Hipbone.Collection
+      else if Module.prototype instanceof require("./../collection")
         if _.isArray(value)
           models = value
         else if _.isObject(value)

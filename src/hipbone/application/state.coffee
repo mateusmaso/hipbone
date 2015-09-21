@@ -1,7 +1,9 @@
+Model = require "./../model"
+
 module.exports =
 
   initializeState: (state={}) ->
-    @state = new (Hipbone.Model.define(defaults: @defaults))(state)
+    @state = new (Model.define(defaults: @defaults))(state)
     @listenTo @state, "all", => @trigger.apply(this, arguments)
 
   get: ->

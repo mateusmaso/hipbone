@@ -1,8 +1,10 @@
+Model = require "./../model"
+
 module.exports =
 
   initializeProperties: (properties={}) ->
     @internals ||= []
-    @props = @properties = new (Hipbone.Model.define(defaults: @defaults))(_.omit(properties, @internals))
+    @props = @properties = new (Model.define(defaults: @defaults))(_.omit(properties, @internals))
     @listenTo @props, "change", => @trigger("change")
 
   get: ->

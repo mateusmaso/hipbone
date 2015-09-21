@@ -1,6 +1,6 @@
 module.exports = ->
   describe "initializers", ->
-    it "should extend and run initializers with options as default", ->
+    it "should run initializers with options", ->
       initializers = []
       initializers.push ->
         @get("output").push("foo")
@@ -13,5 +13,4 @@ module.exports = ->
 
     require("./initializers/parse_body_spec").apply(this)
     require("./initializers/parse_model_spec").apply(this)
-    require("./initializers/start_history_spec").apply(this)
     require("./initializers/register_helpers_spec").apply(this)

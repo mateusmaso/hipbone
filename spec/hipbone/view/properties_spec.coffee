@@ -1,6 +1,6 @@
 module.exports = ->
   describe "properties", ->
-    it "should initialize properties, internal and defaults", ->
+    it "should initialize properties, internals and defaults", ->
       class View extends Hipbone.View
          internals: ["fooBar"]
          defaults:

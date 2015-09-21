@@ -1,4 +1,6 @@
 Module = require "./module"
+Router = require "./router"
+Storage = require "./storage"
 
 module.exports = class Application extends Module
 
@@ -13,15 +15,15 @@ module.exports = class Application extends Module
     @initializeState(_.extend(assets: {}, state))
     @initializeLocale(options.locale)
     @initializeInitializers()
-    @router = new Hipbone.Router(title: @title)
-    @storage = new Hipbone.Storage(prefix: @prefix)
+    @router = new Router(title: @title)
+    @storage = new Storage(prefix: @prefix)
     @runInitializers(options)
     @initialize(options)
 
   initialize: (options={}) ->
 
   run: ->
-    @router.start()
     @trigger("run")
+    @router.start()
 
   @register "Application"

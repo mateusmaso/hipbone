@@ -3,7 +3,7 @@ IdentityMap = require "./../identity_map"
 module.exports =
 
   included: ->
-    @::identityMap ||= new IdentityMap
+    @identityMap = @::identityMap ||= new IdentityMap
 
   registered: ->
     @::hashName = _.string.dasherize(@::moduleName).substring(1)

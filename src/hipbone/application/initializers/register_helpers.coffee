@@ -1,3 +1,5 @@
+View = require "./../../view"
+
 module.exports = ->
 
   Handlebars.registerHelper 'asset', (asset, options={}) =>
@@ -17,8 +19,8 @@ module.exports = ->
     eval(javascript)
 
   Handlebars.registerHelper 'template', (path, options={}) ->
-    context = if _.isEmpty(options.hash) then this else options.hash
-    template = Hipbone.View::getTemplate(path)(context)
+    view = View.identityMap.find(@cid)
+    template = view.getTemplate(path)(view.getContext(options.hash, this))
     if options.hash.unescape then template else new Handlebars.SafeString(template)
 
   eachHelper = Handlebars.helpers.each

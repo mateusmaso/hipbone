@@ -26,6 +26,15 @@ module.exports = ->
       app = new Hipbone.Application
       chai.expect(Handlebars.compile("{{eval '1 + 1'}}")()).to.be.equal("2")
 
+    it "should render template", ->
+      class View extends Hipbone.View
+        templatePath: "/path"
+        templates:
+          "/path/test": Handlebars.compile("test")
+      view = new View
+      app = new Hipbone.Application
+      chai.expect(Handlebars.compile("{{template '/test'}}")(view._context)).to.be.equal("test")
+
     it "#each should work with collection", ->
       app = new Hipbone.Application
       collection = new Hipbone.Collection([{text: "hello"}, {text: "world"}])

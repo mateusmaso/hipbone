@@ -1,12 +1,12 @@
 module.exports = ->
   describe "ajax", ->
-    it "should prepend url with host", ->
+    it "should prepend host url", ->
       class Application extends Hipbone.Application
         host: "/api/v1"
       app = new Application
       chai.expect(app.ajaxUrl("/ping")).to.be.equal("/api/v1/ping")
 
-    it "should add headers", ->
+    it "should add http headers", ->
       class Application extends Hipbone.Application
         headers:
           "X-CSRF-Token": "abc"
