@@ -27,7 +27,7 @@
 
 }).call(this);
 
-},{"./hipbone/application":2,"./hipbone/collection":13,"./hipbone/history":22,"./hipbone/i18n":23,"./hipbone/identity_map":24,"./hipbone/model":25,"./hipbone/module":33,"./hipbone/route":34,"./hipbone/router":40,"./hipbone/storage":43,"./hipbone/view":44}],2:[function(require,module,exports){
+},{"./hipbone/application":2,"./hipbone/collection":13,"./hipbone/history":22,"./hipbone/i18n":23,"./hipbone/identity_map":24,"./hipbone/model":25,"./hipbone/module":33,"./hipbone/route":34,"./hipbone/router":41,"./hipbone/storage":44,"./hipbone/view":45}],2:[function(require,module,exports){
 (function() {
   var Application, Module, Router, Storage,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -94,7 +94,7 @@
 
 }).call(this);
 
-},{"./application/ajax":3,"./application/initializers":4,"./application/locale":11,"./application/state":12,"./module":33,"./router":40,"./storage":43}],3:[function(require,module,exports){
+},{"./application/ajax":3,"./application/initializers":4,"./application/locale":11,"./application/state":12,"./module":33,"./router":41,"./storage":44}],3:[function(require,module,exports){
 (function() {
   var slice = [].slice;
 
@@ -170,6 +170,7 @@
       this.initializers.unshift(require("./initializers/parse_model"));
       this.initializers.unshift(require("./initializers/link_bridge"));
       this.initializers.unshift(require("./initializers/prevent_form"));
+      this.initializers.unshift(require("./initializers/prepare_sync"));
       return this.initializers.unshift(require("./initializers/register_helpers"));
     },
     runInitializers: function(options) {
@@ -186,7 +187,7 @@
 
 }).call(this);
 
-},{"./initializers/link_bridge":5,"./initializers/parse_body":6,"./initializers/parse_model":7,"./initializers/prevent_form":9,"./initializers/register_helpers":10}],5:[function(require,module,exports){
+},{"./initializers/link_bridge":5,"./initializers/parse_body":6,"./initializers/parse_model":7,"./initializers/prepare_sync":8,"./initializers/prevent_form":9,"./initializers/register_helpers":10}],5:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return $('body').on("click", "a:not([bypass])", (function(_this) {
@@ -361,7 +362,7 @@
 
 }).call(this);
 
-},{"./../../view":44}],11:[function(require,module,exports){
+},{"./../../view":45}],11:[function(require,module,exports){
 (function() {
   var I18n;
 
@@ -459,19 +460,20 @@
       this.initializeMeta(options.meta);
       this.initializeParent(options.parent);
       this.initializeFilters();
+      this.initializePopulate();
       this.initializePagination();
       Collection.__super__.constructor.apply(this, arguments);
+      this.store();
+      this.on("all", _.debounce((function(_this) {
+        return function() {
+          return _this.store();
+        };
+      })(this)));
       this.on("add remove reset sort", (function(_this) {
         return function() {
           return _this.trigger("update", _this);
         };
       })(this));
-      this.on("all", (function(_this) {
-        return function() {
-          return _this.store();
-        };
-      })(this));
-      this.store();
     }
 
     Collection.prototype._prepareModel = function(attributes, options) {
@@ -486,7 +488,11 @@
     };
 
     Collection.prototype.modelId = function(attributes) {
-      return void 0;
+      if (_.isArray(this.model)) {
+        return this.polymorphicUniqueId(attributes);
+      } else {
+        return Collection.__super__.modelId.apply(this, arguments);
+      }
     };
 
     Collection.prototype.url = function(options) {
@@ -595,17 +601,18 @@
   module.exports = {
     initializePagination: function() {
       this.pagination || (this.pagination = {});
-      this.paginationOffset = this.pagination.offset;
+      this.limit = this.pagination.limit || 0;
+      this.offset = this.pagination.offset || 0;
       this.filters || (this.filters = {});
       this.filters.limit = function(options) {
         if (options == null) {
           options = {};
         }
-        if (this.paginationOffset != null) {
+        if (this.limit > 0) {
           if (options.paginate) {
-            return this.pagination.limit;
+            return this.limit;
           } else {
-            return this.pagination.limit + this.paginationOffset;
+            return this.limit + this.offset;
           }
         }
       };
@@ -613,9 +620,9 @@
         if (options == null) {
           options = {};
         }
-        if (this.paginationOffset != null) {
+        if (this.limit > 0) {
           if (options.paginate) {
-            return this.paginationOffset;
+            return this.offset;
           } else {
             return 0;
           }
@@ -626,10 +633,10 @@
       return this.on("destroy", this.decrementCounter);
     },
     incrementPagination: function() {
-      return this.paginationOffset = this.paginationOffset + this.pagination.limit;
+      return this.offset = this.offset + this.limit;
     },
     decrementPagination: function() {
-      return this.paginationOffset = this.paginationOffset - this.pagination.limit;
+      return this.offset = this.offset - this.limit;
     },
     paginate: function(options) {
       if (options == null) {
@@ -645,7 +652,7 @@
       return this.length < this.getPaginationCount();
     },
     getPaginationCount: function() {
-      return this.meta.get('count');
+      return this.meta.get('count') || 0;
     },
     incrementCounter: function(model, collection, options) {
       if (options == null) {
@@ -714,13 +721,17 @@
         ref = this.model;
         for (i = 0, len = ref.length; i < len; i++) {
           Model = ref[i];
-          if (!(Model.prototype.moduleName === this.polymorphicType(attributes))) {
-            continue;
+          if (Model.prototype.moduleName === this.polymorphicType(attributes)) {
+            return new Model(attributes, options);
           }
-          delete attributes[this.polymorphicTypeAttribute(attributes)];
-          return new Model(attributes, options);
         }
       }
+    },
+    polymorphicId: function(attributes) {
+      if (attributes == null) {
+        attributes = {};
+      }
+      return attributes[this.polymorphicIdAttribute(attributes)];
     },
     polymorphicType: function(attributes) {
       if (attributes == null) {
@@ -728,11 +739,23 @@
       }
       return attributes[this.polymorphicTypeAttribute(attributes)];
     },
+    polymorphicIdAttribute: function(attributes) {
+      if (attributes == null) {
+        attributes = {};
+      }
+      return "id";
+    },
     polymorphicTypeAttribute: function(attributes) {
       if (attributes == null) {
         attributes = {};
       }
       return "type";
+    },
+    polymorphicUniqueId: function(attributes) {
+      if (attributes == null) {
+        attributes = {};
+      }
+      return (this.polymorphicId(attributes)) + "-" + (this.polymorphicType(attributes));
     }
   };
 
@@ -741,6 +764,9 @@
 },{}],19:[function(require,module,exports){
 (function() {
   module.exports = {
+    initializePopulate: function() {
+      return this.deferreds = {};
+    },
     populated: function(name) {
       return this.synced;
     },
@@ -748,7 +774,13 @@
       return this.fetch();
     },
     prepare: function(name) {
-      return $.when(this.populated(name) || this.populate(name));
+      var deferred;
+      deferred = this.deferreds[name];
+      if (deferred && !deferred.state() !== "resolved") {
+        return deferred;
+      } else {
+        return this.deferreds[name] = $.when(this.populated(name) || this.populate(name));
+      }
     }
   };
 
@@ -1115,16 +1147,17 @@
       if (model = this.initializeStore(attributes, options)) {
         return model;
       }
+      this.initializePopulate();
       this.initializeMappings();
       this.initializeValidations();
       this.initializeComputedAttributes();
       Model.__super__.constructor.apply(this, arguments);
-      this.on("all", (function(_this) {
+      this.store();
+      this.on("all", _.debounce((function(_this) {
         return function() {
           return _this.store();
         };
-      })(this));
-      this.store();
+      })(this)));
     }
 
     Model.prototype.get = function(attribute) {
@@ -1277,11 +1310,12 @@
       return attributes[this.parseMappingTypeAttribute(mapping)];
     },
     getMapping: function(mapping) {
-      var Model, Module, attributes, collection, i, id, len, model, polymorphic;
+      var Model, Models, Module, attributes, collection, i, id, len, model, polymorphic;
       Module = this.mappings[mapping].apply(this);
       if (polymorphic = _.isArray(Module)) {
-        for (i = 0, len = Module.length; i < len; i++) {
-          Model = Module[i];
+        Models = Module;
+        for (i = 0, len = Models.length; i < len; i++) {
+          Model = Models[i];
           if (Model.prototype.moduleName === this.mappingType(mapping, this.attributes)) {
             Module = Model;
           }
@@ -1303,14 +1337,15 @@
       return model || collection || this.transients[mapping];
     },
     setMapping: function(mapping, value, options) {
-      var Model, Module, collection, i, len, meta, model, models, polymorphic;
+      var Model, Models, Module, collection, i, len, meta, model, models, polymorphic;
       if (options == null) {
         options = {};
       }
       Module = this.mappings[mapping].apply(this);
       if (polymorphic = _.isArray(Module) && value) {
-        for (i = 0, len = Module.length; i < len; i++) {
-          Model = Module[i];
+        Models = Module;
+        for (i = 0, len = Models.length; i < len; i++) {
+          Model = Models[i];
           if (Model.prototype.moduleName === this.parseMappingType(mapping, value)) {
             Module = Model;
           }
@@ -1678,6 +1713,8 @@ arguments[4][21][0].apply(exports,arguments)
 
     Route.include(require("./route/populate"));
 
+    Route.include(require("./route/activate"));
+
     Route.include(require("./route/parameters"));
 
     function Route(params, options) {
@@ -1694,30 +1731,21 @@ arguments[4][21][0].apply(exports,arguments)
       this.cid = _.uniqueId('route');
       this.initializeTitle(options.titleRoot);
       this.initializeElement(options.elementRoot);
+      this.initializePopulate();
       this.initializeParameters(params);
       this.initialize(params);
-      this.on("all", (function(_this) {
+      this.store();
+      this.on("all", _.debounce((function(_this) {
         return function() {
           return _this.store();
         };
-      })(this));
-      this.prepare();
-      this.store();
+      })(this)));
     }
 
     Route.prototype.initialize = function(params) {
       if (params == null) {
         params = {};
       }
-    };
-
-    Route.prototype.beforeActivate = function() {
-      return true;
-    };
-
-    Route.prototype.activate = function() {
-      this.renderTitle();
-      return this.renderElement();
     };
 
     Route.register("Route");
@@ -1728,7 +1756,30 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./module":33,"./route/element":35,"./route/parameters":36,"./route/populate":37,"./route/store":38,"./route/title":39}],35:[function(require,module,exports){
+},{"./module":33,"./route/activate":35,"./route/element":36,"./route/parameters":37,"./route/populate":38,"./route/store":39,"./route/title":40}],35:[function(require,module,exports){
+(function() {
+  module.exports = {
+    active: function() {},
+    beforeActivate: function() {
+      return true;
+    },
+    activate: function() {
+      if (this.beforeActivate() !== false) {
+        return this.prepare().done((function(_this) {
+          return function() {
+            _this.active();
+            _this.trigger("active");
+            _this.renderTitle();
+            return _this.renderElement();
+          };
+        })(this));
+      }
+    }
+  };
+
+}).call(this);
+
+},{}],36:[function(require,module,exports){
 (function() {
   var currentElement;
 
@@ -1755,7 +1806,7 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 (function() {
   var Model;
 
@@ -1795,9 +1846,12 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./../model":25}],37:[function(require,module,exports){
+},{"./../model":25}],38:[function(require,module,exports){
 (function() {
   module.exports = {
+    initializePopulate: function() {
+      return this.deferreds = {};
+    },
     populated: function(name) {
       return false;
     },
@@ -1805,13 +1859,19 @@ arguments[4][21][0].apply(exports,arguments)
       return $.when(true);
     },
     prepare: function(name) {
-      return $.when(this.populated(name) || this.populate(name));
+      var deferred;
+      deferred = this.deferreds[name];
+      if (deferred && !deferred.state() !== "resolved") {
+        return deferred;
+      } else {
+        return this.deferreds[name] = $.when(this.populated(name) || this.populate(name));
+      }
     }
   };
 
 }).call(this);
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 (function() {
   var IdentityMap;
 
@@ -1868,7 +1928,7 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./../identity_map":24}],39:[function(require,module,exports){
+},{"./../identity_map":24}],40:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeTitle: function(titleRoot) {
@@ -1896,7 +1956,7 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 (function() {
   var History, Module, Router,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1921,7 +1981,6 @@ arguments[4][21][0].apply(exports,arguments)
       if (options == null) {
         options = {};
       }
-      this.title || (this.title = options.title || "App");
       this.initializeMatches();
       Router.__super__.constructor.apply(this, arguments);
     }
@@ -1958,10 +2017,11 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./history":22,"./module":33,"./router/matches":41,"./router/url":42}],41:[function(require,module,exports){
+},{"./history":22,"./module":33,"./router/matches":42,"./router/url":43}],42:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeMatches: function() {
+      this.params || (this.params = {});
       return this.matches || (this.matches = {});
     },
     match: function(name, options) {
@@ -1973,30 +2033,27 @@ arguments[4][21][0].apply(exports,arguments)
       url = options.url;
       Route = options.route;
       return this.route(url, name, function() {
-        var i, index, len, param, params, ref;
-        params = this.history.parameters();
+        var i, index, len, param, ref;
+        this.params = this.history.parameters();
         ref = url.match(/:\w+/g) || [];
         for (index = i = 0, len = ref.length; i < len; index = ++i) {
           param = ref[index];
           if (arguments[index]) {
-            params[param.substring(1)] = _.parse(arguments[index]);
+            this.params[param.substring(1)] = _.parse(arguments[index]);
           }
         }
-        this._route = new Route(params, {
-          title: this.title,
+        this._route = new Route(this.params, {
           path: this.history.location.pathname,
           popstate: this.history.popstate
         });
-        if (this._route.beforeActivate()) {
-          return this._route.activate();
-        }
+        return this._route.activate();
       });
     }
   };
 
 }).call(this);
 
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 (function() {
   module.exports = {
     url: function(name, params) {
@@ -2018,7 +2075,7 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 (function() {
   var Module, Storage,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -2083,7 +2140,7 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./module":33}],44:[function(require,module,exports){
+},{"./module":33}],45:[function(require,module,exports){
 (function() {
   var Module, View,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -2137,20 +2194,20 @@ arguments[4][21][0].apply(exports,arguments)
       this.initializeProperties(properties);
       this.initializeClassNameBindings();
       View.__super__.constructor.call(this, options);
+      this.store();
+      this.lifecycle();
+      this.prepare();
+      this.render();
+      this.on("all", _.debounce((function(_this) {
+        return function() {
+          return _this.store();
+        };
+      })(this)));
       this.on("change", (function(_this) {
         return function() {
           return _this.update();
         };
       })(this));
-      this.on("all", (function(_this) {
-        return function() {
-          return _this.store();
-        };
-      })(this));
-      this.lifecycle();
-      this.prepare();
-      this.render();
-      this.store();
     }
 
     View.prototype.destroy = function() {};
@@ -2198,7 +2255,7 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./module":33,"./view/bubble":45,"./view/class_name_bindings":46,"./view/content":47,"./view/context":48,"./view/elements":49,"./view/lifecycle":50,"./view/populate":51,"./view/properties":52,"./view/store":53,"./view/template":54}],45:[function(require,module,exports){
+},{"./module":33,"./view/bubble":46,"./view/class_name_bindings":47,"./view/content":48,"./view/context":49,"./view/elements":50,"./view/lifecycle":51,"./view/populate":52,"./view/properties":53,"./view/store":54,"./view/template":55}],46:[function(require,module,exports){
 (function() {
   var slice = [].slice;
 
@@ -2213,7 +2270,7 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],46:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeClassNameBindings: function() {
@@ -2247,7 +2304,7 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeContent: function(content) {
@@ -2256,6 +2313,7 @@ arguments[4][21][0].apply(exports,arguments)
     },
     setContent: function(content) {
       if (this.content !== content) {
+        $(this.content).detach();
         this.content = content;
         return this.renderContent();
       }
@@ -2273,7 +2331,7 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 (function() {
   var Collection, Model;
 
@@ -2326,7 +2384,7 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./../collection":13,"./../model":25}],49:[function(require,module,exports){
+},{"./../collection":13,"./../model":25}],50:[function(require,module,exports){
 (function() {
   var findBooleans;
 
@@ -2383,7 +2441,7 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 (function() {
   module.exports = {
     insert: function() {},
@@ -2419,11 +2477,12 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 (function() {
   module.exports = {
     initializePopulate: function() {
       var populate, populated;
+      this.deferreds = {};
       this.background || (this.background = false);
       this.defaults || (this.defaults = {});
       this.defaults.loading = false;
@@ -2458,13 +2517,19 @@ arguments[4][21][0].apply(exports,arguments)
       return $.when(true);
     },
     prepare: function(name) {
-      return $.when(this.populated(name) || this.populate(name));
+      var deferred;
+      deferred = this.deferreds[name];
+      if (deferred && deferred.state() !== "resolved") {
+        return deferred;
+      } else {
+        return this.deferreds[name] = $.when(this.populated(name) || this.populate(name));
+      }
     }
   };
 
 }).call(this);
 
-},{}],52:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 (function() {
   var Model;
 
@@ -2519,7 +2584,7 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./../model":25}],53:[function(require,module,exports){
+},{"./../model":25}],54:[function(require,module,exports){
 (function() {
   var IdentityMap;
 
@@ -2567,7 +2632,7 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{"./../identity_map":24}],54:[function(require,module,exports){
+},{"./../identity_map":24}],55:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeTemplate: function() {
@@ -2590,4 +2655,4 @@ arguments[4][21][0].apply(exports,arguments)
 
 }).call(this);
 
-},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54]);
+},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55]);

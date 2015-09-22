@@ -641,33 +641,81 @@
         return Annotations;
 
       })(Hipbone.Collection);
-      it("should set model", function() {
-        var annotation1, annotation2, annotations;
-        annotation1 = new AuthorAnnotation({
-          id: 1
+      describe("model", function() {
+        it("should initialize", function() {
+          var annotation1, annotation2, annotation3, annotation4, annotations;
+          annotation1 = new AuthorAnnotation({
+            id: 1
+          });
+          annotation2 = new AuthorAnnotation({
+            id: 2
+          });
+          annotation3 = new ReaderAnnotation({
+            id: 3
+          });
+          annotation4 = new ReaderAnnotation({
+            id: 4
+          });
+          annotations = new Annotations([annotation1, annotation2, annotation3, annotation4]);
+          return chai.expect(annotations.map(function(annotation) {
+            return annotation.id;
+          })).to.be.deep.equal([1, 2, 3, 4]);
         });
-        annotation2 = new ReaderAnnotation({
-          id: 1
+        return it("should set", function() {
+          var annotation1, annotation2, annotations;
+          annotation1 = new AuthorAnnotation({
+            id: 5
+          });
+          annotation2 = new AuthorAnnotation({
+            id: 6
+          });
+          annotations = new Annotations();
+          annotations.set([annotation1, annotation2]);
+          return chai.expect(annotations.map(function(annotation) {
+            return annotation.id;
+          })).to.be.deep.equal([5, 6]);
         });
-        annotations = new Annotations([annotation1, annotation2]);
-        return chai.expect(annotations.map(function(annotation) {
-          return annotation.id;
-        })).to.be.deep.equal([1, 1]);
       });
-      return it("should set object", function() {
-        var annotation1, annotation2, annotations;
-        annotation1 = {
-          id: 1,
-          type: "AuthorAnnotation"
-        };
-        annotation2 = {
-          id: 1,
-          type: "ReaderAnnotation"
-        };
-        annotations = new Annotations([annotation1, annotation2]);
-        return chai.expect(annotations.map(function(annotation) {
-          return annotation.id;
-        })).to.be.deep.equal([1, 1]);
+      return describe("object", function() {
+        it("should initialize", function() {
+          var annotation1, annotation2, annotation3, annotation4, annotations;
+          annotation1 = {
+            id: 1,
+            type: "AuthorAnnotation"
+          };
+          annotation2 = {
+            id: 2,
+            type: "AuthorAnnotation"
+          };
+          annotation3 = {
+            id: 3,
+            type: "ReaderAnnotation"
+          };
+          annotation4 = {
+            id: 4,
+            type: "ReaderAnnotation"
+          };
+          annotations = new Annotations([annotation1, annotation2, annotation3, annotation4]);
+          return chai.expect(annotations.map(function(annotation) {
+            return annotation.id;
+          })).to.be.deep.equal([1, 2, 3, 4]);
+        });
+        return it("should set", function() {
+          var annotation1, annotation2, annotations;
+          annotation1 = {
+            id: 5,
+            type: "AuthorAnnotation"
+          };
+          annotation2 = {
+            id: 6,
+            type: "ReaderAnnotation"
+          };
+          annotations = new Annotations();
+          annotations.set([annotation1, annotation2]);
+          return chai.expect(annotations.map(function(annotation) {
+            return annotation.id;
+          })).to.be.deep.equal([5, 6]);
+        });
       });
     });
   };
@@ -1599,6 +1647,17 @@
 
 },{}],29:[function(require,module,exports){
 (function() {
+  module.exports = function() {
+    return describe("activate", function() {
+      it("should not activate", function() {});
+      return it("should activate", function() {});
+    });
+  };
+
+}).call(this);
+
+},{}],30:[function(require,module,exports){
+(function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -1657,7 +1716,7 @@
 
 }).call(this);
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -1740,7 +1799,7 @@
 
 }).call(this);
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -1798,7 +1857,7 @@
 
 }).call(this);
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("store", function() {
@@ -1827,7 +1886,7 @@
 
 }).call(this);
 
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -1867,7 +1926,7 @@
 
 }).call(this);
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("Route", function() {
@@ -1881,7 +1940,7 @@
 
 }).call(this);
 
-},{"./route/element_spec":29,"./route/parameters_spec":30,"./route/populate_spec":31,"./route/store_spec":32,"./route/title_spec":33}],35:[function(require,module,exports){
+},{"./route/element_spec":30,"./route/parameters_spec":31,"./route/populate_spec":32,"./route/store_spec":33,"./route/title_spec":34}],36:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -1929,7 +1988,7 @@
 
 }).call(this);
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("url", function() {
@@ -1967,7 +2026,7 @@
 
 }).call(this);
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("Router", function() {
@@ -1978,7 +2037,7 @@
 
 }).call(this);
 
-},{"./router/matches_spec":35,"./router/url_spec":36}],38:[function(require,module,exports){
+},{"./router/matches_spec":36,"./router/url_spec":37}],39:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("Storage", function() {
@@ -2025,7 +2084,7 @@
 
 }).call(this);
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -2114,7 +2173,7 @@
 
 }).call(this);
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("bubble", function() {
@@ -2138,7 +2197,7 @@
 
 }).call(this);
 
-},{}],41:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -2185,7 +2244,7 @@
 
 }).call(this);
 
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -2229,7 +2288,7 @@
 
 }).call(this);
 
-},{}],43:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("context", function() {
@@ -2302,7 +2361,7 @@
 
 }).call(this);
 
-},{}],44:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -2382,7 +2441,7 @@
 
 }).call(this);
 
-},{}],45:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -2492,7 +2551,7 @@
 
 }).call(this);
 
-},{}],46:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -2600,7 +2659,7 @@
 
 }).call(this);
 
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -2659,7 +2718,7 @@
 
 }).call(this);
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("store", function() {
@@ -2673,7 +2732,7 @@
 
 }).call(this);
 
-},{}],49:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("template", function() {});
@@ -2681,7 +2740,7 @@
 
 }).call(this);
 
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("View", function() {
@@ -2700,7 +2759,7 @@
 
 }).call(this);
 
-},{"./view/bubble_spec":40,"./view/class_name_bindings_spec":41,"./view/content_spec":42,"./view/context_spec":43,"./view/elements_spec":44,"./view/lifecycle_spec":45,"./view/populate_spec":46,"./view/properties_spec":47,"./view/store_spec":48,"./view/template_spec":49}],51:[function(require,module,exports){
+},{"./view/bubble_spec":41,"./view/class_name_bindings_spec":42,"./view/content_spec":43,"./view/context_spec":44,"./view/elements_spec":45,"./view/lifecycle_spec":46,"./view/populate_spec":47,"./view/properties_spec":48,"./view/store_spec":49,"./view/template_spec":50}],52:[function(require,module,exports){
 (function() {
   if (navigator.userAgent.indexOf('PhantomJS') < 0) {
     describe("hipbone", function() {
@@ -2719,4 +2778,4 @@
 
 }).call(this);
 
-},{"./hipbone/application_spec":8,"./hipbone/collection_spec":17,"./hipbone/i18n_spec":18,"./hipbone/identity_map_spec":19,"./hipbone/model_spec":27,"./hipbone/module_spec":28,"./hipbone/route_spec":34,"./hipbone/router_spec":37,"./hipbone/storage_spec":38,"./hipbone/view_spec":50}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51]);
+},{"./hipbone/application_spec":8,"./hipbone/collection_spec":17,"./hipbone/i18n_spec":18,"./hipbone/identity_map_spec":19,"./hipbone/model_spec":27,"./hipbone/module_spec":28,"./hipbone/route_spec":35,"./hipbone/router_spec":38,"./hipbone/storage_spec":39,"./hipbone/view_spec":51}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52]);

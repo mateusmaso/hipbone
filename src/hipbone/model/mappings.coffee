@@ -31,7 +31,8 @@ module.exports =
   getMapping: (mapping) ->
     Module = @mappings[mapping].apply(this)
     if polymorphic = _.isArray(Module)
-      Module = Model for Model in Module when Model::moduleName is @mappingType(mapping, @attributes)
+      Models = Module
+      Module = Model for Model in Models when Model::moduleName is @mappingType(mapping, @attributes)
 
     if Module.prototype instanceof require("./../model")
       attributes = {}
@@ -45,7 +46,8 @@ module.exports =
   setMapping: (mapping, value, options={}) ->
     Module = @mappings[mapping].apply(this)
     if polymorphic = _.isArray(Module) and value
-      Module = Model for Model in Module when Model::moduleName is @parseMappingType(mapping, value)
+      Models = Module
+      Module = Model for Model in Models when Model::moduleName is @parseMappingType(mapping, value)
 
     if value instanceof require("./../model")
       model = value

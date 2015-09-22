@@ -26,12 +26,12 @@ module.exports = class View extends Backbone.View
     @initializeProperties(properties)
     @initializeClassNameBindings()
     super(options)
-    @on("change", => @update())
-    @on("all", => @store())
+    @store()
     @lifecycle()
     @prepare()
     @render()
-    @store()
+    @on("all", _.debounce => @store())
+    @on("change", => @update())
 
   destroy: ->
 

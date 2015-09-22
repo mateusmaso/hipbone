@@ -1,4 +1,4 @@
-class TodoMVC.TodosView extends Hipbone.View
+class TodoMVC.TodosView extends TodoMVC.View
 
   tagName: "ul"
 

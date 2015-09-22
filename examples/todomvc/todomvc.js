@@ -1,3 +1,95 @@
+this["HandlebarsTemplates"] = this["HandlebarsTemplates"] || {};
+
+this["HandlebarsTemplates"]["todomvc/templates/root"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  var buffer = "", stack1, helper, options, functionType="function", escapeExpression=this.escapeExpression, helperMissing=helpers.helperMissing, self=this;
+
+function program1(depth0,data) {
+  
+  
+  return "\n      <button class=\"clear-completed\">Clear completed</button>\n    ";
+  }
+
+  buffer += "<section class=\"todoapp\">\n  <header class=\"header\">\n    <h1>todos</h1>\n    <input class=\"new-todo\" placeholder=\"What needs to be done?\" autofocus>\n  </header>\n\n  <section class=\"main\">\n    <input class=\"toggle-all\" type=\"checkbox\">\n    <label for=\"toggle-all\">Mark all as complete</label>\n    <hb-todos todos=\"";
+  if (helper = helpers.todos) { stack1 = helper.call(depth0, {hash:{},data:data}); }
+  else { helper = (depth0 && depth0.todos); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
+  buffer += escapeExpression(stack1)
+    + "\"></hb-todos>\n  </section>\n\n  <footer class=\"footer\"></footer>\n\n  <footer class=\"footer\">\n		<span class=\"todo-count\"><strong>"
+    + escapeExpression((helper = helpers.bind || (depth0 && depth0.bind),options={hash:{},data:data},helper ? helper.call(depth0, "leftCount", options) : helperMissing.call(depth0, "bind", "leftCount", options)))
+    + "</strong> items left</span>\n		<ul class=\"filters\">\n			<li>\n				<a class=\"selected\" href=\"#/\">All</a>\n			</li>\n			<li>\n				<a href=\""
+    + escapeExpression((helper = helpers.url || (depth0 && depth0.url),options={hash:{},data:data},helper ? helper.call(depth0, "active", options) : helperMissing.call(depth0, "url", "active", options)))
+    + "\">Active</a>\n			</li>\n			<li>\n				<a href=\""
+    + escapeExpression((helper = helpers.url || (depth0 && depth0.url),options={hash:{},data:data},helper ? helper.call(depth0, "completed", options) : helperMissing.call(depth0, "url", "completed", options)))
+    + "\">Completed</a>\n			</li>\n		</ul>\n\n    ";
+  stack1 = helpers['if'].call(depth0, "completedCount", {hash:{
+    'bind': (true)
+  },inverse:self.noop,fn:self.program(1, program1, data),data:data});
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n	</footer>\n</section>\n\n<footer class=\"info\">\n  <p>Double-click to edit a todo</p>\n  <p>Written by <a href=\"https://github.com/mateusmaso\">Mateus Maso</a></p>\n  <p>Part of <a href=\"http://todomvc.com\">TodoMVC</a></p>\n</footer>\n";
+  return buffer;
+  });
+
+this["HandlebarsTemplates"]["todomvc/templates/todo"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  var buffer = "", stack1, escapeExpression=this.escapeExpression, functionType="function", self=this;
+
+function program1(depth0,data) {
+  
+  var buffer = "", stack1;
+  buffer += "\n  <input class=\"toggle\" type=\"checkbox\" "
+    + escapeExpression(helpers['if'].call(depth0, "todo.completed", {hash:{
+    'bindAttr': (true),
+    'then': ("checked")
+  },data:data}))
+    + ">\n  <label>"
+    + escapeExpression(((stack1 = ((stack1 = (depth0 && depth0.todo)),stack1 == null || stack1 === false ? stack1 : stack1.text)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1))
+    + "</label>\n  <button class=\"destroy\"></button>\n";
+  return buffer;
+  }
+
+function program3(depth0,data) {
+  
+  var buffer = "", stack1;
+  buffer += "\n  <input class=\"edit\" value=\""
+    + escapeExpression(((stack1 = ((stack1 = (depth0 && depth0.todo)),stack1 == null || stack1 === false ? stack1 : stack1.text)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1))
+    + "\" hb-autofocus>\n";
+  return buffer;
+  }
+
+  stack1 = helpers.unless.call(depth0, "editing", {hash:{
+    'bind': (true)
+  },inverse:self.program(3, program3, data),fn:self.program(1, program1, data),data:data});
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n";
+  return buffer;
+  });
+
+this["HandlebarsTemplates"]["todomvc/templates/todos"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  this.compilerInfo = [4,'>= 1.0.0'];
+helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
+  var buffer = "", stack1, functionType="function", escapeExpression=this.escapeExpression, self=this;
+
+function program1(depth0,data) {
+  
+  var buffer = "", stack1, helper;
+  buffer += "\n  <hb-todo todo=\"";
+  if (helper = helpers.todo) { stack1 = helper.call(depth0, {hash:{},data:data}); }
+  else { helper = (depth0 && depth0.todo); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
+  buffer += escapeExpression(stack1)
+    + "\"></hb-todo>\n";
+  return buffer;
+  }
+
+  stack1 = helpers.each.call(depth0, (depth0 && depth0.todos), {hash:{
+    'var': ("todo"),
+    'bind': (true)
+  },inverse:self.noop,fn:self.program(1, program1, data),data:data});
+  if(stack1 || stack1 === 0) { buffer += stack1; }
+  buffer += "\n";
+  return buffer;
+  });
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -264,6 +356,29 @@
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
+  TodoMVC.View = (function(superClass) {
+    extend(View, superClass);
+
+    function View() {
+      return View.__super__.constructor.apply(this, arguments);
+    }
+
+    View.prototype.templatePath = "todomvc/templates";
+
+    View.prototype.templates = HandlebarsTemplates;
+
+    View.register("View");
+
+    return View;
+
+  })(Hipbone.View);
+
+}).call(this);
+
+(function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
   TodoMVC.RootView = (function(superClass) {
     extend(RootView, superClass);
 
@@ -350,7 +465,7 @@
 
     return RootView;
 
-  })(Hipbone.View);
+  })(TodoMVC.View);
 
 }).call(this);
 
@@ -439,7 +554,7 @@
 
     return TodoView;
 
-  })(Hipbone.View);
+  })(TodoMVC.View);
 
 }).call(this);
 
@@ -468,99 +583,6 @@
 
     return TodosView;
 
-  })(Hipbone.View);
+  })(TodoMVC.View);
 
 }).call(this);
-
-this["HandlebarsTemplates"] = this["HandlebarsTemplates"] || {};
-
-this["HandlebarsTemplates"]["todomvc/templates/root"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
-  this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  var buffer = "", stack1, helper, options, functionType="function", escapeExpression=this.escapeExpression, helperMissing=helpers.helperMissing, self=this;
-
-function program1(depth0,data) {
-  
-  
-  return "\n      <button class=\"clear-completed\">Clear completed</button>\n    ";
-  }
-
-  buffer += "<section class=\"todoapp\">\n  <header class=\"header\">\n    <h1>todos</h1>\n    <input class=\"new-todo\" placeholder=\"What needs to be done?\" autofocus>\n  </header>\n\n  <section class=\"main\">\n    <input class=\"toggle-all\" type=\"checkbox\">\n    <label for=\"toggle-all\">Mark all as complete</label>\n    <hb-todos todos=\"";
-  if (helper = helpers.todos) { stack1 = helper.call(depth0, {hash:{},data:data}); }
-  else { helper = (depth0 && depth0.todos); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
-  buffer += escapeExpression(stack1)
-    + "\"></hb-todos>\n  </section>\n\n  <footer class=\"footer\"></footer>\n\n  <footer class=\"footer\">\n		<span class=\"todo-count\"><strong>"
-    + escapeExpression((helper = helpers.bind || (depth0 && depth0.bind),options={hash:{},data:data},helper ? helper.call(depth0, "leftCount", options) : helperMissing.call(depth0, "bind", "leftCount", options)))
-    + "</strong> items left</span>\n		<ul class=\"filters\">\n			<li>\n				<a class=\"selected\" href=\"#/\">All</a>\n			</li>\n			<li>\n				<a href=\""
-    + escapeExpression((helper = helpers.url || (depth0 && depth0.url),options={hash:{},data:data},helper ? helper.call(depth0, "active", options) : helperMissing.call(depth0, "url", "active", options)))
-    + "\">Active</a>\n			</li>\n			<li>\n				<a href=\""
-    + escapeExpression((helper = helpers.url || (depth0 && depth0.url),options={hash:{},data:data},helper ? helper.call(depth0, "completed", options) : helperMissing.call(depth0, "url", "completed", options)))
-    + "\">Completed</a>\n			</li>\n		</ul>\n\n    ";
-  stack1 = helpers['if'].call(depth0, "completedCount", {hash:{
-    'bind': (true)
-  },inverse:self.noop,fn:self.program(1, program1, data),data:data});
-  if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n	</footer>\n</section>\n\n<footer class=\"info\">\n  <p>Double-click to edit a todo</p>\n  <p>Written by <a href=\"https://github.com/mateusmaso\">Mateus Maso</a></p>\n  <p>Part of <a href=\"http://todomvc.com\">TodoMVC</a></p>\n</footer>\n";
-  return buffer;
-  });
-
-this["HandlebarsTemplates"]["todomvc/templates/todo"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
-  this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  var buffer = "", stack1, escapeExpression=this.escapeExpression, functionType="function", self=this;
-
-function program1(depth0,data) {
-  
-  var buffer = "", stack1;
-  buffer += "\n  <input class=\"toggle\" type=\"checkbox\" "
-    + escapeExpression(helpers['if'].call(depth0, "todo.completed", {hash:{
-    'bindAttr': (true),
-    'then': ("checked")
-  },data:data}))
-    + ">\n  <label>"
-    + escapeExpression(((stack1 = ((stack1 = (depth0 && depth0.todo)),stack1 == null || stack1 === false ? stack1 : stack1.text)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1))
-    + "</label>\n  <button class=\"destroy\"></button>\n";
-  return buffer;
-  }
-
-function program3(depth0,data) {
-  
-  var buffer = "", stack1;
-  buffer += "\n  <input class=\"edit\" value=\""
-    + escapeExpression(((stack1 = ((stack1 = (depth0 && depth0.todo)),stack1 == null || stack1 === false ? stack1 : stack1.text)),typeof stack1 === functionType ? stack1.apply(depth0) : stack1))
-    + "\" hb-autofocus>\n";
-  return buffer;
-  }
-
-  stack1 = helpers.unless.call(depth0, "editing", {hash:{
-    'bind': (true)
-  },inverse:self.program(3, program3, data),fn:self.program(1, program1, data),data:data});
-  if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n";
-  return buffer;
-  });
-
-this["HandlebarsTemplates"]["todomvc/templates/todos"] = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
-  this.compilerInfo = [4,'>= 1.0.0'];
-helpers = this.merge(helpers, Handlebars.helpers); data = data || {};
-  var buffer = "", stack1, functionType="function", escapeExpression=this.escapeExpression, self=this;
-
-function program1(depth0,data) {
-  
-  var buffer = "", stack1, helper;
-  buffer += "\n  <hb-todo todo=\"";
-  if (helper = helpers.todo) { stack1 = helper.call(depth0, {hash:{},data:data}); }
-  else { helper = (depth0 && depth0.todo); stack1 = typeof helper === functionType ? helper.call(depth0, {hash:{},data:data}) : helper; }
-  buffer += escapeExpression(stack1)
-    + "\"></hb-todo>\n";
-  return buffer;
-  }
-
-  stack1 = helpers.each.call(depth0, (depth0 && depth0.todos), {hash:{
-    'var': ("todo"),
-    'bind': (true)
-  },inverse:self.noop,fn:self.program(1, program1, data),data:data});
-  if(stack1 || stack1 === 0) { buffer += stack1; }
-  buffer += "\n";
-  return buffer;
-  });

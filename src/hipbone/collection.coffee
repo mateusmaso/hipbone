@@ -26,18 +26,19 @@ module.exports = class Collection extends Backbone.Collection
     @initializeMeta(options.meta)
     @initializeParent(options.parent)
     @initializeFilters()
+    @initializePopulate()
     @initializePagination()
     super
-    @on("add remove reset sort", => @trigger("update", this))
-    @on("all", => @store())
     @store()
+    @on("all", _.debounce => @store())
+    @on("add remove reset sort", => @trigger("update", this))
 
   _prepareModel: (attributes, options={}) ->
     attributes = model if model = @preparePolymorphic(attributes, options)
     super(attributes, options)
 
   modelId: (attributes) ->
-    undefined
+    if _.isArray(@model) then @polymorphicUniqueId(attributes) else super
 
   url: (options) ->
     query = @getFilters(options)

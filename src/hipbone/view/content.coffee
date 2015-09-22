@@ -6,6 +6,7 @@ module.exports =
 
   setContent: (content) ->
     if @content isnt content
+      $(@content).detach()
       @content = content
       @renderContent()
 

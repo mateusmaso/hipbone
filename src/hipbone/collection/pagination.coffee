@@ -2,28 +2,29 @@ module.exports =
 
   initializePagination: ->
     @pagination ||= {}
-    @paginationOffset = @pagination.offset
+    @limit = @pagination.limit || 0
+    @offset = @pagination.offset || 0
 
     @filters ||= {}
     @filters.limit = (options={}) ->
-      if @paginationOffset?
+      if @limit > 0
         if options.paginate
-          @pagination.limit
+          @limit
         else
-          @pagination.limit + @paginationOffset
+          @limit + @offset
     @filters.offset = (options={}) ->
-      if @paginationOffset?
-        if options.paginate then @paginationOffset else 0
+      if @limit > 0
+        if options.paginate then @offset else 0
 
     @on("add", @incrementCounter)
     @on("remove", @decrementCounter)
     @on("destroy", @decrementCounter)
 
   incrementPagination: ->
-    @paginationOffset = @paginationOffset + @pagination.limit
+    @offset = @offset + @limit
 
   decrementPagination: ->
-    @paginationOffset = @paginationOffset - @pagination.limit
+    @offset = @offset - @limit
 
   paginate: (options={}) ->
     @incrementPagination()
@@ -33,10 +34,10 @@ module.exports =
     @length < @getPaginationCount()
 
   getPaginationCount: ->
-    @meta.get('count')
+    @meta.get('count') || 0
 
   incrementCounter: (model, collection, options={}) ->
     @meta.set(count: @meta.get("count") + 1) if @meta.has("count") and not options.parse
 
   decrementCounter: (model, collection, options={}) ->
-    @meta.set(count: @meta.get("count") - 1) if @meta.has("count")  and not options.parse
+    @meta.set(count: @meta.get("count") - 1) if @meta.has("count") and not options.parse

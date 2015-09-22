@@ -16,12 +16,13 @@ module.exports = class Model extends Backbone.Model
 
   constructor: (attributes={}, options={}) ->
     return model if model = @initializeStore(attributes, options)
+    @initializePopulate()
     @initializeMappings()
     @initializeValidations()
     @initializeComputedAttributes()
     super
-    @on("all", => @store())
     @store()
+    @on("all", _.debounce => @store())
 
   get: (attribute) ->
     if @mappings[attribute]

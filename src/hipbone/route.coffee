@@ -7,6 +7,7 @@ module.exports = class Route extends Module
   @include require "./route/title"
   @include require "./route/element"
   @include require "./route/populate"
+  @include require "./route/activate"
   @include require "./route/parameters"
 
   constructor: (params={}, options={}) ->
@@ -14,19 +15,12 @@ module.exports = class Route extends Module
     @cid = _.uniqueId('route')
     @initializeTitle(options.titleRoot)
     @initializeElement(options.elementRoot)
+    @initializePopulate()
     @initializeParameters(params)
     @initialize(params)
-    @on("all", => @store())
-    @prepare()
     @store()
+    @on("all", _.debounce => @store())
 
   initialize: (params={}) ->
-
-  beforeActivate: ->
-    true
-
-  activate: ->
-    @renderTitle()
-    @renderElement()
 
   @register "Route"

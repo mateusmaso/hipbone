@@ -6,6 +6,7 @@ module.exports =
     @initializers.unshift(require("./initializers/parse_model"))
     @initializers.unshift(require("./initializers/link_bridge"))
     @initializers.unshift(require("./initializers/prevent_form"))
+    @initializers.unshift(require("./initializers/prepare_sync"))
     @initializers.unshift(require("./initializers/register_helpers"))
 
   runInitializers: (options) ->

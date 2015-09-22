@@ -1,4 +1,4 @@
-class TodoMVC.RootView extends Hipbone.View
+class TodoMVC.RootView extends TodoMVC.View
 
   templateName: "/root"
 

@@ -1,5 +1,8 @@
 module.exports =
 
+  initializePopulate: ->
+    @deferreds = {}
+
   populated: (name) ->
     false
 
@@ -7,4 +10,9 @@ module.exports =
     $.when(true)
 
   prepare: (name) ->
-    $.when(@populated(name) || @populate(name))
+    deferred = @deferreds[name]
+
+    if deferred and not deferred.state() isnt "resolved"
+      deferred
+    else
+      @deferreds[name] = $.when(@populated(name) || @populate(name))

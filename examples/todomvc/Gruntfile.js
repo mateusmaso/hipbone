@@ -17,14 +17,15 @@ module.exports = function(grunt) {
     concat: {
       dist: {
         src: [
+          'temp/templates.js',
           'temp/todomvc.js',
           'temp/initializers/*.js',
           'temp/locales/*.js',
           'temp/models/*.js',
           'temp/collections/*.js',
           'temp/routes/*.js',
-          'temp/views/*.js',
-          'temp/templates.js'
+          'temp/views/view.js',
+          'temp/views/*.js'
         ],
         dest: 'todomvc.js'
       }

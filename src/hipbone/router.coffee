@@ -11,7 +11,6 @@ module.exports = class Router extends Backbone.Router
   history: Backbone.history = new History
 
   constructor: (options={}) ->
-    @title ||= options.title || "App"
     @initializeMatches()
     super
 
