@@ -1,7 +1,8 @@
 module.exports = ->
   describe "Model", ->
-    require("./model/sync_spec").apply(this)
+    require("./model/syncs_spec").apply(this)
     require("./model/store_spec").apply(this)
+    require("./model/schemes_spec").apply(this)
     require("./model/mappings_spec").apply(this)
     require("./model/populate_spec").apply(this)
     require("./model/validations_spec").apply(this)

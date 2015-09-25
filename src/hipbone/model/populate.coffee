@@ -4,7 +4,10 @@ module.exports =
     @deferreds = {}
 
   populated: (name) ->
-    @synced
+    if name
+      @syncs[name]
+    else
+      @synced
 
   populate: (name) ->
     @fetch()
