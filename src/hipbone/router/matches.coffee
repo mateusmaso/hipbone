@@ -12,5 +12,5 @@ module.exports =
       @params = @history.parameters()
       for param, index in url.match(/:\w+/g) || [] when arguments[index]
         @params[param.substring(1)] = _.parse(arguments[index])
-      @_route = new Route(@params, path: @history.location.pathname, popstate: @history.popstate)
+      @_route = new Route(@params, path: @history.getPathname(), popstate: @history.popstate)
       @_route.activate()

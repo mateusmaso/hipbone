@@ -15,14 +15,14 @@ module.exports = class History extends Backbone.History
 
   change: (parameters) ->
     delete parameters[key] for key, value of parameters when not value?
-    fragment = @location.pathname
+    fragment = @getPathname()
     fragment += "?#{$.param(parameters)}" unless _.isEmpty(parameters)
     @history.replaceState({}, document.title, fragment)
 
   parameters: ->
     parameters = {}
     regex = /([^&=]+)=?([^&]*)/g
-    while match = regex.exec(@location.search.substring(1))
+    while match = regex.exec(@getSearch().substring(1))
       [pair, key, value] = match
       parameters[@decode(key)] = _.parse(@decode(value))
     parameters
@@ -34,5 +34,8 @@ module.exports = class History extends Backbone.History
     @popstate = true
     super
     @popstate = false
+
+  getPathname: ->
+    "/#{@getPath().replace(@getSearch(), "")}"
 
   @register "History"

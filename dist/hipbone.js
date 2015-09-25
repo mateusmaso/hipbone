@@ -147,7 +147,9 @@
       if (options.type === 'POST') {
         options.dataType = 'json';
         options.contentType = 'application/json';
-        options.data = JSON.stringify(options.data);
+        if (options.data) {
+          options.data = JSON.stringify(options.data);
+        }
       }
       options.beforeSend = _.catenate(function(xhr, settings) {
         if (settings == null) {
@@ -959,7 +961,7 @@
           delete parameters[key];
         }
       }
-      fragment = this.location.pathname;
+      fragment = this.getPathname();
       if (!_.isEmpty(parameters)) {
         fragment += "?" + ($.param(parameters));
       }
@@ -970,7 +972,7 @@
       var key, match, pair, parameters, regex, value;
       parameters = {};
       regex = /([^&=]+)=?([^&]*)/g;
-      while (match = regex.exec(this.location.search.substring(1))) {
+      while (match = regex.exec(this.getSearch().substring(1))) {
         pair = match[0], key = match[1], value = match[2];
         parameters[this.decode(key)] = _.parse(this.decode(value));
       }
@@ -985,6 +987,10 @@
       this.popstate = true;
       History.__super__.checkUrl.apply(this, arguments);
       return this.popstate = false;
+    };
+
+    History.prototype.getPathname = function() {
+      return "/" + (this.getPath().replace(this.getSearch(), ""));
     };
 
     History.register("History");
@@ -1249,7 +1255,8 @@
       this.setMappings(attributes, options);
       this.setNestedAttributes(attributes, options);
       Model.__super__.set.call(this, attributes, options);
-      return this.nestedChangeTrigger(options);
+      this.triggerNestedChange(options);
+      return this;
     };
 
     Model.prototype.toJSON = function(options) {
@@ -1544,7 +1551,7 @@
       }
       return results;
     },
-    nestedChangeTrigger: function(options) {
+    triggerNestedChange: function(options) {
       if (_.keys(this.changed).length === 0 && _.keys(this.nestedChanged).length !== 0) {
         return this.trigger('change', this, options);
       }
@@ -2074,7 +2081,7 @@
         hashes = _.without(hashes, options.path);
       }
       if (route = this.identityMap.findAll(hashes)[0]) {
-        route.set(params);
+        route.set(route.parse(params));
         return route;
       } else {
         this.store(hashes);
@@ -2219,7 +2226,7 @@
           }
         }
         this._route = new Route(this.params, {
-          path: this.history.location.pathname,
+          path: this.history.getPathname(),
           popstate: this.history.popstate
         });
         return this._route.activate();
@@ -2233,10 +2240,16 @@
 (function() {
   module.exports = {
     url: function(name, params) {
+      if (params == null) {
+        params = {};
+      }
       return this.matches[name].toURL(params);
     },
     urlFragment: function(fragment, params) {
       var anchor;
+      if (params == null) {
+        params = {};
+      }
       if (this.matches[fragment]) {
         fragment = this.url(fragment, params);
       }
@@ -2550,6 +2563,9 @@
       if (context == null) {
         context = {};
       }
+      jsondiffpatch.config.objectHash = function(object) {
+        return (object != null ? object.cid : void 0) || object;
+      };
       return jsondiffpatch.patch(this._context, jsondiffpatch.diff(this._context, context));
     },
     updateContextBindings: function() {

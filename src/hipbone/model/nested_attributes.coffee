@@ -25,5 +25,5 @@ module.exports =
       @setNestedAttribute(attribute, value, options)
       delete attributes[attribute]
 
-  nestedChangeTrigger: (options) ->
+  triggerNestedChange: (options) ->
     @trigger('change', this, options) if _.keys(@changed).length is 0 and _.keys(@nestedChanged).length isnt 0

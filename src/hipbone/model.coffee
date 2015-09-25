@@ -46,7 +46,8 @@ module.exports = class Model extends Backbone.Model
     @setMappings(attributes, options)
     @setNestedAttributes(attributes, options)
     super(attributes, options)
-    @nestedChangeTrigger(options)
+    @triggerNestedChange(options)
+    this
 
   toJSON: (options={}) ->
     mappings = options.mappings || {}

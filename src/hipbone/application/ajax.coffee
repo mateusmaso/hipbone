@@ -29,7 +29,7 @@ module.exports =
     if options.type is 'POST'
       options.dataType = 'json'
       options.contentType = 'application/json'
-      options.data = JSON.stringify(options.data)
+      options.data = JSON.stringify(options.data) if options.data
 
     options.beforeSend = _.catenate (xhr, settings={}) ->
       xhr.settings = settings

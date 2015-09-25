@@ -13,7 +13,7 @@ module.exports =
     hashes = _.without(hashes, options.path) if @identityMap.find(options.path) and not options.popstate
 
     if route = @identityMap.findAll(hashes)[0]
-      route.set(params)
+      route.set(route.parse(params))
       route
     else
       @store(hashes)
