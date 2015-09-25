@@ -2725,10 +2725,6 @@
             return View.__super__.constructor.apply(this, arguments);
           }
 
-          View.prototype.populated = function() {
-            return true;
-          };
-
           View.prototype.populate = function() {
             return deferred.resolve();
           };
@@ -2737,6 +2733,7 @@
 
         })(Hipbone.View);
         view = new View;
+        deferred.resolve();
         view.prepare();
         return chai.expect(deferred).to.be.fulfilled;
       });
@@ -2749,6 +2746,10 @@
           function View() {
             return View.__super__.constructor.apply(this, arguments);
           }
+
+          View.prototype.populated = function() {
+            return deferred.state() === "resolved";
+          };
 
           View.prototype.populate = function() {
             return deferred;
@@ -2764,7 +2765,7 @@
         afterPopulate = view.get("loading");
         return chai.expect([beforePopulate, afterPopulate]).to.be.deep.equal([true, false]);
       });
-      return it("should not show loading when populating but background", function() {
+      return it("should not show loading when background populating", function() {
         var View, afterPopulate, beforePopulate, deferred, view;
         deferred = $.Deferred();
         View = (function(superClass) {
@@ -2775,6 +2776,10 @@
           }
 
           View.prototype.background = true;
+
+          View.prototype.populated = function() {
+            return true;
+          };
 
           View.prototype.populate = function() {
             return deferred;

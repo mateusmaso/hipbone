@@ -31,7 +31,6 @@ module.exports = class Collection extends Backbone.Collection
     super
     @store()
     @on("all", _.debounce => @store())
-    @on("add remove reset sort", => @trigger("update", this))
 
   _prepareModel: (attributes, options={}) ->
     attributes = model if model = @preparePolymorphic(attributes, options)

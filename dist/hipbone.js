@@ -469,11 +469,6 @@
           return _this.store();
         };
       })(this)));
-      this.on("add remove reset sort", (function(_this) {
-        return function() {
-          return _this.trigger("update", _this);
-        };
-      })(this));
     }
 
     Collection.prototype._prepareModel = function(attributes, options) {
@@ -2384,11 +2379,11 @@
           return _this.store();
         };
       })(this)));
-      this.on("change", (function(_this) {
+      this.on("change", _.debounce((function(_this) {
         return function() {
           return _this.update();
         };
-      })(this));
+      })(this)));
     }
 
     View.prototype.destroy = function() {};
@@ -2662,34 +2657,12 @@
 (function() {
   module.exports = {
     initializePopulate: function() {
-      var populate, populated;
       this.deferreds = {};
       this.background || (this.background = false);
       this.defaults || (this.defaults = {});
       this.defaults.loading = false;
       this.internals || (this.internals = []);
-      this.internals.push("loading");
-      populated = this.populated;
-      this.populated = function() {
-        return this.background || populated.apply(this, arguments);
-      };
-      populate = this.populate;
-      return this.populate = function() {
-        if (this.background) {
-          return populate.apply(this, arguments);
-        } else {
-          this.set({
-            loading: true
-          });
-          return populate.apply(this, arguments).done((function(_this) {
-            return function() {
-              return _this.set({
-                loading: false
-              });
-            };
-          })(this));
-        }
-      };
+      return this.internals.push("loading");
     },
     populated: function(name) {
       return false;
@@ -2698,12 +2671,27 @@
       return $.when(true);
     },
     prepare: function(name) {
-      var deferred;
+      var deferred, populated;
       deferred = this.deferreds[name];
       if (deferred && deferred.state() !== "resolved") {
         return deferred;
       } else {
-        return this.deferreds[name] = $.when(this.populated(name) || this.populate(name));
+        populated = this.populated(name);
+        if (!populated) {
+          this.set({
+            loading: true
+          });
+        }
+        if (this.background) {
+          populated = false;
+        }
+        return this.deferreds[name] = $.when(populated || this.populate(name)).done((function(_this) {
+          return function() {
+            return _this.set({
+              loading: false
+            });
+          };
+        })(this));
       }
     }
   };

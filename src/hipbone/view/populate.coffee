@@ -8,18 +8,6 @@ module.exports =
     @internals ||= []
     @internals.push("loading")
 
-    populated = @populated
-    @populated = ->
-      @background || populated.apply(this, arguments)
-
-    populate = @populate
-    @populate = ->
-      if @background
-        populate.apply(this, arguments)
-      else
-        @set(loading: true)
-        populate.apply(this, arguments).done => @set(loading: false)
-
   populated: (name) ->
     false
 
@@ -32,4 +20,7 @@ module.exports =
     if deferred and deferred.state() isnt "resolved"
       deferred
     else
-      @deferreds[name] = $.when(@populated(name) || @populate(name))
+      populated = @populated(name)
+      @set(loading: true) unless populated
+      populated = false if @background
+      @deferreds[name] = $.when(populated || @populate(name)).done => @set(loading: false)
