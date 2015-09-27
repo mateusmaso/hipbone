@@ -2429,7 +2429,7 @@
           };
         };
         return chai.expect(view.presentContext(view.context())).to.be.deep.equal({
-          cid: view.cid,
+          view: view,
           collection: {
             cid: collection.cid,
             length: 1,
@@ -2869,7 +2869,6 @@
 (function() {
   module.exports = function() {
     return describe("View", function() {
-      require("./view/store_spec").apply(this);
       require("./view/bubble_spec").apply(this);
       require("./view/content_spec").apply(this);
       require("./view/context_spec").apply(this);
@@ -2884,7 +2883,7 @@
 
 }).call(this);
 
-},{"./view/bubble_spec":43,"./view/class_name_bindings_spec":44,"./view/content_spec":45,"./view/context_spec":46,"./view/elements_spec":47,"./view/lifecycle_spec":48,"./view/populate_spec":49,"./view/properties_spec":50,"./view/store_spec":51,"./view/template_spec":52}],54:[function(require,module,exports){
+},{"./view/bubble_spec":43,"./view/class_name_bindings_spec":44,"./view/content_spec":45,"./view/context_spec":46,"./view/elements_spec":47,"./view/lifecycle_spec":48,"./view/populate_spec":49,"./view/properties_spec":50,"./view/template_spec":52}],54:[function(require,module,exports){
 (function() {
   if (navigator.userAgent.indexOf('PhantomJS') < 0) {
     describe("hipbone", function() {

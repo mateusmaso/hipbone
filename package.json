@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "observe-js": "~0.4.0",
-    "jsondiffpatch": "0.0.8",
+    "jsondiffpatch": "~0.1.37",
     "jquery": "~2.1.0",
     "jquery.lifecycle": "~0.1.2",
     "handlebars": "~1.1.0",

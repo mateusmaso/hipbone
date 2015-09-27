@@ -5,7 +5,6 @@ module.exports = class View extends Backbone.View
   _.extend(this, Module)
 
   @include Backbone.Events
-  @include require "./view/store"
   @include require "./view/bubble"
   @include require "./view/content"
   @include require "./view/context"
@@ -17,7 +16,6 @@ module.exports = class View extends Backbone.View
   @include require "./view/class_name_bindings"
 
   constructor: (properties={}, options={}) ->
-    return view if view = @initializeStore(properties)
     @initializeContext()
     @initializeContent(options.content)
     @initializePopulate()
@@ -26,11 +24,9 @@ module.exports = class View extends Backbone.View
     @initializeProperties(properties)
     @initializeClassNameBindings()
     super(options)
-    @store()
     @lifecycle()
     @prepare()
     @render()
-    @on("all", _.debounce => @store())
     @on("change", _.debounce => @update())
 
   destroy: ->

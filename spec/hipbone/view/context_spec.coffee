@@ -7,7 +7,7 @@ module.exports = ->
       view.context = ->
         fooUpcase: @get("foo").toUpperCase()
       chai.expect(view.presentContext(view.context())).to.be.deep.equal
-        cid: view.cid
+        view: view
         collection:
           cid: collection.cid
           length: 1

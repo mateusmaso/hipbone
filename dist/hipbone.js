@@ -325,12 +325,11 @@
       return eval(javascript);
     });
     Handlebars.registerHelper('template', function(path, options) {
-      var template, view;
+      var template;
       if (options == null) {
         options = {};
       }
-      view = View.identityMap.find(this.cid);
-      template = view.getTemplate(path)(view.getContext(options.hash, this));
+      template = this.view.getTemplate(path)(this.view.getContext(options.hash, this));
       if (options.hash.unescape) {
         return template;
       } else {
@@ -2396,8 +2395,6 @@
 
     View.include(Backbone.Events);
 
-    View.include(require("./view/store"));
-
     View.include(require("./view/bubble"));
 
     View.include(require("./view/content"));
@@ -2417,15 +2414,11 @@
     View.include(require("./view/class_name_bindings"));
 
     function View(properties, options) {
-      var view;
       if (properties == null) {
         properties = {};
       }
       if (options == null) {
         options = {};
-      }
-      if (view = this.initializeStore(properties)) {
-        return view;
       }
       this.initializeContext();
       this.initializeContent(options.content);
@@ -2435,15 +2428,9 @@
       this.initializeProperties(properties);
       this.initializeClassNameBindings();
       View.__super__.constructor.call(this, options);
-      this.store();
       this.lifecycle();
       this.prepare();
       this.render();
-      this.on("all", _.debounce((function(_this) {
-        return function() {
-          return _this.store();
-        };
-      })(this)));
       this.on("change", _.debounce((function(_this) {
         return function() {
           return _this.update();
@@ -2496,7 +2483,7 @@
 
 }).call(this);
 
-},{"./module":36,"./view/bubble":50,"./view/class_name_bindings":51,"./view/content":52,"./view/context":53,"./view/elements":54,"./view/lifecycle":55,"./view/populate":56,"./view/properties":57,"./view/store":58,"./view/template":59}],50:[function(require,module,exports){
+},{"./module":36,"./view/bubble":50,"./view/class_name_bindings":51,"./view/content":52,"./view/context":53,"./view/elements":54,"./view/lifecycle":55,"./view/populate":56,"./view/properties":57,"./view/template":59}],50:[function(require,module,exports){
 (function() {
   var slice = [].slice;
 
@@ -2574,11 +2561,17 @@
 
 },{}],53:[function(require,module,exports){
 (function() {
-  var Collection, Model;
+  var Collection, Model, diffPatcher;
 
   Model = require("./../model");
 
   Collection = require("./../collection");
+
+  diffPatcher = jsondiffpatch.create({
+    objectHash: function(object) {
+      return (object != null ? object.cid : void 0) || object;
+    }
+  });
 
   module.exports = {
     initializeContext: function() {
@@ -2593,7 +2586,7 @@
       }
       rootContext || (rootContext = this._context);
       context = _.isEmpty(context) ? rootContext : context;
-      context.cid = this.cid;
+      context.view = this;
       return context;
     },
     presentContext: function(context) {
@@ -2601,7 +2594,7 @@
       if (context == null) {
         context = {};
       }
-      context.cid = this.cid;
+      context.view = this;
       ref = context = _.defaults(context, this.properties.attributes);
       for (key in ref) {
         value = ref[key];
@@ -2615,10 +2608,7 @@
       if (context == null) {
         context = {};
       }
-      jsondiffpatch.config.objectHash = function(object) {
-        return (object != null ? object.cid : void 0) || object;
-      };
-      return jsondiffpatch.patch(this._context, jsondiffpatch.diff(this._context, context));
+      return diffPatcher.patch(this._context, diffPatcher.diff(this._context, context));
     },
     updateContextBindings: function() {
       this.mergeContext(this.presentContext(this.context()));

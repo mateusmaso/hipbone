@@ -19,8 +19,7 @@ module.exports = ->
     eval(javascript)
 
   Handlebars.registerHelper 'template', (path, options={}) ->
-    view = View.identityMap.find(@cid)
-    template = view.getTemplate(path)(view.getContext(options.hash, this))
+    template = @view.getTemplate(path)(@view.getContext(options.hash, this))
     if options.hash.unescape then template else new Handlebars.SafeString(template)
 
   eachHelper = Handlebars.helpers.each

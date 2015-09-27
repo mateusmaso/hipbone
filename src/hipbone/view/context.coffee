@@ -1,6 +1,9 @@
 Model = require "./../model"
 Collection = require "./../collection"
 
+diffPatcher = jsondiffpatch.create
+  objectHash: (object) -> object?.cid || object
+
 module.exports =
 
   initializeContext: ->
@@ -12,19 +15,18 @@ module.exports =
   getContext: (context={}, rootContext) ->
     rootContext ||= @_context
     context = if _.isEmpty(context) then rootContext else context
-    context.cid = @cid
+    context.view = this
     context
 
   presentContext: (context={}) ->
-    context.cid = @cid
+    context.view = this
     for key, value of context = _.defaults(context, @properties.attributes)
       if value instanceof Model or value instanceof Collection
         context[key] = value.toJSON()
     context
 
   mergeContext: (context={}) ->
-    jsondiffpatch.config.objectHash = (object) -> object?.cid || object
-    jsondiffpatch.patch(@_context, jsondiffpatch.diff(@_context, context))
+    diffPatcher.patch(@_context, diffPatcher.diff(@_context, context))
 
   updateContextBindings: ->
     @mergeContext(@presentContext(@context()))
