@@ -149,10 +149,8 @@
         app = new Hipbone.Application;
         app.router.match("test", {
           route: Hipbone.Route,
-          url: "test",
-          toURL: function() {
-            return "/test";
-          }
+          name: "test",
+          url: "/test"
         });
         return chai.expect(Handlebars.compile("{{url 'test'}}")()).to.be.equal("/test");
       });
@@ -2085,9 +2083,20 @@
     return describe("matches", function() {
       before(function() {
         this.app = new Hipbone.Application;
-        return this.app.run();
+        this.app.run();
+        return this.app.router.match("/test-*foo", {
+          route: Hipbone.Route,
+          name: "test",
+          url: "/test-:foo"
+        });
       });
-      return it("should trigger matched route with params", function() {
+      it("should get match route url with params", function() {
+        return chai.expect(this.app.router.matchUrl("test", {
+          foo: "bar",
+          test: "ok"
+        })).to.be.equal("/test-bar?test=ok");
+      });
+      return it("should trigger match route with params", function() {
         var BookRoute, route;
         BookRoute = (function(superClass) {
           extend(BookRoute, superClass);
@@ -2105,15 +2114,10 @@
           return BookRoute;
 
         })(Hipbone.Route);
-        this.app.router.match("book", {
+        this.app.router.match("books/:id", {
           route: BookRoute,
-          url: "books/:id",
-          toURL: function(params) {
-            if (params == null) {
-              params = {};
-            }
-            return "books/" + params.id;
-          }
+          name: "book",
+          url: "books/:id"
         });
         this.app.router.history.loadUrl("/books/1");
         route = this.app.router._route;
@@ -2130,32 +2134,12 @@
     return describe("url", function() {
       before(function() {
         this.app = new Hipbone.Application;
-        this.app.run();
-        return this.app.router.match("test", {
-          route: Hipbone.Route,
-          url: "/test-*foo",
-          toURL: function(params) {
-            if (params == null) {
-              params = {};
-            }
-            return "/test-" + params.foo;
-          }
-        });
+        return this.app.run();
       });
-      it("should get route url", function() {
-        return chai.expect(this.app.router.url("test", {
-          foo: "bar"
-        })).to.be.equal("/test-bar");
-      });
-      it("should parse fragment with params", function() {
-        return chai.expect(this.app.router.urlFragment("/some/url", {
+      return it("should parse fragment with params", function() {
+        return chai.expect(this.app.router.url("/some/url", {
           foo: "bar"
         })).to.be.equal("/some/url?foo=bar");
-      });
-      return it("should parse route fragment with params", function() {
-        return chai.expect(this.app.router.urlFragment("test", {
-          foo: "bar"
-        })).to.be.equal("/test-bar?foo=bar");
       });
     });
   };

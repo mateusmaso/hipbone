@@ -9,7 +9,7 @@ module.exports = ->
     @i18n.t(key, options.hash)
 
   Handlebars.registerHelper 'url', (name, options={}) =>
-    @router.url(name, options.hash)
+    @router.matchUrl(name, options.hash)
 
   Handlebars.registerHelper 'fmt', (text, formats..., options={}) ->
     index = 0

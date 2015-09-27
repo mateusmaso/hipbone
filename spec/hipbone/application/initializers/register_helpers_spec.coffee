@@ -15,7 +15,7 @@ module.exports = ->
 
     it "should route url", ->
       app = new Hipbone.Application
-      app.router.match("test", route: Hipbone.Route, url: "test", toURL: -> "/test")
+      app.router.match("test", route: Hipbone.Route, name: "test", url: "/test")
       chai.expect(Handlebars.compile("{{url 'test'}}")()).to.be.equal("/test")
 
     it "should format string", ->

@@ -13,19 +13,11 @@ module.exports = class History extends Backbone.History
     else
       @location.reload()
 
-  change: (parameters) ->
-    delete parameters[key] for key, value of parameters when not value?
+  change: (query={}) ->
+    delete query[key] for key, value of query when not value?
     fragment = @getPathname()
-    fragment += "?#{$.param(parameters)}" unless _.isEmpty(parameters)
+    fragment += "?#{$.param(query)}" unless _.isEmpty(query)
     @history.replaceState({}, document.title, fragment)
-
-  parameters: ->
-    parameters = {}
-    regex = /([^&=]+)=?([^&]*)/g
-    while match = regex.exec(@getSearch().substring(1))
-      [pair, key, value] = match
-      parameters[@decode(key)] = _.parse(@decode(value))
-    parameters
 
   decode: (string) ->
     decodeURIComponent(string.replace(/\+/g, " "))
@@ -34,6 +26,14 @@ module.exports = class History extends Backbone.History
     @popstate = true
     super
     @popstate = false
+
+  getQuery: ->
+    query = {}
+    regex = /([^&=]+)=?([^&]*)/g
+    while match = regex.exec(@getSearch().substring(1))
+      [pair, key, value] = match
+      query[@decode(key)] = _.parse(@decode(value))
+    query
 
   getPathname: ->
     "/#{@getPath().replace(@getSearch(), "")}"

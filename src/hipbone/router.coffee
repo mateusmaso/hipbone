@@ -6,16 +6,22 @@ module.exports = class Router extends Backbone.Router
   _.extend(this, Module)
 
   @include require "./router/url"
+  @include require "./router/params"
   @include require "./router/matches"
 
   history: Backbone.history = new History
 
   constructor: (options={}) ->
+    @initializeParams()
     @initializeMatches()
     super
 
+  execute: (callback, args, name) ->
+    @updateParams(@matchUrlParams(name, args))
+    super
+
   navigate: (fragment, options={}) ->
-    fragment = @urlFragment(fragment, options.params)
+    fragment = @matchUrl(fragment, options.params) || @url(fragment, options.params)
 
     if options.reload
       @history.reload(fragment)

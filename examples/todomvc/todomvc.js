@@ -136,6 +136,26 @@ function program1(depth0,data) {
 
 (function() {
   TodoMVC.prototype.initializers.push(function() {
+    this.router.match("completed(/)", {
+      route: TodoMVC.CompletedRoute,
+      name: "completed",
+      url: "/completed"
+    });
+    this.router.match("active(/)", {
+      route: TodoMVC.CompletedRoute,
+      name: "active",
+      url: "/active"
+    });
+    return this.router.match("*all", {
+      route: TodoMVC.RootRoute,
+      url: "/"
+    });
+  });
+
+}).call(this);
+
+(function() {
+  TodoMVC.prototype.initializers.push(function() {
     return Handlebars.registerAttribute('autofocus', function(element) {
       var attribute;
       attribute = document.createAttribute('autofocus');

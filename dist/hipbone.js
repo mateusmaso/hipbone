@@ -27,7 +27,7 @@
 
 }).call(this);
 
-},{"./hipbone/application":2,"./hipbone/collection":13,"./hipbone/history":23,"./hipbone/i18n":24,"./hipbone/identity_map":25,"./hipbone/model":26,"./hipbone/module":36,"./hipbone/route":37,"./hipbone/router":44,"./hipbone/storage":47,"./hipbone/view":48}],2:[function(require,module,exports){
+},{"./hipbone/application":2,"./hipbone/collection":13,"./hipbone/history":23,"./hipbone/i18n":24,"./hipbone/identity_map":25,"./hipbone/model":26,"./hipbone/module":36,"./hipbone/route":37,"./hipbone/router":44,"./hipbone/storage":48,"./hipbone/view":49}],2:[function(require,module,exports){
 (function() {
   var Application, Module, Router, Storage,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -94,7 +94,7 @@
 
 }).call(this);
 
-},{"./application/ajax":3,"./application/initializers":4,"./application/locale":11,"./application/state":12,"./module":36,"./router":44,"./storage":47}],3:[function(require,module,exports){
+},{"./application/ajax":3,"./application/initializers":4,"./application/locale":11,"./application/state":12,"./module":36,"./router":44,"./storage":48}],3:[function(require,module,exports){
 (function() {
   var slice = [].slice;
 
@@ -304,7 +304,7 @@
         if (options == null) {
           options = {};
         }
-        return _this.router.url(name, options.hash);
+        return _this.router.matchUrl(name, options.hash);
       };
     })(this));
     Handlebars.registerHelper('fmt', function() {
@@ -364,7 +364,7 @@
 
 }).call(this);
 
-},{"./../../view":48}],11:[function(require,module,exports){
+},{"./../../view":49}],11:[function(require,module,exports){
 (function() {
   var I18n;
 
@@ -953,30 +953,22 @@
       }
     };
 
-    History.prototype.change = function(parameters) {
+    History.prototype.change = function(query) {
       var fragment, key, value;
-      for (key in parameters) {
-        value = parameters[key];
+      if (query == null) {
+        query = {};
+      }
+      for (key in query) {
+        value = query[key];
         if (value == null) {
-          delete parameters[key];
+          delete query[key];
         }
       }
       fragment = this.getPathname();
-      if (!_.isEmpty(parameters)) {
-        fragment += "?" + ($.param(parameters));
+      if (!_.isEmpty(query)) {
+        fragment += "?" + ($.param(query));
       }
       return this.history.replaceState({}, document.title, fragment);
-    };
-
-    History.prototype.parameters = function() {
-      var key, match, pair, parameters, regex, value;
-      parameters = {};
-      regex = /([^&=]+)=?([^&]*)/g;
-      while (match = regex.exec(this.getSearch().substring(1))) {
-        pair = match[0], key = match[1], value = match[2];
-        parameters[this.decode(key)] = _.parse(this.decode(value));
-      }
-      return parameters;
     };
 
     History.prototype.decode = function(string) {
@@ -987,6 +979,17 @@
       this.popstate = true;
       History.__super__.checkUrl.apply(this, arguments);
       return this.popstate = false;
+    };
+
+    History.prototype.getQuery = function() {
+      var key, match, pair, query, regex, value;
+      query = {};
+      regex = /([^&=]+)=?([^&]*)/g;
+      while (match = regex.exec(this.getSearch().substring(1))) {
+        pair = match[0], key = match[1], value = match[2];
+        query[this.decode(key)] = _.parse(this.decode(value));
+      }
+      return query;
     };
 
     History.prototype.getPathname = function() {
@@ -2156,6 +2159,8 @@
 
     Router.include(require("./router/url"));
 
+    Router.include(require("./router/params"));
+
     Router.include(require("./router/matches"));
 
     Router.prototype.history = Backbone.history = new History;
@@ -2164,15 +2169,21 @@
       if (options == null) {
         options = {};
       }
+      this.initializeParams();
       this.initializeMatches();
       Router.__super__.constructor.apply(this, arguments);
     }
+
+    Router.prototype.execute = function(callback, args, name) {
+      this.updateParams(this.matchUrlParams(name, args));
+      return Router.__super__.execute.apply(this, arguments);
+    };
 
     Router.prototype.navigate = function(fragment, options) {
       if (options == null) {
         options = {};
       }
-      fragment = this.urlFragment(fragment, options.params);
+      fragment = this.matchUrl(fragment, options.params) || this.url(fragment, options.params);
       if (options.reload) {
         return this.history.reload(fragment);
       } else if (options.load) {
@@ -2200,37 +2211,71 @@
 
 }).call(this);
 
-},{"./history":23,"./module":36,"./router/matches":45,"./router/url":46}],45:[function(require,module,exports){
+},{"./history":23,"./module":36,"./router/matches":45,"./router/params":46,"./router/url":47}],45:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeMatches: function() {
-      this.params || (this.params = {});
       return this.matches || (this.matches = {});
     },
-    match: function(name, options) {
-      var Route, url;
+    match: function(pattern, options) {
       if (options == null) {
         options = {};
       }
-      this.matches[name] = options;
-      url = options.url;
-      Route = options.route;
-      return this.route(url, name, function() {
-        var i, index, len, param, ref;
-        this.params = this.history.parameters();
-        ref = url.match(/:\w+/g) || [];
-        for (index = i = 0, len = ref.length; i < len; index = ++i) {
-          param = ref[index];
-          if (arguments[index]) {
-            this.params[param.substring(1)] = _.parse(arguments[index]);
-          }
-        }
+      this.matches[options.name] = options;
+      return this.route(pattern, options.name, function() {
+        var Route;
+        Route = options.route;
         this._route = new Route(this.params, {
           path: this.history.getPathname(),
           popstate: this.history.popstate
         });
         return this._route.activate();
       });
+    },
+    matchUrl: function(name, params) {
+      var fragment, match;
+      if (params == null) {
+        params = {};
+      }
+      if (match = this.matches[name]) {
+        fragment = this.matchFragment(name, params);
+        return this.url(fragment, _.omit(params, this.matchUrlParamKeys(name)));
+      }
+    },
+    matchUrlParams: function(name, args) {
+      var i, index, len, param, params, ref;
+      params = {};
+      ref = this.matchUrlParamKeys(name);
+      for (index = i = 0, len = ref.length; i < len; index = ++i) {
+        param = ref[index];
+        if (args[index]) {
+          params[param] = _.parse(args[index]);
+        }
+      }
+      return params;
+    },
+    matchUrlParamKeys: function(name) {
+      var i, len, param, ref, results;
+      ref = this.matches[name].url.match(/:\w+/g) || [];
+      results = [];
+      for (i = 0, len = ref.length; i < len; i++) {
+        param = ref[i];
+        results.push(param.substring(1));
+      }
+      return results;
+    },
+    matchFragment: function(name, params) {
+      var i, len, param, ref, url;
+      if (params == null) {
+        params = {};
+      }
+      url = this.matches[name].url;
+      ref = this.matchUrlParamKeys(name);
+      for (i = 0, len = ref.length; i < len; i++) {
+        param = ref[i];
+        url = url.replace(":" + param, params[param]);
+      }
+      return url;
     }
   };
 
@@ -2239,19 +2284,26 @@
 },{}],46:[function(require,module,exports){
 (function() {
   module.exports = {
-    url: function(name, params) {
+    initializeParams: function() {
+      return this.params || (this.params = {});
+    },
+    updateParams: function(params) {
       if (params == null) {
         params = {};
       }
-      return this.matches[name].toURL(params);
-    },
-    urlFragment: function(fragment, params) {
+      return this.params = _.extend(this.history.getQuery(), params);
+    }
+  };
+
+}).call(this);
+
+},{}],47:[function(require,module,exports){
+(function() {
+  module.exports = {
+    url: function(fragment, params) {
       var anchor;
       if (params == null) {
         params = {};
-      }
-      if (this.matches[fragment]) {
-        fragment = this.url(fragment, params);
       }
       anchor = $("<a>").attr("href", fragment).get(0);
       if (params) {
@@ -2264,7 +2316,7 @@
 
 }).call(this);
 
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 (function() {
   var Module, Storage,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -2329,7 +2381,7 @@
 
 }).call(this);
 
-},{"./module":36}],48:[function(require,module,exports){
+},{"./module":36}],49:[function(require,module,exports){
 (function() {
   var Module, View,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -2444,7 +2496,7 @@
 
 }).call(this);
 
-},{"./module":36,"./view/bubble":49,"./view/class_name_bindings":50,"./view/content":51,"./view/context":52,"./view/elements":53,"./view/lifecycle":54,"./view/populate":55,"./view/properties":56,"./view/store":57,"./view/template":58}],49:[function(require,module,exports){
+},{"./module":36,"./view/bubble":50,"./view/class_name_bindings":51,"./view/content":52,"./view/context":53,"./view/elements":54,"./view/lifecycle":55,"./view/populate":56,"./view/properties":57,"./view/store":58,"./view/template":59}],50:[function(require,module,exports){
 (function() {
   var slice = [].slice;
 
@@ -2459,7 +2511,7 @@
 
 }).call(this);
 
-},{}],50:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeClassNameBindings: function() {
@@ -2493,7 +2545,7 @@
 
 }).call(this);
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeContent: function(content) {
@@ -2520,7 +2572,7 @@
 
 }).call(this);
 
-},{}],52:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 (function() {
   var Collection, Model;
 
@@ -2576,7 +2628,7 @@
 
 }).call(this);
 
-},{"./../collection":13,"./../model":26}],53:[function(require,module,exports){
+},{"./../collection":13,"./../model":26}],54:[function(require,module,exports){
 (function() {
   var findBooleans;
 
@@ -2633,7 +2685,7 @@
 
 }).call(this);
 
-},{}],54:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 (function() {
   module.exports = {
     insert: function() {},
@@ -2669,7 +2721,7 @@
 
 }).call(this);
 
-},{}],55:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 (function() {
   module.exports = {
     initializePopulate: function() {
@@ -2714,7 +2766,7 @@
 
 }).call(this);
 
-},{}],56:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 (function() {
   var Model;
 
@@ -2769,7 +2821,7 @@
 
 }).call(this);
 
-},{"./../model":26}],57:[function(require,module,exports){
+},{"./../model":26}],58:[function(require,module,exports){
 (function() {
   var IdentityMap;
 
@@ -2817,7 +2869,7 @@
 
 }).call(this);
 
-},{"./../identity_map":25}],58:[function(require,module,exports){
+},{"./../identity_map":25}],59:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeTemplate: function() {
@@ -2840,4 +2892,4 @@
 
 }).call(this);
 
-},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58]);
+},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59]);
