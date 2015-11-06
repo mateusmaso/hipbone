@@ -27,7 +27,7 @@
 
 }).call(this);
 
-},{"./hipbone/application":2,"./hipbone/collection":13,"./hipbone/history":23,"./hipbone/i18n":24,"./hipbone/identity_map":25,"./hipbone/model":26,"./hipbone/module":36,"./hipbone/route":37,"./hipbone/router":44,"./hipbone/storage":48,"./hipbone/view":49}],2:[function(require,module,exports){
+},{"./hipbone/application":2,"./hipbone/collection":13,"./hipbone/history":23,"./hipbone/i18n":25,"./hipbone/identity_map":26,"./hipbone/model":27,"./hipbone/module":37,"./hipbone/route":38,"./hipbone/router":45,"./hipbone/storage":49,"./hipbone/view":50}],2:[function(require,module,exports){
 (function() {
   var Application, Module, Router, Storage,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -94,7 +94,7 @@
 
 }).call(this);
 
-},{"./application/ajax":3,"./application/initializers":4,"./application/locale":11,"./application/state":12,"./module":36,"./router":44,"./storage":48}],3:[function(require,module,exports){
+},{"./application/ajax":3,"./application/initializers":4,"./application/locale":11,"./application/state":12,"./module":37,"./router":45,"./storage":49}],3:[function(require,module,exports){
 (function() {
   var slice = [].slice;
 
@@ -244,7 +244,7 @@
 
 }).call(this);
 
-},{"./../../collection":13,"./../../model":26}],8:[function(require,module,exports){
+},{"./../../collection":13,"./../../model":27}],8:[function(require,module,exports){
 (function() {
   module.exports = function() {
     var sync;
@@ -282,7 +282,7 @@
   View = require("./../../view");
 
   module.exports = function() {
-    var eachHelper, ifHelper;
+    var eachHelper, ifHelper, withHelper;
     Handlebars.registerHelper('asset', (function(_this) {
       return function(asset, options) {
         if (options == null) {
@@ -336,6 +336,14 @@
         return new Handlebars.SafeString(template);
       }
     });
+    withHelper = Handlebars.helpers.each;
+    Handlebars.registerHelper('with', function(context, options) {
+      if (options == null) {
+        options = {};
+      }
+      context.view = this.view;
+      return withHelper.apply(this, [context, options]);
+    });
     eachHelper = Handlebars.helpers.each;
     Handlebars.registerHelper('each', function(items, options) {
       if (options == null) {
@@ -363,7 +371,7 @@
 
 }).call(this);
 
-},{"./../../view":49}],11:[function(require,module,exports){
+},{"./../../view":50}],11:[function(require,module,exports){
 (function() {
   var I18n;
 
@@ -382,7 +390,7 @@
 
 }).call(this);
 
-},{"./../i18n":24}],12:[function(require,module,exports){
+},{"./../i18n":25}],12:[function(require,module,exports){
 (function() {
   var Model;
 
@@ -412,7 +420,7 @@
 
 }).call(this);
 
-},{"./../model":26}],13:[function(require,module,exports){
+},{"./../model":27}],13:[function(require,module,exports){
 (function() {
   var Collection, Model, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -464,12 +472,7 @@
       this.initializePopulate();
       this.initializePagination();
       Collection.__super__.constructor.apply(this, arguments);
-      this.store();
-      this.on("all", _.debounce((function(_this) {
-        return function() {
-          return _this.store();
-        };
-      })(this)));
+      this.storeChanges();
     }
 
     Collection.prototype._prepareModel = function(attributes, options) {
@@ -492,11 +495,10 @@
     };
 
     Collection.prototype.url = function(options) {
-      var query, url;
-      query = this.getFilters(options);
+      var url;
       url = this.parentUrl(options);
-      if (!_.isEmpty(query)) {
-        url = url + "?" + ($.param(query));
+      if (!_.isEmpty(this.getFilters(options))) {
+        url = url + "?" + ($.param(this.getFilters(options)));
       }
       return url;
     };
@@ -537,7 +539,7 @@
 
 }).call(this);
 
-},{"./collection/filters":14,"./collection/meta":15,"./collection/pagination":16,"./collection/parent":17,"./collection/polymorphic":18,"./collection/populate":19,"./collection/store":20,"./collection/sync":21,"./model":26,"./module":36}],14:[function(require,module,exports){
+},{"./collection/filters":14,"./collection/meta":15,"./collection/pagination":16,"./collection/parent":17,"./collection/polymorphic":18,"./collection/populate":19,"./collection/store":20,"./collection/sync":21,"./model":27,"./module":37}],14:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeFilters: function() {
@@ -592,7 +594,7 @@
 
 }).call(this);
 
-},{"./../model":26}],16:[function(require,module,exports){
+},{"./../model":27}],16:[function(require,module,exports){
 (function() {
   module.exports = {
     initializePagination: function() {
@@ -772,7 +774,7 @@
     prepare: function(name) {
       var deferred;
       deferred = this.deferreds[name];
-      if (deferred && !deferred.state() !== "resolved") {
+      if (deferred && deferred.state() !== "resolved") {
         return deferred;
       } else {
         return this.deferreds[name] = $.when(this.populated(name) || this.populate(name));
@@ -815,6 +817,14 @@
         return null;
       }
     },
+    storeChanges: function() {
+      this.on("change change:parent meta:change", (function(_this) {
+        return function() {
+          return _this.store();
+        };
+      })(this));
+      return this.store();
+    },
     hashes: function(models, options) {
       var hashes, ref;
       if (options == null) {
@@ -840,7 +850,7 @@
 
 }).call(this);
 
-},{"./../identity_map":25}],21:[function(require,module,exports){
+},{"./../identity_map":26}],21:[function(require,module,exports){
 (function() {
   module.exports = {
     unsync: function() {
@@ -920,7 +930,7 @@
 
 }).call(this);
 
-},{"./module":36}],23:[function(require,module,exports){
+},{"./module":37}],23:[function(require,module,exports){
 (function() {
   var History, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -937,6 +947,8 @@
 
     _.extend(History, Module);
 
+    History.include(require("./history/query"));
+
     History.prototype.route = function(route, callback) {
       return this.handlers.push({
         route: route,
@@ -952,7 +964,32 @@
       }
     };
 
-    History.prototype.change = function(query) {
+    History.prototype.getPathname = function() {
+      return "/" + (this.getPath().replace(this.getSearch(), ""));
+    };
+
+    History.prototype.navigate = function(fragment, options) {
+      this.popstate = false;
+      return History.__super__.navigate.apply(this, arguments);
+    };
+
+    History.prototype.checkUrl = function(event) {
+      this.popstate = true;
+      return History.__super__.checkUrl.apply(this, arguments);
+    };
+
+    History.register("History");
+
+    return History;
+
+  })(Backbone.History);
+
+}).call(this);
+
+},{"./history/query":24,"./module":37}],24:[function(require,module,exports){
+(function() {
+  module.exports = {
+    change: function(query) {
       var fragment, key, value;
       if (query == null) {
         query = {};
@@ -968,19 +1005,8 @@
         fragment += "?" + ($.param(query));
       }
       return this.history.replaceState({}, document.title, fragment);
-    };
-
-    History.prototype.decode = function(string) {
-      return decodeURIComponent(string.replace(/\+/g, " "));
-    };
-
-    History.prototype.checkUrl = function(event) {
-      this.popstate = true;
-      History.__super__.checkUrl.apply(this, arguments);
-      return this.popstate = false;
-    };
-
-    History.prototype.getQuery = function() {
+    },
+    getQuery: function() {
       var key, match, pair, query, regex, value;
       query = {};
       regex = /([^&=]+)=?([^&]*)/g;
@@ -989,21 +1015,15 @@
         query[this.decode(key)] = _.parse(this.decode(value));
       }
       return query;
-    };
-
-    History.prototype.getPathname = function() {
-      return "/" + (this.getPath().replace(this.getSearch(), ""));
-    };
-
-    History.register("History");
-
-    return History;
-
-  })(Backbone.History);
+    },
+    decode: function(string) {
+      return decodeURIComponent(string.replace(/\+/g, " "));
+    }
+  };
 
 }).call(this);
 
-},{"./module":36}],24:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 (function() {
   var I18n, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1084,7 +1104,7 @@
 
 }).call(this);
 
-},{"./module":36}],25:[function(require,module,exports){
+},{"./module":37}],26:[function(require,module,exports){
 (function() {
   var IdentityMap, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1175,7 +1195,7 @@
 
 }).call(this);
 
-},{"./module":36}],26:[function(require,module,exports){
+},{"./module":37}],27:[function(require,module,exports){
 (function() {
   var Model, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1224,12 +1244,7 @@
       this.initializeValidations();
       this.initializeComputedAttributes();
       Model.__super__.constructor.apply(this, arguments);
-      this.store();
-      this.on("all", _.debounce((function(_this) {
-        return function() {
-          return _this.store();
-        };
-      })(this)));
+      this.storeChanges();
     }
 
     Model.prototype.get = function(attribute) {
@@ -1303,7 +1318,7 @@
 
 }).call(this);
 
-},{"./model/computed_attributes":27,"./model/mappings":28,"./model/nested_attributes":29,"./model/populate":30,"./model/schemes":31,"./model/store":32,"./model/syncs":34,"./model/validations":35,"./module":36}],27:[function(require,module,exports){
+},{"./model/computed_attributes":28,"./model/mappings":29,"./model/nested_attributes":30,"./model/populate":31,"./model/schemes":32,"./model/store":33,"./model/syncs":35,"./model/validations":36,"./module":37}],28:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeComputedAttributes: function() {
@@ -1345,7 +1360,7 @@
 
 }).call(this);
 
-},{}],28:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeMappings: function() {
@@ -1502,7 +1517,7 @@
 
 }).call(this);
 
-},{"./../collection":13,"./../model":26}],29:[function(require,module,exports){
+},{"./../collection":13,"./../model":27}],30:[function(require,module,exports){
 (function() {
   module.exports = {
     getNestedAttribute: function(attribute) {
@@ -1562,7 +1577,7 @@
 
 }).call(this);
 
-},{}],30:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 (function() {
   module.exports = {
     initializePopulate: function() {
@@ -1591,7 +1606,7 @@
 
 }).call(this);
 
-},{}],31:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeSchemes: function() {
@@ -1616,7 +1631,7 @@
 
 }).call(this);
 
-},{}],32:[function(require,module,exports){
+},{}],33:[function(require,module,exports){
 (function() {
   var IdentityMap;
 
@@ -1647,6 +1662,14 @@
         return null;
       }
     },
+    storeChanges: function() {
+      this.on("change", (function(_this) {
+        return function() {
+          return _this.store();
+        };
+      })(this));
+      return this.store();
+    },
     hashes: function(attributes) {
       var hashes;
       hashes = [];
@@ -1666,7 +1689,7 @@
 
 }).call(this);
 
-},{"./../identity_map":25}],33:[function(require,module,exports){
+},{"./../identity_map":26}],34:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeSync: function() {
@@ -1694,7 +1717,7 @@
 
 }).call(this);
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeSyncs: function() {
@@ -1722,7 +1745,7 @@
 
 }).call(this);
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeValidations: function() {
@@ -1760,7 +1783,7 @@
 
 }).call(this);
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 (function() {
   var Module, keywords, prepare, store,
     slice = [].slice,
@@ -1877,7 +1900,7 @@
 
 }).call(this);
 
-},{}],37:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 (function() {
   var Module, Route,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1919,12 +1942,7 @@
       this.initializePopulate();
       this.initializeParameters(params);
       this.initialize(params);
-      this.store();
-      this.on("all", _.debounce((function(_this) {
-        return function() {
-          return _this.store();
-        };
-      })(this)));
+      this.storeChanges();
     }
 
     Route.prototype.initialize = function(params) {
@@ -1941,7 +1959,7 @@
 
 }).call(this);
 
-},{"./module":36,"./route/activate":38,"./route/element":39,"./route/parameters":40,"./route/populate":41,"./route/store":42,"./route/title":43}],38:[function(require,module,exports){
+},{"./module":37,"./route/activate":39,"./route/element":40,"./route/parameters":41,"./route/populate":42,"./route/store":43,"./route/title":44}],39:[function(require,module,exports){
 (function() {
   module.exports = {
     active: function() {},
@@ -1964,7 +1982,7 @@
 
 }).call(this);
 
-},{}],39:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 (function() {
   var currentElement;
 
@@ -1991,7 +2009,7 @@
 
 }).call(this);
 
-},{}],40:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 (function() {
   var Model;
 
@@ -2031,7 +2049,7 @@
 
 }).call(this);
 
-},{"./../model":26}],41:[function(require,module,exports){
+},{"./../model":27}],42:[function(require,module,exports){
 (function() {
   module.exports = {
     initializePopulate: function() {
@@ -2046,7 +2064,7 @@
     prepare: function(name) {
       var deferred;
       deferred = this.deferreds[name];
-      if (deferred && !deferred.state() !== "resolved") {
+      if (deferred && deferred.state() !== "resolved") {
         return deferred;
       } else {
         return this.deferreds[name] = $.when(this.populated(name) || this.populate(name));
@@ -2056,7 +2074,7 @@
 
 }).call(this);
 
-},{}],42:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 (function() {
   var IdentityMap;
 
@@ -2079,8 +2097,8 @@
         options = {};
       }
       hashes = this.hashes(params, options);
-      if (this.identityMap.find(options.path) && !options.popstate) {
-        hashes = _.without(hashes, options.path);
+      if (this.identityMap.find(options.pathname) && !options.popstate) {
+        hashes = _.without(hashes, options.pathname);
       }
       if (route = this.identityMap.findAll(hashes)[0]) {
         route.set(route.parse(params));
@@ -2089,6 +2107,14 @@
         this.store(hashes);
         return null;
       }
+    },
+    storeChanges: function() {
+      this.on("change", (function(_this) {
+        return function() {
+          return _this.store();
+        };
+      })(this));
+      return this.store();
     },
     hashes: function(params, options) {
       var hashes;
@@ -2102,7 +2128,7 @@
       if (this.cid) {
         hashes.push(this.cid);
       }
-      hashes.push(options.path);
+      hashes.push(options.pathname);
       return hashes;
     },
     store: function(hashes) {
@@ -2113,7 +2139,7 @@
 
 }).call(this);
 
-},{"./../identity_map":25}],43:[function(require,module,exports){
+},{"./../identity_map":26}],44:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeTitle: function(titleRoot) {
@@ -2141,7 +2167,7 @@
 
 }).call(this);
 
-},{}],44:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 (function() {
   var History, Module, Router,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -2210,7 +2236,7 @@
 
 }).call(this);
 
-},{"./history":23,"./module":36,"./router/matches":45,"./router/params":46,"./router/url":47}],45:[function(require,module,exports){
+},{"./history":23,"./module":37,"./router/matches":46,"./router/params":47,"./router/url":48}],46:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeMatches: function() {
@@ -2225,7 +2251,7 @@
         var Route;
         Route = options.route;
         this._route = new Route(this.params, {
-          path: this.history.getPathname(),
+          pathname: this.history.getPathname(),
           popstate: this.history.popstate
         });
         return this._route.activate();
@@ -2280,7 +2306,7 @@
 
 }).call(this);
 
-},{}],46:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeParams: function() {
@@ -2296,7 +2322,7 @@
 
 }).call(this);
 
-},{}],47:[function(require,module,exports){
+},{}],48:[function(require,module,exports){
 (function() {
   module.exports = {
     url: function(fragment, params) {
@@ -2315,7 +2341,7 @@
 
 }).call(this);
 
-},{}],48:[function(require,module,exports){
+},{}],49:[function(require,module,exports){
 (function() {
   var Module, Storage,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -2380,7 +2406,7 @@
 
 }).call(this);
 
-},{"./module":36}],49:[function(require,module,exports){
+},{"./module":37}],50:[function(require,module,exports){
 (function() {
   var Module, View,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -2431,11 +2457,7 @@
       this.lifecycle();
       this.prepare();
       this.render();
-      this.on("change", _.debounce((function(_this) {
-        return function() {
-          return _this.update();
-        };
-      })(this)));
+      this.on("change", this.update);
     }
 
     View.prototype.destroy = function() {};
@@ -2483,7 +2505,7 @@
 
 }).call(this);
 
-},{"./module":36,"./view/bubble":50,"./view/class_name_bindings":51,"./view/content":52,"./view/context":53,"./view/elements":54,"./view/lifecycle":55,"./view/populate":56,"./view/properties":57,"./view/template":59}],50:[function(require,module,exports){
+},{"./module":37,"./view/bubble":51,"./view/class_name_bindings":52,"./view/content":53,"./view/context":54,"./view/elements":55,"./view/lifecycle":56,"./view/populate":57,"./view/properties":58,"./view/template":60}],51:[function(require,module,exports){
 (function() {
   var slice = [].slice;
 
@@ -2498,7 +2520,7 @@
 
 }).call(this);
 
-},{}],51:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeClassNameBindings: function() {
@@ -2532,7 +2554,7 @@
 
 }).call(this);
 
-},{}],52:[function(require,module,exports){
+},{}],53:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeContent: function(content) {
@@ -2559,7 +2581,7 @@
 
 }).call(this);
 
-},{}],53:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 (function() {
   var Collection, Model, diffPatcher;
 
@@ -2618,7 +2640,7 @@
 
 }).call(this);
 
-},{"./../collection":13,"./../model":26}],54:[function(require,module,exports){
+},{"./../collection":13,"./../model":27}],55:[function(require,module,exports){
 (function() {
   var findBooleans;
 
@@ -2634,7 +2656,7 @@
     for (key in attributes) {
       value = attributes[key];
       if (_.isBoolean(value) && !_.contains(internals, key)) {
-        booleans.push(_.string.dasherize(key));
+        booleans.push(key);
       }
     }
     return booleans;
@@ -2675,7 +2697,7 @@
 
 }).call(this);
 
-},{}],55:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 (function() {
   module.exports = {
     insert: function() {},
@@ -2711,7 +2733,7 @@
 
 }).call(this);
 
-},{}],56:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 (function() {
   module.exports = {
     initializePopulate: function() {
@@ -2756,7 +2778,7 @@
 
 }).call(this);
 
-},{}],57:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 (function() {
   var Model;
 
@@ -2771,9 +2793,9 @@
       this.props = this.properties = new (Model.define({
         defaults: this.defaults
       }))(_.omit(properties, this.internals));
-      return this.listenTo(this.props, "change", (function(_this) {
+      return this.listenTo(this.props, "all", (function(_this) {
         return function() {
-          return _this.trigger("change");
+          return _this.trigger.apply(_this, arguments);
         };
       })(this));
     },
@@ -2811,7 +2833,7 @@
 
 }).call(this);
 
-},{"./../model":26}],58:[function(require,module,exports){
+},{"./../model":27}],59:[function(require,module,exports){
 (function() {
   var IdentityMap;
 
@@ -2859,7 +2881,7 @@
 
 }).call(this);
 
-},{"./../identity_map":25}],59:[function(require,module,exports){
+},{"./../identity_map":26}],60:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeTemplate: function() {
@@ -2882,4 +2904,4 @@
 
 }).call(this);
 
-},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59]);
+},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60]);

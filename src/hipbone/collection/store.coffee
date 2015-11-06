@@ -20,6 +20,10 @@ module.exports =
       @store(hashes)
       return null
 
+  storeChanges: ->
+    @on("change change:parent meta:change", => @store())
+    @store()
+
   hashes: (models, options={}) ->
     hashes = []
     hashes.push(@cid) if @cid

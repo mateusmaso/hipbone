@@ -7,7 +7,7 @@ module.exports =
     @matches[options.name] = options
     @route pattern, options.name, ->
       Route = options.route
-      @_route = new Route(@params, path: @history.getPathname(), popstate: @history.popstate)
+      @_route = new Route(@params, pathname: @history.getPathname(), popstate: @history.popstate)
       @_route.activate()
 
   matchUrl: (name, params={}) ->

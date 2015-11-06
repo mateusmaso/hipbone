@@ -1998,20 +1998,20 @@
       it("should be equal with same path and popstate", function() {
         var route;
         route = new Hipbone.Route({}, {
-          path: "/test"
+          pathname: "/test"
         });
         return chai.expect(route).to.be.equal(new Hipbone.Route({}, {
-          path: "/test",
+          pathname: "/test",
           popstate: true
         }));
       });
       return it("should be different with same path and no popstate", function() {
         var route;
         route = new Hipbone.Route({}, {
-          path: "/test2"
+          pathname: "/test2"
         });
         return chai.expect(route).to.not.equal(new Hipbone.Route({}, {
-          path: "/test2",
+          pathname: "/test2",
           popstate: false
         }));
       });

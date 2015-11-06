@@ -6,6 +6,5 @@ TodoMVC::initializers.push ->
     attribute
   , ready: (element) ->
     $(element).lifecycle
-      insert: _.once =>
-        _.defer =>
-          $(element).focus()
+      insert: _.once _.debounce =>
+        $(element).focus()

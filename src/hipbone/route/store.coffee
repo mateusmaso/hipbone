@@ -10,7 +10,7 @@ module.exports =
 
   initializeStore: (params={}, options={}) ->
     hashes = @hashes(params, options)
-    hashes = _.without(hashes, options.path) if @identityMap.find(options.path) and not options.popstate
+    hashes = _.without(hashes, options.pathname) if @identityMap.find(options.pathname) and not options.popstate
 
     if route = @identityMap.findAll(hashes)[0]
       route.set(route.parse(params))
@@ -19,10 +19,14 @@ module.exports =
       @store(hashes)
       return null
 
+  storeChanges: ->
+    @on("change", => @store())
+    @store()
+
   hashes: (params={}, options={}) ->
     hashes = []
     hashes.push(@cid) if @cid
-    hashes.push(options.path)
+    hashes.push(options.pathname)
     hashes
 
   store: (hashes) ->

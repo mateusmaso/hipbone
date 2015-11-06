@@ -24,8 +24,7 @@ module.exports = class Model extends Backbone.Model
     @initializeValidations()
     @initializeComputedAttributes()
     super
-    @store()
-    @on("all", _.debounce => @store())
+    @storeChanges()
 
   get: (attribute) ->
     if @mappings[attribute]

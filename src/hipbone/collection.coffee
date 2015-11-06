@@ -29,8 +29,7 @@ module.exports = class Collection extends Backbone.Collection
     @initializePopulate()
     @initializePagination()
     super
-    @store()
-    @on("all", _.debounce => @store())
+    @storeChanges()
 
   _prepareModel: (attributes, options={}) ->
     attributes = model if model = @preparePolymorphic(attributes, options)
@@ -40,9 +39,8 @@ module.exports = class Collection extends Backbone.Collection
     if _.isArray(@model) then @polymorphicUniqueId(attributes) else super
 
   url: (options) ->
-    query = @getFilters(options)
     url = @parentUrl(options)
-    url = "#{url}?#{$.param(query)}" unless _.isEmpty(query)
+    url = "#{url}?#{$.param(@getFilters(options))}" unless _.isEmpty(@getFilters(options))
     url
 
   toJSON: (options={}) ->

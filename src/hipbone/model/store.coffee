@@ -18,6 +18,10 @@ module.exports =
       @store(hashes)
       return null
 
+  storeChanges: ->
+    @on("change", => @store())
+    @store()
+
   hashes: (attributes) ->
     hashes = []
     hashes.push(@cid) if @cid

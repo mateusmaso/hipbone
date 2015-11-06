@@ -22,6 +22,11 @@ module.exports = ->
     template = @view.getTemplate(path)(@view.getContext(options.hash, this))
     if options.hash.unescape then template else new Handlebars.SafeString(template)
 
+  withHelper = Handlebars.helpers.each
+  Handlebars.registerHelper 'with', (context, options={}) ->
+    context.view = @view
+    withHelper.apply(this, [context, options])
+
   eachHelper = Handlebars.helpers.each
   Handlebars.registerHelper 'each', (items, options={}) ->
     items = items.models || items if items

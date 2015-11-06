@@ -27,7 +27,7 @@ module.exports = class View extends Backbone.View
     @lifecycle()
     @prepare()
     @render()
-    @on("change", _.debounce => @update())
+    @on("change", @update)
 
   destroy: ->
 

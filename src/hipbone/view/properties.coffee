@@ -5,7 +5,7 @@ module.exports =
   initializeProperties: (properties={}) ->
     @internals ||= []
     @props = @properties = new (Model.define(defaults: @defaults))(_.omit(properties, @internals))
-    @listenTo @props, "change", => @trigger("change")
+    @listenTo @props, "all", => @trigger.apply(this, arguments)
 
   get: ->
     @props.get.apply(@props, arguments)

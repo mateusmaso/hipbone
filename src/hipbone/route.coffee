@@ -18,8 +18,7 @@ module.exports = class Route extends Module
     @initializePopulate()
     @initializeParameters(params)
     @initialize(params)
-    @store()
-    @on("all", _.debounce => @store())
+    @storeChanges()
 
   initialize: (params={}) ->
 

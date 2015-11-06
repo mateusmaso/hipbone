@@ -1,6 +1,6 @@
 findBooleans = (attributes={}, internals=[]) ->
   booleans = []
-  booleans.push(_.string.dasherize(key)) for key, value of attributes when _.isBoolean(value) and not _.contains(internals, key)
+  booleans.push(key) for key, value of attributes when _.isBoolean(value) and not _.contains(internals, key)
   booleans
 
 module.exports =
