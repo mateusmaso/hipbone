@@ -2896,6 +2896,7 @@
       return this.templates["" + this.templatePath + path];
     },
     renderTemplate: function() {
+      Handlebars.unbind(this.el);
       if (this.templateName) {
         return this.$el.html(this.template(this.templateName));
       }

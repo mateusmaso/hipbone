@@ -19,7 +19,7 @@ Hipbone is a framework for building scalable apps on top of Backbone.
   * jquery.lifecycle.js (>= 0.1.2)
 * handlebars.js (>= 1.1.0)
   * handlebars.element.js (>= 0.1.3)
-  * handlebars.binding.js (>= 0.1.3)
+  * handlebars.binding.js (>= 0.1.5)
 * underscore.js (>= 1.5.0)
   * underscore.path.js (>= 0.1.4)
   * underscore.pathextend.js (>= 0.1.2)

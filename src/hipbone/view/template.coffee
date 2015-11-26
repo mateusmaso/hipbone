@@ -12,4 +12,5 @@ module.exports =
     @templates["#{@templatePath}#{path}"]
 
   renderTemplate: ->
+    Handlebars.unbind(@el)
     @$el.html(@template(@templateName)) if @templateName
