@@ -16,10 +16,6 @@ module.exports =
       if @limit > 0
         if options.paginate then @offset else 0
 
-    @on("add", @incrementCounter)
-    @on("remove", @decrementCounter)
-    @on("destroy", @decrementCounter)
-
   incrementPagination: ->
     @offset = @offset + @limit
 
@@ -31,13 +27,4 @@ module.exports =
     @fetch(_.extend(remove: false, paginate: true, options))
 
   hasMore: ->
-    @length < @getPaginationCount()
-
-  getPaginationCount: ->
-    @meta.get('count') || 0
-
-  incrementCounter: (model, collection, options={}) ->
-    @meta.set(count: @meta.get("count") + 1) if @meta.has("count") and not options.parse
-
-  decrementCounter: (model, collection, options={}) ->
-    @meta.set(count: @meta.get("count") - 1) if @meta.has("count") and not options.parse
+    @length < (@meta.get(@countAttribute) || 0)

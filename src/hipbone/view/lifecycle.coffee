@@ -17,4 +17,4 @@ module.exports =
       change: (attribute, value) =>
         @change(attribute, value)
         property = _.string.camelize(attribute)
-        @set(property, Handlebars.parseValue(value,  _.contains(@booleans, attribute))) unless _.contains(@internals, property)
+        @set(property, Handlebars.parseValue(value,  _.contains(@booleans, property))) unless _.contains(@internals, property)

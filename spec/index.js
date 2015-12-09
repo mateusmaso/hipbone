@@ -423,6 +423,9 @@
 
   module.exports = function() {
     return describe("meta", function() {
+      before(function() {
+        return this.collection = new Hipbone.Collection;
+      });
       it("should initialize meta and defaults", function() {
         var Collection, collection;
         Collection = (function(superClass) {
@@ -446,7 +449,7 @@
         });
         return chai.expect([collection.meta.get("count"), collection.meta.get("max")]).to.be.deep.equal([10, 50]);
       });
-      return it("should listen to events", function() {
+      it("should listen to events", function() {
         var changed, collection;
         changed = false;
         collection = new Hipbone.Collection;
@@ -459,6 +462,31 @@
           hello: "world"
         });
         return chai.expect(changed).to.be["true"];
+      });
+      it("should not increment/decrement counter when parse", function() {
+        this.collection.meta.set({
+          count: 2
+        });
+        this.collection.set([
+          {
+            id: 3
+          }, {
+            id: 4
+          }
+        ], {
+          parse: true
+        });
+        return chai.expect(this.collection.meta.get("count")).to.be.equal(2);
+      });
+      it("should increment counter on add", function() {
+        this.collection.add({
+          id: 5
+        });
+        return chai.expect(this.collection.meta.get("count")).to.be.equal(3);
+      });
+      return it("should decrement counter on remove", function() {
+        this.collection.pop();
+        return chai.expect(this.collection.meta.get("count")).to.be.equal(2);
       });
     });
   };
@@ -505,35 +533,10 @@
           paginate: true
         })).to.be.equal("/models?limit=10&offset=0");
       });
-      it("should fetch only models since beginning", function() {
+      return it("should fetch only models since beginning", function() {
         this.collection.incrementPagination();
         this.collection.incrementPagination();
         return chai.expect(this.collection.url()).to.be.equal("/models?limit=30&offset=0");
-      });
-      it("should not increment/decrement counter when parse", function() {
-        this.collection.meta.set({
-          count: 2
-        });
-        this.collection.set([
-          {
-            id: 3
-          }, {
-            id: 4
-          }
-        ], {
-          parse: true
-        });
-        return chai.expect(this.collection.meta.get("count")).to.be.equal(2);
-      });
-      it("should increment counter on add", function() {
-        this.collection.add({
-          id: 5
-        });
-        return chai.expect(this.collection.meta.get("count")).to.be.equal(3);
-      });
-      return it("should decrement counter on remove", function() {
-        this.collection.pop();
-        return chai.expect(this.collection.meta.get("count")).to.be.equal(2);
       });
     });
   };

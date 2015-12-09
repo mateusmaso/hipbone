@@ -575,20 +575,49 @@
   Model = require("./../model");
 
   module.exports = {
+    countAttribute: "count",
     initializeMeta: function(meta) {
       if (meta == null) {
         meta = {};
       }
       this.meta = new (Model.define({
-        defaults: this.defaults
+        defaults: this.defaults,
+        url: this.metaUrl,
+        parse: this.metaParse
       }))(meta);
-      return this.listenTo(this.meta, "all", (function(_this) {
+      this.listenTo(this.meta, "all", (function(_this) {
         return function() {
           var args, eventName;
           eventName = arguments[0], args = 2 <= arguments.length ? slice.call(arguments, 1) : [];
           return _this.trigger.apply(_this, ["meta:" + eventName].concat(slice.call(args)));
         };
       })(this));
+      this.on("add", this.incrementCounter);
+      return this.on("remove", this.decrementCounter);
+    },
+    metaUrl: (function(_this) {
+      return function() {
+        return _this.url();
+      };
+    })(this),
+    metaParse: function(response) {
+      return response.meta;
+    },
+    incrementCounter: function(model, collection, options) {
+      if (options == null) {
+        options = {};
+      }
+      if (this.meta.has(this.countAttribute) && !options.parse) {
+        return this.meta.set(this.countAttribute, this.meta.get(this.countAttribute) + 1);
+      }
+    },
+    decrementCounter: function(model, collection, options) {
+      if (options == null) {
+        options = {};
+      }
+      if (this.meta.has(this.countAttribute) && !options.parse) {
+        return this.meta.set(this.countAttribute, this.meta.get(this.countAttribute) - 1);
+      }
     }
   };
 
@@ -614,7 +643,7 @@
           }
         }
       };
-      this.filters.offset = function(options) {
+      return this.filters.offset = function(options) {
         if (options == null) {
           options = {};
         }
@@ -626,9 +655,6 @@
           }
         }
       };
-      this.on("add", this.incrementCounter);
-      this.on("remove", this.decrementCounter);
-      return this.on("destroy", this.decrementCounter);
     },
     incrementPagination: function() {
       return this.offset = this.offset + this.limit;
@@ -647,30 +673,7 @@
       }, options));
     },
     hasMore: function() {
-      return this.length < this.getPaginationCount();
-    },
-    getPaginationCount: function() {
-      return this.meta.get('count') || 0;
-    },
-    incrementCounter: function(model, collection, options) {
-      if (options == null) {
-        options = {};
-      }
-      if (this.meta.has("count") && !options.parse) {
-        return this.meta.set({
-          count: this.meta.get("count") + 1
-        });
-      }
-    },
-    decrementCounter: function(model, collection, options) {
-      if (options == null) {
-        options = {};
-      }
-      if (this.meta.has("count") && !options.parse) {
-        return this.meta.set({
-          count: this.meta.get("count") - 1
-        });
-      }
+      return this.length < (this.meta.get(this.countAttribute) || 0);
     }
   };
 
@@ -2723,7 +2726,7 @@
             _this.change(attribute, value);
             property = _.string.camelize(attribute);
             if (!_.contains(_this.internals, property)) {
-              return _this.set(property, Handlebars.parseValue(value, _.contains(_this.booleans, attribute)));
+              return _this.set(property, Handlebars.parseValue(value, _.contains(_this.booleans, property)));
             }
           };
         })(this)
