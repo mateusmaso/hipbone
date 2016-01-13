@@ -16,7 +16,7 @@ module.exports = class Application extends Module
     @initializeLocale(options.locale)
     @initializeInitializers()
     @router = new Router(title: @title)
-    @storage = new Storage(prefix: @prefix)
+    @storage = new Storage(@prefix)
     @runInitializers(options)
     @initialize(options)
 

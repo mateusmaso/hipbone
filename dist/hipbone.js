@@ -68,9 +68,7 @@
       this.router = new Router({
         title: this.title
       });
-      this.storage = new Storage({
-        prefix: this.prefix
-      });
+      this.storage = new Storage(this.prefix);
       this.runInitializers(options);
       this.initialize(options);
     }
