@@ -2,7 +2,7 @@
 // ------------------
 // v1.0.0
 //
-// Copyright (c) 2012-2015 Mateus Maso
+// Copyright (c) 2012-2016 Mateus Maso
 // Distributed under MIT license
 //
 // http://github.com/mateusmaso/hipbone
@@ -2335,7 +2335,11 @@
       }
       anchor = $("<a>").attr("href", fragment).get(0);
       if (params) {
-        anchor.search = $.param(params);
+        if (_.string.isBlank(anchor.search)) {
+          anchor.search += $.param(params);
+        } else {
+          anchor.search += "&" + ($.param(params));
+        }
       }
       fragment = anchor.pathname + anchor.search;
       return fragment;

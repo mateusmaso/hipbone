@@ -2,7 +2,7 @@
 // ------------------
 // v1.0.0
 //
-// Copyright (c) 2012-2015 Mateus Maso
+// Copyright (c) 2012-2016 Mateus Maso
 // Distributed under MIT license
 //
 // http://github.com/mateusmaso/hipbone
@@ -2139,10 +2139,15 @@
         this.app = new Hipbone.Application;
         return this.app.run();
       });
-      return it("should parse fragment with params", function() {
+      it("should parse fragment with params", function() {
         return chai.expect(this.app.router.url("/some/url", {
           foo: "bar"
         })).to.be.equal("/some/url?foo=bar");
+      });
+      return it("should parse fragment and merge params", function() {
+        return chai.expect(this.app.router.url("/some/url?bar=foo", {
+          foo: "bar"
+        })).to.be.equal("/some/url?bar=foo&foo=bar");
       });
     });
   };
