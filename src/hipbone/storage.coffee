@@ -7,14 +7,14 @@ module.exports = class Storage extends Module
 
   match: (regex) ->
     matches = {}
-    matches[key.replace(@prefix, "")] = JSON.parse(value) for key, value of localStorage when regex.test(key)
+    matches[key.replace(@prefix, "")] = _.parse(value).data for key, value of localStorage when regex.test(key)
     matches
 
   get: (key) ->
-    _.parse(value) if value = localStorage["#{@prefix}#{key}"]
+    _.parse(value).data if value = localStorage["#{@prefix}#{key}"]
 
   set: (key, value) ->
-    localStorage.setItem("#{@prefix}#{key}", JSON.stringify(value))
+    localStorage.setItem("#{@prefix}#{key}", JSON.stringify(data: value, timestamp: _.now()))
 
   unset: (key) ->
     localStorage.removeItem("#{@prefix}#{key}")

@@ -2370,7 +2370,7 @@
       for (key in localStorage) {
         value = localStorage[key];
         if (regex.test(key)) {
-          matches[key.replace(this.prefix, "")] = JSON.parse(value);
+          matches[key.replace(this.prefix, "")] = _.parse(value).data;
         }
       }
       return matches;
@@ -2379,12 +2379,15 @@
     Storage.prototype.get = function(key) {
       var value;
       if (value = localStorage["" + this.prefix + key]) {
-        return _.parse(value);
+        return _.parse(value).data;
       }
     };
 
     Storage.prototype.set = function(key, value) {
-      return localStorage.setItem("" + this.prefix + key, JSON.stringify(value));
+      return localStorage.setItem("" + this.prefix + key, JSON.stringify({
+        data: value,
+        timestamp: _.now()
+      }));
     };
 
     Storage.prototype.unset = function(key) {
