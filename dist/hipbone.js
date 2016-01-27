@@ -280,7 +280,7 @@
   View = require("./../../view");
 
   module.exports = function() {
-    var eachHelper, ifHelper, withHelper;
+    var eachHelper, ifHelper;
     Handlebars.registerHelper('asset', (function(_this) {
       return function(asset, options) {
         if (options == null) {
@@ -322,25 +322,24 @@
       }
       return eval(javascript);
     });
-    Handlebars.registerHelper('template', function(path, options) {
+    Handlebars.registerHelper('template', function(path, context, options) {
       var template;
+      if (context == null) {
+        context = {};
+      }
       if (options == null) {
         options = {};
       }
-      template = this.view.getTemplate(path)(this.view.getContext(options.hash, this));
+      if (context.hash != null) {
+        options = context;
+      }
+      context = _.extend({}, context, options.hash);
+      template = this.view.getTemplate(path)(this.view.getContext(context, this));
       if (options.hash.unescape) {
         return template;
       } else {
         return new Handlebars.SafeString(template);
       }
-    });
-    withHelper = Handlebars.helpers.each;
-    Handlebars.registerHelper('with', function(context, options) {
-      if (options == null) {
-        options = {};
-      }
-      context.view = this.view;
-      return withHelper.apply(this, [context, options]);
     });
     eachHelper = Handlebars.helpers.each;
     Handlebars.registerHelper('each', function(items, options) {

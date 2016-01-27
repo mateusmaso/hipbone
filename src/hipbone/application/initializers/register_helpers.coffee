@@ -18,14 +18,11 @@ module.exports = ->
   Handlebars.registerHelper 'eval', (javascript, options={}) ->
     eval(javascript)
 
-  Handlebars.registerHelper 'template', (path, options={}) ->
-    template = @view.getTemplate(path)(@view.getContext(options.hash, this))
+  Handlebars.registerHelper 'template', (path, context={}, options={}) ->
+    options = context if context.hash?
+    context = _.extend({}, context, options.hash)
+    template = @view.getTemplate(path)(@view.getContext(context, this))
     if options.hash.unescape then template else new Handlebars.SafeString(template)
-
-  withHelper = Handlebars.helpers.each
-  Handlebars.registerHelper 'with', (context, options={}) ->
-    context.view = @view
-    withHelper.apply(this, [context, options])
 
   eachHelper = Handlebars.helpers.each
   Handlebars.registerHelper 'each', (items, options={}) ->
