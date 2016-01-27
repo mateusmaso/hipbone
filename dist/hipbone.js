@@ -332,6 +332,7 @@
       }
       if (context.hash != null) {
         options = context;
+        context = {};
       }
       context = _.extend({}, context, options.hash);
       template = this.view.getTemplate(path)(this.view.getContext(context, this));

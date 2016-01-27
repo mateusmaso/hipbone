@@ -19,7 +19,10 @@ module.exports = ->
     eval(javascript)
 
   Handlebars.registerHelper 'template', (path, context={}, options={}) ->
-    options = context if context.hash?
+    if context.hash?
+      options = context
+      context = {}
+
     context = _.extend({}, context, options.hash)
     template = @view.getTemplate(path)(@view.getContext(context, this))
     if options.hash.unescape then template else new Handlebars.SafeString(template)
