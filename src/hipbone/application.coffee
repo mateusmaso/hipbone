@@ -12,7 +12,7 @@ module.exports = class Application extends Module
 
   constructor: (state={}, options={}) ->
     @initializeAjax()
-    @initializeState(_.extend(assets: {}, state))
+    @initializeState(state)
     @initializeLocale(options.locale)
     @initializeInitializers()
     @router = new Router(title: @title)

@@ -60,9 +60,7 @@
         options = {};
       }
       this.initializeAjax();
-      this.initializeState(_.extend({
-        assets: {}
-      }, state));
+      this.initializeState(state);
       this.initializeLocale(options.locale);
       this.initializeInitializers();
       this.router = new Router({
@@ -400,13 +398,21 @@
         state = {};
       }
       this.state = new (Model.define({
-        defaults: this.defaults
+        defaults: this.defaults,
+        urlRoot: this.urlRoot,
+        parse: this.parse
       }))(state);
       return this.listenTo(this.state, "all", (function(_this) {
         return function() {
           return _this.trigger.apply(_this, arguments);
         };
       })(this));
+    },
+    fetch: function() {
+      return this.state.fetch.apply(this.state, arguments);
+    },
+    parse: function(response) {
+      return response;
     },
     get: function() {
       return this.state.get.apply(this.state, arguments);
