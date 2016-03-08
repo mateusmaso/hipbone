@@ -27,7 +27,7 @@
 
 }).call(this);
 
-},{"./hipbone/application":2,"./hipbone/collection":13,"./hipbone/history":23,"./hipbone/i18n":25,"./hipbone/identity_map":26,"./hipbone/model":27,"./hipbone/module":37,"./hipbone/route":38,"./hipbone/router":45,"./hipbone/storage":49,"./hipbone/view":50}],2:[function(require,module,exports){
+},{"./hipbone/application":2,"./hipbone/collection":13,"./hipbone/history":22,"./hipbone/i18n":24,"./hipbone/identity_map":25,"./hipbone/model":26,"./hipbone/module":35,"./hipbone/route":36,"./hipbone/router":43,"./hipbone/storage":47,"./hipbone/view":48}],2:[function(require,module,exports){
 (function() {
   var Application, Module, Router, Storage,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -90,7 +90,7 @@
 
 }).call(this);
 
-},{"./application/ajax":3,"./application/initializers":4,"./application/locale":11,"./application/state":12,"./module":37,"./router":45,"./storage":49}],3:[function(require,module,exports){
+},{"./application/ajax":3,"./application/initializers":4,"./application/locale":11,"./application/state":12,"./module":35,"./router":43,"./storage":47}],3:[function(require,module,exports){
 (function() {
   var slice = [].slice;
 
@@ -240,7 +240,7 @@
 
 }).call(this);
 
-},{"./../../collection":13,"./../../model":27}],8:[function(require,module,exports){
+},{"./../../collection":13,"./../../model":26}],8:[function(require,module,exports){
 (function() {
   module.exports = function() {
     var sync;
@@ -367,7 +367,7 @@
 
 }).call(this);
 
-},{"./../../view":50}],11:[function(require,module,exports){
+},{"./../../view":48}],11:[function(require,module,exports){
 (function() {
   var I18n;
 
@@ -386,7 +386,7 @@
 
 }).call(this);
 
-},{"./../i18n":25}],12:[function(require,module,exports){
+},{"./../i18n":24}],12:[function(require,module,exports){
 (function() {
   var Model;
 
@@ -424,7 +424,7 @@
 
 }).call(this);
 
-},{"./../model":27}],13:[function(require,module,exports){
+},{"./../model":26}],13:[function(require,module,exports){
 (function() {
   var Collection, Model, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -543,7 +543,7 @@
 
 }).call(this);
 
-},{"./collection/filters":14,"./collection/meta":15,"./collection/pagination":16,"./collection/parent":17,"./collection/polymorphic":18,"./collection/populate":19,"./collection/store":20,"./collection/sync":21,"./model":27,"./module":37}],14:[function(require,module,exports){
+},{"./collection/filters":14,"./collection/meta":15,"./collection/pagination":16,"./collection/parent":17,"./collection/polymorphic":18,"./collection/populate":19,"./collection/store":20,"./collection/sync":21,"./model":26,"./module":35}],14:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeFilters: function() {
@@ -627,7 +627,7 @@
 
 }).call(this);
 
-},{"./../model":27}],16:[function(require,module,exports){
+},{"./../model":26}],16:[function(require,module,exports){
 (function() {
   module.exports = {
     initializePagination: function() {
@@ -857,7 +857,7 @@
 
 }).call(this);
 
-},{"./../identity_map":26}],21:[function(require,module,exports){
+},{"./../identity_map":25}],21:[function(require,module,exports){
 (function() {
   module.exports = {
     unsync: function() {
@@ -873,71 +873,6 @@
 }).call(this);
 
 },{}],22:[function(require,module,exports){
-(function() {
-  var Graph, Module,
-    extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
-
-  Module = require("./module");
-
-  module.exports = Graph = (function(superClass) {
-    extend(Graph, superClass);
-
-    function Graph(json) {
-      if (json == null) {
-        json = {};
-      }
-      this.nodeTree = this.build(json);
-    }
-
-    Graph.prototype.build = function(json) {
-      var graph, key, value;
-      graph = {};
-      for (key in json) {
-        value = json[key];
-        if (_.isArray(value) && _.isObject(value[0])) {
-          graph[key] = this.build(value[0]);
-        } else if (_.isObject(value)) {
-          graph[key] = this.build(value);
-        } else {
-          graph[key] = void 0;
-        }
-      }
-      return graph;
-    };
-
-    Graph.prototype.print = function(value) {
-      var key, ref, result;
-      result = "{";
-      ref = value || this.nodeTree;
-      for (key in ref) {
-        value = ref[key];
-        if (_.isArray(value) && _.isObject(value[0])) {
-          result += " " + key + " " + (this.print(value[0]));
-        } else if (_.isObject(value)) {
-          result += " " + key + " " + (this.print(value));
-        } else {
-          result += " " + key;
-        }
-      }
-      return result += " }";
-    };
-
-    Graph.prototype.parse = function(value) {
-      value = value.split("{").splice(1).join("{");
-      value = value.split("}").splice(value.split("}").length).join("}");
-      return value;
-    };
-
-    Graph.prototype.contains = function(string) {};
-
-    return Graph;
-
-  })(Module);
-
-}).call(this);
-
-},{"./module":37}],23:[function(require,module,exports){
 (function() {
   var History, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -993,7 +928,7 @@
 
 }).call(this);
 
-},{"./history/query":24,"./module":37}],24:[function(require,module,exports){
+},{"./history/query":23,"./module":35}],23:[function(require,module,exports){
 (function() {
   module.exports = {
     change: function(query) {
@@ -1030,7 +965,7 @@
 
 }).call(this);
 
-},{}],25:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 (function() {
   var I18n, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1111,7 +1046,7 @@
 
 }).call(this);
 
-},{"./module":37}],26:[function(require,module,exports){
+},{"./module":35}],25:[function(require,module,exports){
 (function() {
   var IdentityMap, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1202,7 +1137,7 @@
 
 }).call(this);
 
-},{"./module":37}],27:[function(require,module,exports){
+},{"./module":35}],26:[function(require,module,exports){
 (function() {
   var Model, Module,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1325,7 +1260,7 @@
 
 }).call(this);
 
-},{"./model/computed_attributes":28,"./model/mappings":29,"./model/nested_attributes":30,"./model/populate":31,"./model/schemes":32,"./model/store":33,"./model/syncs":35,"./model/validations":36,"./module":37}],28:[function(require,module,exports){
+},{"./model/computed_attributes":27,"./model/mappings":28,"./model/nested_attributes":29,"./model/populate":30,"./model/schemes":31,"./model/store":32,"./model/syncs":33,"./model/validations":34,"./module":35}],27:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeComputedAttributes: function() {
@@ -1367,7 +1302,7 @@
 
 }).call(this);
 
-},{}],29:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeMappings: function() {
@@ -1524,7 +1459,7 @@
 
 }).call(this);
 
-},{"./../collection":13,"./../model":27}],30:[function(require,module,exports){
+},{"./../collection":13,"./../model":26}],29:[function(require,module,exports){
 (function() {
   module.exports = {
     getNestedAttribute: function(attribute) {
@@ -1584,7 +1519,7 @@
 
 }).call(this);
 
-},{}],31:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 (function() {
   module.exports = {
     initializePopulate: function() {
@@ -1613,7 +1548,7 @@
 
 }).call(this);
 
-},{}],32:[function(require,module,exports){
+},{}],31:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeSchemes: function() {
@@ -1638,7 +1573,7 @@
 
 }).call(this);
 
-},{}],33:[function(require,module,exports){
+},{}],32:[function(require,module,exports){
 (function() {
   var IdentityMap;
 
@@ -1696,35 +1631,7 @@
 
 }).call(this);
 
-},{"./../identity_map":26}],34:[function(require,module,exports){
-(function() {
-  module.exports = {
-    initializeSync: function() {
-      return this.syncs || (this.syncs = {});
-    },
-    unsync: function(name) {
-      delete this.synced;
-      delete this.syncs[name];
-      if (name) {
-        this.trigger("unsync:" + name, this);
-      }
-      return this.trigger("unsync", this);
-    },
-    didSync: function(name) {
-      this.synced = Date.now();
-      if (name) {
-        this.syncs[name] = this.synced;
-      }
-      if (name) {
-        this.trigger("synced:" + name, this);
-      }
-      return this.trigger("synced", name, this);
-    }
-  };
-
-}).call(this);
-
-},{}],35:[function(require,module,exports){
+},{"./../identity_map":25}],33:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeSyncs: function() {
@@ -1752,7 +1659,7 @@
 
 }).call(this);
 
-},{}],36:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeValidations: function() {
@@ -1790,7 +1697,7 @@
 
 }).call(this);
 
-},{}],37:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 (function() {
   var Module, keywords, prepare, store,
     slice = [].slice,
@@ -1907,7 +1814,7 @@
 
 }).call(this);
 
-},{}],38:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 (function() {
   var Module, Route,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -1966,7 +1873,7 @@
 
 }).call(this);
 
-},{"./module":37,"./route/activate":39,"./route/element":40,"./route/parameters":41,"./route/populate":42,"./route/store":43,"./route/title":44}],39:[function(require,module,exports){
+},{"./module":35,"./route/activate":37,"./route/element":38,"./route/parameters":39,"./route/populate":40,"./route/store":41,"./route/title":42}],37:[function(require,module,exports){
 (function() {
   module.exports = {
     active: function() {},
@@ -1989,7 +1896,7 @@
 
 }).call(this);
 
-},{}],40:[function(require,module,exports){
+},{}],38:[function(require,module,exports){
 (function() {
   var currentElement;
 
@@ -2016,7 +1923,7 @@
 
 }).call(this);
 
-},{}],41:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 (function() {
   var Model;
 
@@ -2056,7 +1963,7 @@
 
 }).call(this);
 
-},{"./../model":27}],42:[function(require,module,exports){
+},{"./../model":26}],40:[function(require,module,exports){
 (function() {
   module.exports = {
     initializePopulate: function() {
@@ -2081,7 +1988,7 @@
 
 }).call(this);
 
-},{}],43:[function(require,module,exports){
+},{}],41:[function(require,module,exports){
 (function() {
   var IdentityMap;
 
@@ -2146,7 +2053,7 @@
 
 }).call(this);
 
-},{"./../identity_map":26}],44:[function(require,module,exports){
+},{"./../identity_map":25}],42:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeTitle: function(titleRoot) {
@@ -2174,7 +2081,7 @@
 
 }).call(this);
 
-},{}],45:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 (function() {
   var History, Module, Router,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -2243,7 +2150,7 @@
 
 }).call(this);
 
-},{"./history":23,"./module":37,"./router/matches":46,"./router/params":47,"./router/url":48}],46:[function(require,module,exports){
+},{"./history":22,"./module":35,"./router/matches":44,"./router/params":45,"./router/url":46}],44:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeMatches: function() {
@@ -2313,7 +2220,7 @@
 
 }).call(this);
 
-},{}],47:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeParams: function() {
@@ -2329,7 +2236,7 @@
 
 }).call(this);
 
-},{}],48:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
 (function() {
   module.exports = {
     url: function(fragment, params) {
@@ -2352,7 +2259,7 @@
 
 }).call(this);
 
-},{}],49:[function(require,module,exports){
+},{}],47:[function(require,module,exports){
 (function() {
   var Module, Storage,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -2420,7 +2327,7 @@
 
 }).call(this);
 
-},{"./module":37}],50:[function(require,module,exports){
+},{"./module":35}],48:[function(require,module,exports){
 (function() {
   var Module, View,
     extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
@@ -2519,7 +2426,7 @@
 
 }).call(this);
 
-},{"./module":37,"./view/bubble":51,"./view/class_name_bindings":52,"./view/content":53,"./view/context":54,"./view/elements":55,"./view/lifecycle":56,"./view/populate":57,"./view/properties":58,"./view/template":60}],51:[function(require,module,exports){
+},{"./module":35,"./view/bubble":49,"./view/class_name_bindings":50,"./view/content":51,"./view/context":52,"./view/elements":53,"./view/lifecycle":54,"./view/populate":55,"./view/properties":56,"./view/template":57}],49:[function(require,module,exports){
 (function() {
   var slice = [].slice;
 
@@ -2534,7 +2441,7 @@
 
 }).call(this);
 
-},{}],52:[function(require,module,exports){
+},{}],50:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeClassNameBindings: function() {
@@ -2568,7 +2475,7 @@
 
 }).call(this);
 
-},{}],53:[function(require,module,exports){
+},{}],51:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeContent: function(content) {
@@ -2595,7 +2502,7 @@
 
 }).call(this);
 
-},{}],54:[function(require,module,exports){
+},{}],52:[function(require,module,exports){
 (function() {
   var Collection, Model, diffPatcher;
 
@@ -2654,7 +2561,7 @@
 
 }).call(this);
 
-},{"./../collection":13,"./../model":27}],55:[function(require,module,exports){
+},{"./../collection":13,"./../model":26}],53:[function(require,module,exports){
 (function() {
   var findBooleans;
 
@@ -2711,7 +2618,7 @@
 
 }).call(this);
 
-},{}],56:[function(require,module,exports){
+},{}],54:[function(require,module,exports){
 (function() {
   module.exports = {
     insert: function() {},
@@ -2747,7 +2654,7 @@
 
 }).call(this);
 
-},{}],57:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 (function() {
   module.exports = {
     initializePopulate: function() {
@@ -2792,7 +2699,7 @@
 
 }).call(this);
 
-},{}],58:[function(require,module,exports){
+},{}],56:[function(require,module,exports){
 (function() {
   var Model;
 
@@ -2847,55 +2754,7 @@
 
 }).call(this);
 
-},{"./../model":27}],59:[function(require,module,exports){
-(function() {
-  var IdentityMap;
-
-  IdentityMap = require("./../identity_map");
-
-  module.exports = {
-    included: function() {
-      var base;
-      return this.identityMap = (base = this.prototype).identityMap || (base.identityMap = new IdentityMap);
-    },
-    registered: function() {
-      return this.prototype.hashName = _.string.dasherize(this.prototype.moduleName).substring(1);
-    },
-    initializeStore: function(properties) {
-      var hashes, view;
-      if (properties == null) {
-        properties = {};
-      }
-      hashes = this.hashes(properties);
-      if (view = this.identityMap.findAll(hashes)[0]) {
-        view.setContent(content);
-        view.set(properties);
-        return view;
-      } else {
-        this.store(hashes);
-        return null;
-      }
-    },
-    hashes: function(properties) {
-      var hashes;
-      if (properties == null) {
-        properties = {};
-      }
-      hashes = [];
-      if (this.cid) {
-        hashes.push(this.cid);
-      }
-      return hashes;
-    },
-    store: function(hashes) {
-      hashes || (hashes = this.hashes());
-      return this.identityMap.storeAll(hashes, this);
-    }
-  };
-
-}).call(this);
-
-},{"./../identity_map":26}],60:[function(require,module,exports){
+},{"./../model":26}],57:[function(require,module,exports){
 (function() {
   module.exports = {
     initializeTemplate: function() {
@@ -2919,4 +2778,4 @@
 
 }).call(this);
 
-},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60]);
+},{}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57]);

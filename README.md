@@ -13,23 +13,24 @@ Hipbone is a framework for building scalable apps on top of Backbone.
 
 ## Dependencies
 
-* observe.js (>= 0.4.0)
-* jsondiffpatch.js (>= 0.1.37)
+* observe.js (>= 0.5.7)
+* jsondiffpatch.js (>= 0.1.41)
 * jquery.js (>= 2.1.0)
   * jquery.lifecycle.js (>= 0.1.2)
-* handlebars.js (>= 1.1.0)
+* handlebars.js (>= 4.0.5)
   * handlebars.element.js (>= 0.1.3)
-  * handlebars.binding.js (>= 0.1.7)
-* underscore.js (>= 1.6.0)
+  * handlebars.binding.js (>= 0.3.0)
+* underscore.js (>= 1.8.3)
   * underscore.path.js (>= 0.1.4)
   * underscore.pathextend.js (>= 0.1.2)
   * underscore.parse.js (>= 0.1.1)
-  * underscore.string.js (>= 2.3.2)
+  * underscore.string.js (>= 3.3.4)
+  * underscore.string.js (>= 0.1.4)
   * underscore.prefilter.js (>= 0.1.2)
   * underscore.catenate.js (>= 0.1.1)
   * underscore.deepclone.js (>= 0.1.1)
-* backbone.js (>= 1.2.3)
+* backbone.js (>= 1.3.1)
 
 ## License
 
-Copyright (c) 2012-2015 Mateus Maso. Released under an MIT license.
+Copyright (c) 2012-2016 Mateus Maso. Released under an MIT license.

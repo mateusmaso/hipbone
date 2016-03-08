@@ -1,4 +1,5 @@
 node_modules/
-temp/
-examples/todomvc/temp/
+tmp/
+spec/tmp/
+examples/todomvc/tmp/
 npm-debug.log

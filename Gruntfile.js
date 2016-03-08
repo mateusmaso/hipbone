@@ -21,14 +21,14 @@ module.exports = function(grunt) {
             expand: true,
             cwd: 'spec',
             src: ['**/*.coffee'],
-            dest: 'spec/temp/',
+            dest: 'spec/tmp/',
             ext: '.js'
           },
           {
             expand: true,
             cwd: 'src',
             src: ['**/*.coffee'],
-            dest: 'temp/',
+            dest: 'tmp/',
             ext: '.js'
           }
         ]
@@ -40,8 +40,8 @@ module.exports = function(grunt) {
       },
       dist: {
         files: {
-          'dist/<%= pkg.name %>.js': ['temp/**/*.js'],
-          'spec/index.js': ['spec/temp/**/*.js']
+          'dist/<%= pkg.name %>.js': ['tmp/**/*.js'],
+          'spec/index.js': ['spec/tmp/**/*.js']
         }
       }
     },
@@ -68,7 +68,7 @@ module.exports = function(grunt) {
         tasks: 'coffee'
       },
       browserify: {
-        files: ['tmp/**/*.js', 'spec/tmp/**/*.js'],
+        files: ['tmp/**/*.js'],
         tasks: ['browserify', 'uglify']
       }
     },

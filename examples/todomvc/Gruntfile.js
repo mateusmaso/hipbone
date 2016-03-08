@@ -8,7 +8,7 @@ module.exports = function(grunt) {
             expand: true,
             cwd: 'todomvc',
             src: ['**/*.coffee'],
-            dest: 'temp/',
+            dest: 'tmp/',
             ext: '.js'
           }
         ]
@@ -17,15 +17,15 @@ module.exports = function(grunt) {
     concat: {
       dist: {
         src: [
-          'temp/templates.js',
-          'temp/todomvc.js',
-          'temp/initializers/*.js',
-          'temp/locales/*.js',
-          'temp/models/*.js',
-          'temp/collections/*.js',
-          'temp/routes/*.js',
-          'temp/views/view.js',
-          'temp/views/*.js'
+          'tmp/templates.js',
+          'tmp/todomvc.js',
+          'tmp/initializers/*.js',
+          'tmp/locales/*.js',
+          'tmp/models/*.js',
+          'tmp/collections/*.js',
+          'tmp/routes/*.js',
+          'tmp/views/view.js',
+          'tmp/views/*.js'
         ],
         dest: 'todomvc.js'
       }
@@ -39,7 +39,7 @@ module.exports = function(grunt) {
           }
         },
         files: {
-          "temp/templates.js": ["todomvc/templates/*.hbs"]
+          "tmp/templates.js": ["todomvc/templates/*.hbs"]
         }
       }
     }
