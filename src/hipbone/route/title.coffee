@@ -9,7 +9,7 @@ module.exports =
   title: ->
     subtitle = @subtitle()
 
-    if _.string.isBlank(subtitle)
+    if s.isBlank(subtitle)
       @titleRoot
     else
       "#{subtitle} - #{@titleRoot}"

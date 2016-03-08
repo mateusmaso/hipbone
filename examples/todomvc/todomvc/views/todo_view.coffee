@@ -40,7 +40,7 @@ class TodoMVC.TodoView extends TodoMVC.View
 
   saveTodo: (event) ->
     return if event.type is 'keyup' and event.keyCode isnt 13
-    return @removeTodo() if _.string.isBlank(@$("edit").val())
+    return @removeTodo() if s.isBlank(@$("edit").val())
     @get("todo").set(text: @$("edit").val())
     @stopEditTodo()
 

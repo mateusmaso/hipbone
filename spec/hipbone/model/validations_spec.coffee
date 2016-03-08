@@ -5,7 +5,7 @@ module.exports = ->
         defaults:
           text: ""
         validations:
-          text: (text) -> not _.string.isBlank(text)
+          text: (text) -> not s.isBlank(text)
       @model = new Model
 
     it "should be valid", ->

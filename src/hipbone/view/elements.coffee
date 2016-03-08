@@ -6,7 +6,7 @@ findBooleans = (attributes={}, internals=[]) ->
 module.exports =
 
   registered: ->
-    @::elementName = _.string.dasherize(@::moduleName).substring(1).replace("-view", "")
+    @::elementName = s.dasherize(@::moduleName).substring(1).replace("-view", "")
     @::booleans = findBooleans(@::defaults, @::internals)
     View = this
 

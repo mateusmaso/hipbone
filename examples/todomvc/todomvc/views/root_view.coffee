@@ -28,7 +28,7 @@ class TodoMVC.RootView extends TodoMVC.View
     return if event.keyCode isnt 13
     text = @$("newTodo").val()
 
-    unless _.string.isBlank(text)
+    unless s.isBlank(text)
       @$("newTodo").val("")
       @get("todos").add(new TodoMVC.Todo(text: text))
 

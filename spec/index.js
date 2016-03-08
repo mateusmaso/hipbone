@@ -1473,7 +1473,7 @@
 
           Model.prototype.validations = {
             text: function(text) {
-              return !_.string.isBlank(text);
+              return !s.isBlank(text);
             }
           };
 

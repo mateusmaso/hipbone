@@ -15,7 +15,7 @@ module.exports =
 
   mergeAttributes: (attributes={}) ->
     for attribute, value of @properties.attributes when not _.contains(@internals, attribute)
-      attribute = _.string.dasherize(attribute)
+      attribute = s.dasherize(attribute)
 
       if attribute is "class"
         attributes[attribute] = "#{attributes[attribute]} #{value}".trim()

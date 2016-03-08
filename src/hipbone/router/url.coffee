@@ -4,7 +4,7 @@ module.exports =
     anchor = $("<a>").attr("href", fragment).get(0)
 
     if params
-      if _.string.isBlank(anchor.search)
+      if s.isBlank(anchor.search)
         anchor.search += $.param(params)
       else
         anchor.search += "&#{$.param(params)}"

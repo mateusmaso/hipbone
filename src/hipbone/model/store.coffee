@@ -6,7 +6,7 @@ module.exports =
     @identityMap = @::identityMap ||= new IdentityMap
 
   registered: ->
-    @::hashName = _.string.dasherize(@::moduleName).substring(1)
+    @::hashName = s.dasherize(@::moduleName).substring(1)
 
   initializeStore: (attributes={}, options={}) ->
     hashes = @hashes(attributes)

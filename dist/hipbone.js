@@ -803,7 +803,7 @@
       return this.identityMap = (base = this.prototype).identityMap || (base.identityMap = new IdentityMap);
     },
     registered: function() {
-      return this.prototype.hashName = _.string.dasherize(this.prototype.moduleName).substring(1);
+      return this.prototype.hashName = s.dasherize(this.prototype.moduleName).substring(1);
     },
     initializeStore: function(models, options) {
       var collection, hashes;
@@ -1585,7 +1585,7 @@
       return this.identityMap = (base = this.prototype).identityMap || (base.identityMap = new IdentityMap);
     },
     registered: function() {
-      return this.prototype.hashName = _.string.dasherize(this.prototype.moduleName).substring(1);
+      return this.prototype.hashName = s.dasherize(this.prototype.moduleName).substring(1);
     },
     initializeStore: function(attributes, options) {
       var hashes, model;
@@ -2000,7 +2000,7 @@
       return this.identityMap = (base = this.prototype).identityMap || (base.identityMap = new IdentityMap);
     },
     registered: function() {
-      return this.prototype.hashName = _.string.dasherize(this.prototype.moduleName).substring(1);
+      return this.prototype.hashName = s.dasherize(this.prototype.moduleName).substring(1);
     },
     initializeStore: function(params, options) {
       var hashes, route;
@@ -2068,7 +2068,7 @@
     title: function() {
       var subtitle;
       subtitle = this.subtitle();
-      if (_.string.isBlank(subtitle)) {
+      if (s.isBlank(subtitle)) {
         return this.titleRoot;
       } else {
         return subtitle + " - " + this.titleRoot;
@@ -2246,7 +2246,7 @@
       }
       anchor = $("<a>").attr("href", fragment).get(0);
       if (params) {
-        if (_.string.isBlank(anchor.search)) {
+        if (s.isBlank(anchor.search)) {
           anchor.search += $.param(params);
         } else {
           anchor.search += "&" + ($.param(params));
@@ -2586,7 +2586,7 @@
   module.exports = {
     registered: function() {
       var View;
-      this.prototype.elementName = _.string.dasherize(this.prototype.moduleName).substring(1).replace("-view", "");
+      this.prototype.elementName = s.dasherize(this.prototype.moduleName).substring(1).replace("-view", "");
       this.prototype.booleans = findBooleans(this.prototype.defaults, this.prototype.internals);
       View = this;
       return Handlebars.registerElement(this.prototype.elementName, function(attributes) {
@@ -2642,7 +2642,7 @@
           return function(attribute, value) {
             var property;
             _this.change(attribute, value);
-            property = _.string.camelize(attribute);
+            property = s.camelize(attribute);
             if (!_.contains(_this.internals, property)) {
               return _this.set(property, Handlebars.parseValue(value, _.contains(_this.booleans, property)));
             }
@@ -2737,7 +2737,7 @@
         if (!(!_.contains(this.internals, attribute))) {
           continue;
         }
-        attribute = _.string.dasherize(attribute);
+        attribute = s.dasherize(attribute);
         if (attribute === "class") {
           attributes[attribute] = (attributes[attribute] + " " + value).trim();
         } else if (_.contains(this.booleans, attribute)) {
