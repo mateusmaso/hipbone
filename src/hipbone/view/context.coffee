@@ -30,4 +30,4 @@ module.exports =
 
   updateContextBindings: ->
     @mergeContext(@presentContext(@context()))
-    Platform.performMicrotaskCheckpoint()
+    Handlebars.update()

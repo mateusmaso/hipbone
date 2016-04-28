@@ -2555,7 +2555,7 @@
     },
     updateContextBindings: function() {
       this.mergeContext(this.presentContext(this.context()));
-      return Platform.performMicrotaskCheckpoint();
+      return Handlebars.update();
     }
   };
 
