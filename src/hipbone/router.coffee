@@ -30,6 +30,11 @@ module.exports = class Router extends Backbone.Router
     else
       super(fragment, options)
 
+  restart: ->
+    @history.stop()
+    @history.start(pushState: true)
+    @trigger("restart")
+
   start: ->
     return if Backbone.History.started
     @history.start(pushState: true)

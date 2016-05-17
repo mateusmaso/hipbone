@@ -2132,6 +2132,14 @@
       }
     };
 
+    Router.prototype.restart = function() {
+      this.history.stop();
+      this.history.start({
+        pushState: true
+      });
+      return this.trigger("restart");
+    };
+
     Router.prototype.start = function() {
       if (Backbone.History.started) {
         return;
