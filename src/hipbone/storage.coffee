@@ -7,7 +7,7 @@ module.exports = class Storage extends Module
 
   match: (regex) ->
     matches = {}
-    matches[key.replace(@prefix, "")] = _.parse(value).data for key, value of localStorage when regex.test(key)
+    matches[key.replace(@prefix, "")] = _.parse(value).data for key, value of localStorage when regex.test(key) and s.include(key, @prefix)
     matches
 
   get: (key) ->

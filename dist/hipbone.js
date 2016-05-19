@@ -2290,7 +2290,7 @@
       matches = {};
       for (key in localStorage) {
         value = localStorage[key];
-        if (regex.test(key)) {
+        if (regex.test(key) && s.include(key, this.prefix)) {
           matches[key.replace(this.prefix, "")] = _.parse(value).data;
         }
       }
