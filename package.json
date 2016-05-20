@@ -1,6 +1,6 @@
 {
   "name": "hipbone",
-  "description": "Backbone based framework for building scalable apps",
+  "description": "Backbone based framework for building SPAs",
   "version": "1.0.0",
   "author": "mateusmaso",
   "keywords": ["backbone", "javascript", "spa", "binding", "handlebars", "htmlbars"],

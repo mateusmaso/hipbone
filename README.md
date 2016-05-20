@@ -1,7 +1,7 @@
 hipbone [![Build Status](https://travis-ci.org/mateusmaso/hipbone.svg?branch=master)](https://travis-ci.org/mateusmaso/hipbone)
 ==============
 
-Hipbone is a framework for building scalable apps on top of Backbone.
+Hipbone is a framework for building Single Page Applications on top of Backbone.
 
 ## Features
 
