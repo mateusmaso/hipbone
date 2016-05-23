@@ -21,14 +21,14 @@ module.exports = function(grunt) {
             expand: true,
             cwd: 'spec',
             src: ['**/*.coffee'],
-            dest: 'spec/tmp/',
+            dest: 'tmp/spec',
             ext: '.js'
           },
           {
             expand: true,
             cwd: 'src',
             src: ['**/*.coffee'],
-            dest: 'tmp/',
+            dest: 'lib/',
             ext: '.js'
           }
         ]
@@ -36,12 +36,18 @@ module.exports = function(grunt) {
     },
     browserify: {
       options: {
-        banner: '<%= meta.banner %>'
+        banner: '<%= meta.banner %>',
+        exclude: ["underscore", "jquery", "handlebars"],
+        alias: {
+          'jquery': './shims/jquery.js',
+          'underscore': './shims/underscore.js',
+          'handlebars': './shims/handlebars.js'
+        }
       },
       dist: {
         files: {
-          'dist/<%= pkg.name %>.js': ['tmp/**/*.js'],
-          'spec/index.js': ['spec/tmp/**/*.js']
+          'dist/<%= pkg.name %>.js': ['shim/**/*.js', 'lib/index.js'],
+          'spec/index.js': ['tmp/spec/index.js'],
         }
       }
     },
@@ -54,13 +60,11 @@ module.exports = function(grunt) {
         dest: 'dist/<%= pkg.name %>.min.js'
       }
     },
-    mocha: {
+    mocha_phantomjs: {
       options: {
-        run: true
+        reporter: 'spec'
       },
-      test: {
-        src: ['spec/**/*.html']
-      }
+      all: ['spec/**/*.html']
     },
     watch: {
       coffee: {
@@ -68,18 +72,17 @@ module.exports = function(grunt) {
         tasks: 'coffee'
       },
       browserify: {
-        files: ['tmp/**/*.js'],
+        files: ['lib/**/*.js'],
         tasks: ['browserify', 'uglify']
       }
-    },
-    clean: ['dist']
+    }
   });
 
-  grunt.loadNpmTasks('grunt-mocha');
+  grunt.loadNpmTasks('grunt-mocha-phantomjs');
   grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-coffee');
   grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-watch');
 
-  grunt.registerTask('default', ['coffee', 'browserify', 'uglify', 'mocha']);
+  grunt.registerTask('default', ['coffee', 'browserify', 'uglify', 'mocha_phantomjs']);
 };

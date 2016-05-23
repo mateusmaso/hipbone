@@ -6,48 +6,39 @@ module.exports = function(grunt) {
         files: [
           {
             expand: true,
-            cwd: 'todomvc',
             src: ['**/*.coffee'],
-            dest: 'tmp/',
+            dest: '../../tmp/examples/todomvc',
             ext: '.js'
           }
         ]
       }
     },
-    concat: {
+    browserify: {
       dist: {
-        src: [
-          'tmp/templates.js',
-          'tmp/todomvc.js',
-          'tmp/initializers/*.js',
-          'tmp/locales/*.js',
-          'tmp/models/*.js',
-          'tmp/collections/*.js',
-          'tmp/routes/*.js',
-          'tmp/views/view.js',
-          'tmp/views/*.js'
-        ],
-        dest: 'todomvc.js'
+        files: {
+          'app/index.js': ['../../tmp/examples/todomvc/app/index.js']
+        }
       }
     },
     handlebars: {
       compile: {
         options: {
-          namespace: "HandlebarsTemplates",
+          namespace: "Templates",
           processName: function(filePath) {
             return filePath.replace(".hbs", "");
           }
         },
         files: {
-          "tmp/templates.js": ["todomvc/templates/*.hbs"]
+          "../../tmp/examples/todomvc/app/templates/index.js": ["app/templates/*.hbs"]
         }
       }
     }
   });
 
+  grunt.loadNpmTasks('grunt-browserify');
   grunt.loadNpmTasks('grunt-contrib-coffee');
   grunt.loadNpmTasks('grunt-contrib-handlebars');
   grunt.loadNpmTasks('grunt-contrib-concat');
 
-  grunt.registerTask('default', ['coffee', 'handlebars', 'concat']);
+  grunt.registerTask('default', ['coffee', 'handlebars', 'browserify']);
 };

@@ -1,3 +1,0 @@
-TodoMVC::locales['en'] = {
-  
-}

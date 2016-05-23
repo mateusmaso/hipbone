@@ -1,6 +1,6 @@
 // hipbone
 // ------------------
-// v2.0.0
+// v2.0.1
 //
 // Copyright (c) 2012-2016 Mateus Maso
 // Distributed under MIT license
@@ -8,7 +8,7 @@
 // http://github.com/mateusmaso/hipbone
 
 
-(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -67,6 +67,64 @@
 },{}],2:[function(require,module,exports){
 (function() {
   module.exports = function() {
+    return describe("Application", function() {
+      require("./ajax_spec").apply(this);
+      require("./state_spec").apply(this);
+      require("./locale_spec").apply(this);
+      return require("./initializers_spec").apply(this);
+    });
+  };
+
+}).call(this);
+
+},{"./ajax_spec":1,"./initializers_spec":3,"./locale_spec":7,"./state_spec":8}],3:[function(require,module,exports){
+(function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  module.exports = function() {
+    return describe("initializers", function() {
+      it("should run initializers with options", function() {
+        var Application, app, initializers;
+        initializers = [];
+        initializers.push(function() {
+          return this.get("output").push("foo");
+        });
+        initializers.push(function(options) {
+          if (options.bar) {
+            return this.get("output").push("bar");
+          }
+        });
+        Application = (function(superClass) {
+          extend(Application, superClass);
+
+          function Application() {
+            return Application.__super__.constructor.apply(this, arguments);
+          }
+
+          Application.prototype.initializers = initializers;
+
+          return Application;
+
+        })(Hipbone.Application);
+        app = new Application({
+          output: []
+        }, {
+          bar: true
+        });
+        return chai.expect(app.get("output")).to.be.deep.equal(["foo", "bar"]);
+      });
+      require("./parse_body_spec").apply(this);
+      require("./parse_model_spec").apply(this);
+      return require("./register_helpers_spec").apply(this);
+    });
+  };
+
+}).call(this);
+
+},{"./parse_body_spec":4,"./parse_model_spec":5,"./register_helpers_spec":6}],4:[function(require,module,exports){
+(function() {
+  module.exports = function() {
     return describe("parse body", function() {
       return it("should parse view element", function() {
         var app;
@@ -80,7 +138,7 @@
 
 }).call(this);
 
-},{}],3:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("parse model", function() {
@@ -105,7 +163,7 @@
 
 }).call(this);
 
-},{}],4:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -213,52 +271,7 @@
 
 }).call(this);
 
-},{}],5:[function(require,module,exports){
-(function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
-
-  module.exports = function() {
-    return describe("initializers", function() {
-      it("should run initializers with options", function() {
-        var Application, app, initializers;
-        initializers = [];
-        initializers.push(function() {
-          return this.get("output").push("foo");
-        });
-        initializers.push(function(options) {
-          if (options.bar) {
-            return this.get("output").push("bar");
-          }
-        });
-        Application = (function(superClass) {
-          extend(Application, superClass);
-
-          function Application() {
-            return Application.__super__.constructor.apply(this, arguments);
-          }
-
-          Application.prototype.initializers = initializers;
-
-          return Application;
-
-        })(Hipbone.Application);
-        app = new Application({
-          output: []
-        }, {
-          bar: true
-        });
-        return chai.expect(app.get("output")).to.be.deep.equal(["foo", "bar"]);
-      });
-      require("./initializers/parse_body_spec").apply(this);
-      require("./initializers/parse_model_spec").apply(this);
-      return require("./initializers/register_helpers_spec").apply(this);
-    });
-  };
-
-}).call(this);
-
-},{"./initializers/parse_body_spec":2,"./initializers/parse_model_spec":3,"./initializers/register_helpers_spec":4}],6:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -314,7 +327,7 @@
 
 }).call(this);
 
-},{}],7:[function(require,module,exports){
+},{}],8:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -370,20 +383,7 @@
 
 }).call(this);
 
-},{}],8:[function(require,module,exports){
-(function() {
-  module.exports = function() {
-    return describe("Application", function() {
-      require("./application/ajax_spec").apply(this);
-      require("./application/state_spec").apply(this);
-      require("./application/locale_spec").apply(this);
-      return require("./application/initializers_spec").apply(this);
-    });
-  };
-
-}).call(this);
-
-},{"./application/ajax_spec":1,"./application/initializers_spec":5,"./application/locale_spec":6,"./application/state_spec":7}],9:[function(require,module,exports){
+},{}],9:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -417,6 +417,68 @@
 }).call(this);
 
 },{}],10:[function(require,module,exports){
+(function() {
+  module.exports = function() {
+    return describe("Collection", function() {
+      require("./sync_spec").apply(this);
+      require("./meta_spec").apply(this);
+      require("./store_spec").apply(this);
+      require("./parent_spec").apply(this);
+      require("./filters_spec").apply(this);
+      require("./populate_spec").apply(this);
+      require("./pagination_spec").apply(this);
+      require("./polymorphic_spec").apply(this);
+      return describe("json", function() {
+        before(function() {
+          return this.collection = new Hipbone.Collection([
+            {
+              id: 1
+            }, {
+              id: 2
+            }
+          ], {
+            meta: {
+              count: 10
+            }
+          });
+        });
+        it("should include by default cid, meta and helpers", function() {
+          return chai.expect(this.collection.toJSON()).to.be.deep.equal({
+            cid: this.collection.cid,
+            length: 2,
+            meta: {
+              cid: this.collection.meta.cid,
+              count: 10
+            },
+            models: [
+              {
+                cid: this.collection.at(0).cid,
+                id: 1
+              }, {
+                cid: this.collection.at(1).cid,
+                id: 2
+              }
+            ]
+          });
+        });
+        return it("should behave as backbone when sync", function() {
+          return chai.expect(this.collection.toJSON({
+            sync: true
+          })).to.be.deep.equal([
+            {
+              id: 1
+            }, {
+              id: 2
+            }
+          ]);
+        });
+      });
+    });
+  };
+
+}).call(this);
+
+},{"./filters_spec":9,"./meta_spec":11,"./pagination_spec":12,"./parent_spec":13,"./polymorphic_spec":14,"./populate_spec":15,"./store_spec":16,"./sync_spec":17}],11:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -493,7 +555,7 @@
 
 }).call(this);
 
-},{}],11:[function(require,module,exports){
+},{}],12:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -543,7 +605,7 @@
 
 }).call(this);
 
-},{}],12:[function(require,module,exports){
+},{}],13:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -596,7 +658,7 @@
 
 }).call(this);
 
-},{}],13:[function(require,module,exports){
+},{}],14:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -723,7 +785,7 @@
 
 }).call(this);
 
-},{}],14:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -778,7 +840,7 @@
 
 }).call(this);
 
-},{}],15:[function(require,module,exports){
+},{}],16:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("store", function() {
@@ -802,7 +864,7 @@
 
 }).call(this);
 
-},{}],16:[function(require,module,exports){
+},{}],17:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("sync", function() {
@@ -831,69 +893,7 @@
 
 }).call(this);
 
-},{}],17:[function(require,module,exports){
-(function() {
-  module.exports = function() {
-    return describe("Collection", function() {
-      require("./collection/sync_spec").apply(this);
-      require("./collection/meta_spec").apply(this);
-      require("./collection/store_spec").apply(this);
-      require("./collection/parent_spec").apply(this);
-      require("./collection/filters_spec").apply(this);
-      require("./collection/populate_spec").apply(this);
-      require("./collection/pagination_spec").apply(this);
-      require("./collection/polymorphic_spec").apply(this);
-      return describe("json", function() {
-        before(function() {
-          return this.collection = new Hipbone.Collection([
-            {
-              id: 1
-            }, {
-              id: 2
-            }
-          ], {
-            meta: {
-              count: 10
-            }
-          });
-        });
-        it("should include by default cid, meta and helpers", function() {
-          return chai.expect(this.collection.toJSON()).to.be.deep.equal({
-            cid: this.collection.cid,
-            length: 2,
-            meta: {
-              cid: this.collection.meta.cid,
-              count: 10
-            },
-            models: [
-              {
-                cid: this.collection.at(0).cid,
-                id: 1
-              }, {
-                cid: this.collection.at(1).cid,
-                id: 2
-              }
-            ]
-          });
-        });
-        return it("should behave as backbone when sync", function() {
-          return chai.expect(this.collection.toJSON({
-            sync: true
-          })).to.be.deep.equal([
-            {
-              id: 1
-            }, {
-              id: 2
-            }
-          ]);
-        });
-      });
-    });
-  };
-
-}).call(this);
-
-},{"./collection/filters_spec":9,"./collection/meta_spec":10,"./collection/pagination_spec":11,"./collection/parent_spec":12,"./collection/polymorphic_spec":13,"./collection/populate_spec":14,"./collection/store_spec":15,"./collection/sync_spec":16}],18:[function(require,module,exports){
+},{}],18:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("I18n", function() {
@@ -998,6 +998,23 @@
 
 },{}],20:[function(require,module,exports){
 (function() {
+  describe("hipbone", function() {
+    require("./module_spec").apply(this);
+    require("./i18n_spec").apply(this);
+    require("./identity_map_spec").apply(this);
+    require("./storage_spec").apply(this);
+    require("./application_spec").apply(this);
+    require("./model_spec").apply(this);
+    require("./collection_spec").apply(this);
+    require("./router_spec").apply(this);
+    require("./route_spec").apply(this);
+    return require("./view_spec").apply(this);
+  });
+
+}).call(this);
+
+},{"./application_spec":2,"./collection_spec":10,"./i18n_spec":18,"./identity_map_spec":19,"./model_spec":22,"./module_spec":30,"./route_spec":32,"./router_spec":37,"./storage_spec":40,"./view_spec":46}],21:[function(require,module,exports){
+(function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
 
@@ -1033,7 +1050,169 @@
 
 }).call(this);
 
-},{}],21:[function(require,module,exports){
+},{}],22:[function(require,module,exports){
+(function() {
+  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
+    hasProp = {}.hasOwnProperty;
+
+  module.exports = function() {
+    return describe("Model", function() {
+      require("./syncs_spec").apply(this);
+      require("./store_spec").apply(this);
+      require("./schemes_spec").apply(this);
+      require("./mappings_spec").apply(this);
+      require("./populate_spec").apply(this);
+      require("./validations_spec").apply(this);
+      require("./nested_attributes_spec").apply(this);
+      require("./computed_attributes_spec").apply(this);
+      return describe("json", function() {
+        var Book, Page, Pages;
+        Book = (function(superClass) {
+          extend(Book, superClass);
+
+          function Book() {
+            return Book.__super__.constructor.apply(this, arguments);
+          }
+
+          Book.prototype.mappings = {
+            pages: function() {
+              return Pages;
+            }
+          };
+
+          Book.prototype.computedAttributes = {
+            full_title: "fullTitle"
+          };
+
+          Book.prototype.fullTitle = function() {
+            return (this.get("title")) + " by " + (this.get("author"));
+          };
+
+          Book.register("Book");
+
+          return Book;
+
+        })(Hipbone.Model);
+        Page = (function(superClass) {
+          extend(Page, superClass);
+
+          function Page() {
+            return Page.__super__.constructor.apply(this, arguments);
+          }
+
+          Page.prototype.mappings = {
+            book: function() {
+              return Book;
+            }
+          };
+
+          Page.register("Page");
+
+          return Page;
+
+        })(Hipbone.Model);
+        Pages = (function(superClass) {
+          extend(Pages, superClass);
+
+          function Pages() {
+            return Pages.__super__.constructor.apply(this, arguments);
+          }
+
+          Pages.prototype.model = Page;
+
+          Pages.register("Pages");
+
+          return Pages;
+
+        })(Hipbone.Collection);
+        before(function() {
+          Hipbone.Model.identityMap.clear();
+          Hipbone.Collection.identityMap.clear();
+          return this.book = new Book({
+            id: 1,
+            title: "Hipbone",
+            author: "Mateus",
+            pages: [
+              {
+                book_id: 1
+              }, {
+                book_id: 1
+              }
+            ]
+          });
+        });
+        it("should include by default cid and computed attributes", function() {
+          return chai.expect(this.book.toJSON()).to.be.deep.equal({
+            cid: this.book.cid,
+            id: 1,
+            title: "Hipbone",
+            author: "Mateus",
+            full_title: "Hipbone by Mateus"
+          });
+        });
+        it("should behave as backbone when sync", function() {
+          return chai.expect(this.book.toJSON({
+            sync: true
+          })).to.be.deep.equal({
+            id: 1,
+            title: "Hipbone",
+            author: "Mateus"
+          });
+        });
+        return it("should include mappings when requested", function() {
+          return chai.expect(this.book.toJSON({
+            mappings: {
+              pages: {
+                mappings: {
+                  book: {}
+                }
+              }
+            }
+          })).to.be.deep.equal({
+            cid: this.book.cid,
+            id: 1,
+            title: "Hipbone",
+            author: "Mateus",
+            full_title: "Hipbone by Mateus",
+            pages: {
+              cid: this.book.get("pages").cid,
+              length: 2,
+              meta: {
+                cid: this.book.get("pages").meta.cid
+              },
+              models: [
+                {
+                  book: {
+                    cid: this.book.cid,
+                    id: 1,
+                    title: "Hipbone",
+                    author: "Mateus",
+                    full_title: "Hipbone by Mateus"
+                  },
+                  book_id: 1,
+                  cid: this.book.get("pages").at(0).cid
+                }, {
+                  book: {
+                    cid: this.book.cid,
+                    id: 1,
+                    title: "Hipbone",
+                    author: "Mateus",
+                    full_title: "Hipbone by Mateus"
+                  },
+                  book_id: 1,
+                  cid: this.book.get("pages").at(1).cid
+                }
+              ]
+            }
+          });
+        });
+      });
+    });
+  };
+
+}).call(this);
+
+},{"./computed_attributes_spec":21,"./mappings_spec":23,"./nested_attributes_spec":24,"./populate_spec":25,"./schemes_spec":26,"./store_spec":27,"./syncs_spec":28,"./validations_spec":29}],23:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -1219,7 +1398,7 @@
 
 }).call(this);
 
-},{}],22:[function(require,module,exports){
+},{}],24:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("nested attributes", function() {
@@ -1264,7 +1443,7 @@
 
 }).call(this);
 
-},{}],23:[function(require,module,exports){
+},{}],25:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -1319,7 +1498,7 @@
 
 }).call(this);
 
-},{}],24:[function(require,module,exports){
+},{}],26:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -1373,7 +1552,7 @@
 
 }).call(this);
 
-},{}],25:[function(require,module,exports){
+},{}],27:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("store", function() {
@@ -1396,7 +1575,7 @@
 
 }).call(this);
 
-},{}],26:[function(require,module,exports){
+},{}],28:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("syncs", function() {
@@ -1451,7 +1630,7 @@
 
 }).call(this);
 
-},{}],27:[function(require,module,exports){
+},{}],29:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -1473,7 +1652,7 @@
 
           Model.prototype.validations = {
             text: function(text) {
-              return !s.isBlank(text);
+              return text.trim() !== "";
             }
           };
 
@@ -1499,169 +1678,7 @@
 
 }).call(this);
 
-},{}],28:[function(require,module,exports){
-(function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
-
-  module.exports = function() {
-    return describe("Model", function() {
-      require("./model/syncs_spec").apply(this);
-      require("./model/store_spec").apply(this);
-      require("./model/schemes_spec").apply(this);
-      require("./model/mappings_spec").apply(this);
-      require("./model/populate_spec").apply(this);
-      require("./model/validations_spec").apply(this);
-      require("./model/nested_attributes_spec").apply(this);
-      require("./model/computed_attributes_spec").apply(this);
-      return describe("json", function() {
-        var Book, Page, Pages;
-        Book = (function(superClass) {
-          extend(Book, superClass);
-
-          function Book() {
-            return Book.__super__.constructor.apply(this, arguments);
-          }
-
-          Book.prototype.mappings = {
-            pages: function() {
-              return Pages;
-            }
-          };
-
-          Book.prototype.computedAttributes = {
-            full_title: "fullTitle"
-          };
-
-          Book.prototype.fullTitle = function() {
-            return (this.get("title")) + " by " + (this.get("author"));
-          };
-
-          Book.register("Book");
-
-          return Book;
-
-        })(Hipbone.Model);
-        Page = (function(superClass) {
-          extend(Page, superClass);
-
-          function Page() {
-            return Page.__super__.constructor.apply(this, arguments);
-          }
-
-          Page.prototype.mappings = {
-            book: function() {
-              return Book;
-            }
-          };
-
-          Page.register("Page");
-
-          return Page;
-
-        })(Hipbone.Model);
-        Pages = (function(superClass) {
-          extend(Pages, superClass);
-
-          function Pages() {
-            return Pages.__super__.constructor.apply(this, arguments);
-          }
-
-          Pages.prototype.model = Page;
-
-          Pages.register("Pages");
-
-          return Pages;
-
-        })(Hipbone.Collection);
-        before(function() {
-          Hipbone.Model.identityMap.clear();
-          Hipbone.Collection.identityMap.clear();
-          return this.book = new Book({
-            id: 1,
-            title: "Hipbone",
-            author: "Mateus",
-            pages: [
-              {
-                book_id: 1
-              }, {
-                book_id: 1
-              }
-            ]
-          });
-        });
-        it("should include by default cid and computed attributes", function() {
-          return chai.expect(this.book.toJSON()).to.be.deep.equal({
-            cid: this.book.cid,
-            id: 1,
-            title: "Hipbone",
-            author: "Mateus",
-            full_title: "Hipbone by Mateus"
-          });
-        });
-        it("should behave as backbone when sync", function() {
-          return chai.expect(this.book.toJSON({
-            sync: true
-          })).to.be.deep.equal({
-            id: 1,
-            title: "Hipbone",
-            author: "Mateus"
-          });
-        });
-        return it("should include mappings when requested", function() {
-          return chai.expect(this.book.toJSON({
-            mappings: {
-              pages: {
-                mappings: {
-                  book: {}
-                }
-              }
-            }
-          })).to.be.deep.equal({
-            cid: this.book.cid,
-            id: 1,
-            title: "Hipbone",
-            author: "Mateus",
-            full_title: "Hipbone by Mateus",
-            pages: {
-              cid: this.book.get("pages").cid,
-              length: 2,
-              meta: {
-                cid: this.book.get("pages").meta.cid
-              },
-              models: [
-                {
-                  book: {
-                    cid: this.book.cid,
-                    id: 1,
-                    title: "Hipbone",
-                    author: "Mateus",
-                    full_title: "Hipbone by Mateus"
-                  },
-                  book_id: 1,
-                  cid: this.book.get("pages").at(0).cid
-                }, {
-                  book: {
-                    cid: this.book.cid,
-                    id: 1,
-                    title: "Hipbone",
-                    author: "Mateus",
-                    full_title: "Hipbone by Mateus"
-                  },
-                  book_id: 1,
-                  cid: this.book.get("pages").at(1).cid
-                }
-              ]
-            }
-          });
-        });
-      });
-    });
-  };
-
-}).call(this);
-
-},{"./model/computed_attributes_spec":20,"./model/mappings_spec":21,"./model/nested_attributes_spec":22,"./model/populate_spec":23,"./model/schemes_spec":24,"./model/store_spec":25,"./model/syncs_spec":26,"./model/validations_spec":27}],29:[function(require,module,exports){
+},{}],30:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -1722,17 +1739,6 @@
         Cow.extend(Moo);
         return chai.expect([Cow.moo(), extended, _.contains(Cow.extendedModules, Moo)]).to.be.deep.equal(["mooh", true, true]);
       });
-    });
-  };
-
-}).call(this);
-
-},{}],30:[function(require,module,exports){
-(function() {
-  module.exports = function() {
-    return describe("activate", function() {
-      it("should not activate", function() {});
-      return it("should activate", function() {});
     });
   };
 
@@ -1799,6 +1805,20 @@
 }).call(this);
 
 },{}],32:[function(require,module,exports){
+(function() {
+  module.exports = function() {
+    return describe("Route", function() {
+      require("./title_spec").apply(this);
+      require("./store_spec").apply(this);
+      require("./element_spec").apply(this);
+      require("./populate_spec").apply(this);
+      return require("./parameters_spec").apply(this);
+    });
+  };
+
+}).call(this);
+
+},{"./element_spec":31,"./parameters_spec":33,"./populate_spec":34,"./store_spec":35,"./title_spec":36}],33:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -1881,7 +1901,7 @@
 
 }).call(this);
 
-},{}],33:[function(require,module,exports){
+},{}],34:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -1939,7 +1959,7 @@
 
 }).call(this);
 
-},{}],34:[function(require,module,exports){
+},{}],35:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("store", function() {
@@ -1968,7 +1988,7 @@
 
 }).call(this);
 
-},{}],35:[function(require,module,exports){
+},{}],36:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -2008,21 +2028,18 @@
 
 }).call(this);
 
-},{}],36:[function(require,module,exports){
+},{}],37:[function(require,module,exports){
 (function() {
   module.exports = function() {
-    return describe("Route", function() {
-      require("./route/title_spec").apply(this);
-      require("./route/store_spec").apply(this);
-      require("./route/element_spec").apply(this);
-      require("./route/populate_spec").apply(this);
-      return require("./route/parameters_spec").apply(this);
+    return describe("Router", function() {
+      require("./url_spec").apply(this);
+      return require("./matches_spec").apply(this);
     });
   };
 
 }).call(this);
 
-},{"./route/element_spec":31,"./route/parameters_spec":32,"./route/populate_spec":33,"./route/store_spec":34,"./route/title_spec":35}],37:[function(require,module,exports){
+},{"./matches_spec":38,"./url_spec":39}],38:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -2076,7 +2093,7 @@
 
 }).call(this);
 
-},{}],38:[function(require,module,exports){
+},{}],39:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("url", function() {
@@ -2099,18 +2116,7 @@
 
 }).call(this);
 
-},{}],39:[function(require,module,exports){
-(function() {
-  module.exports = function() {
-    return describe("Router", function() {
-      require("./router/url_spec").apply(this);
-      return require("./router/matches_spec").apply(this);
-    });
-  };
-
-}).call(this);
-
-},{"./router/matches_spec":37,"./router/url_spec":38}],40:[function(require,module,exports){
+},{}],40:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("Storage", function() {
@@ -2159,95 +2165,6 @@
 
 },{}],41:[function(require,module,exports){
 (function() {
-  var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-    hasProp = {}.hasOwnProperty;
-
-  module.exports = function() {
-    return describe("attributes", function() {
-      it("should be dasherized", function() {
-        var view;
-        view = new Hipbone.View({
-          fooBar: "bar"
-        });
-        return chai.expect(view.$el.attr("foo-bar")).to.be.equal("bar");
-      });
-      it("should add if class attribute", function() {
-        var View, view;
-        View = (function(superClass) {
-          extend(View, superClass);
-
-          function View() {
-            return View.__super__.constructor.apply(this, arguments);
-          }
-
-          View.prototype.className = "test";
-
-          return View;
-
-        })(Hipbone.View);
-        view = new View({
-          "class": "test-class"
-        });
-        return chai.expect(view.$el.attr("class")).to.be.equal("test test-class");
-      });
-      it("should not set boolean attribute if false", function() {
-        var View, view;
-        View = (function(superClass) {
-          extend(View, superClass);
-
-          function View() {
-            return View.__super__.constructor.apply(this, arguments);
-          }
-
-          View.prototype.defaults = {
-            test: false
-          };
-
-          View.register("View");
-
-          return View;
-
-        })(Hipbone.View);
-        view = new View;
-        return chai.expect(view.$el.attr("test")).to.be.equal(void 0);
-      });
-      it("should set boolean attribute empty if true", function() {
-        var View, view;
-        View = (function(superClass) {
-          extend(View, superClass);
-
-          function View() {
-            return View.__super__.constructor.apply(this, arguments);
-          }
-
-          View.prototype.defaults = {
-            test: false
-          };
-
-          View.register("View");
-
-          return View;
-
-        })(Hipbone.View);
-        view = new View({
-          test: true
-        });
-        return chai.expect(view.$el.attr("test")).to.be.equal("");
-      });
-      return it("should not set object attribute", function() {
-        var view;
-        view = new Hipbone.View({
-          object: {}
-        });
-        return chai.expect(view.$el.attr("object")).to.be.equal(void 0);
-      });
-    });
-  };
-
-}).call(this);
-
-},{}],42:[function(require,module,exports){
-(function() {
   module.exports = function() {
     return describe("bubble", function() {
       return it("should trigger and bubble DOM tree", function() {
@@ -2270,7 +2187,7 @@
 
 }).call(this);
 
-},{}],43:[function(require,module,exports){
+},{}],42:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -2317,7 +2234,7 @@
 
 }).call(this);
 
-},{}],44:[function(require,module,exports){
+},{}],43:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -2361,7 +2278,7 @@
 
 }).call(this);
 
-},{}],45:[function(require,module,exports){
+},{}],44:[function(require,module,exports){
 (function() {
   module.exports = function() {
     return describe("context", function() {
@@ -2434,7 +2351,7 @@
 
 }).call(this);
 
-},{}],46:[function(require,module,exports){
+},{}],45:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -2514,7 +2431,25 @@
 
 }).call(this);
 
-},{}],47:[function(require,module,exports){
+},{}],46:[function(require,module,exports){
+(function() {
+  module.exports = function() {
+    return describe("View", function() {
+      require("./bubble_spec").apply(this);
+      require("./content_spec").apply(this);
+      require("./context_spec").apply(this);
+      require("./populate_spec").apply(this);
+      require("./elements_spec").apply(this);
+      require("./template_spec").apply(this);
+      require("./lifecycle_spec").apply(this);
+      require("./properties_spec").apply(this);
+      return require("./class_name_bindings_spec").apply(this);
+    });
+  };
+
+}).call(this);
+
+},{"./bubble_spec":41,"./class_name_bindings_spec":42,"./content_spec":43,"./context_spec":44,"./elements_spec":45,"./lifecycle_spec":47,"./populate_spec":48,"./properties_spec":49,"./template_spec":50}],47:[function(require,module,exports){
 (function() {
   var extend = function(child, parent) { for (var key in parent) { if (hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
     hasProp = {}.hasOwnProperty;
@@ -2610,9 +2545,6 @@
         })(Hipbone.View);
         view = new View;
         view.$el.appendTo("#fixtures");
-        view.$el.on("change", function() {
-          return console.log(arguments);
-        });
         view.$el.attr("foo-bar", "");
         return _.defer(function() {
           chai.expect(view.get("fooBar")).to.be["true"];
@@ -2804,41 +2736,13 @@
 
 }).call(this);
 
-},{}],51:[function(require,module,exports){
-(function() {
-  module.exports = function() {
-    return describe("View", function() {
-      require("./view/bubble_spec").apply(this);
-      require("./view/content_spec").apply(this);
-      require("./view/context_spec").apply(this);
-      require("./view/populate_spec").apply(this);
-      require("./view/elements_spec").apply(this);
-      require("./view/template_spec").apply(this);
-      require("./view/lifecycle_spec").apply(this);
-      require("./view/properties_spec").apply(this);
-      return require("./view/class_name_bindings_spec").apply(this);
-    });
-  };
+},{}],"handlebars":[function(require,module,exports){
+module.exports = window.Handlebars;
 
-}).call(this);
+},{}],"jquery":[function(require,module,exports){
+module.exports = window.jQuery || window.$;
 
-},{"./view/bubble_spec":42,"./view/class_name_bindings_spec":43,"./view/content_spec":44,"./view/context_spec":45,"./view/elements_spec":46,"./view/lifecycle_spec":47,"./view/populate_spec":48,"./view/properties_spec":49,"./view/template_spec":50}],52:[function(require,module,exports){
-(function() {
-  if (navigator.userAgent.indexOf('PhantomJS') < 0) {
-    describe("hipbone", function() {
-      require("./hipbone/module_spec").apply(this);
-      require("./hipbone/i18n_spec").apply(this);
-      require("./hipbone/identity_map_spec").apply(this);
-      require("./hipbone/storage_spec").apply(this);
-      require("./hipbone/application_spec").apply(this);
-      require("./hipbone/model_spec").apply(this);
-      require("./hipbone/collection_spec").apply(this);
-      require("./hipbone/router_spec").apply(this);
-      require("./hipbone/route_spec").apply(this);
-      return require("./hipbone/view_spec").apply(this);
-    });
-  }
+},{}],"underscore":[function(require,module,exports){
+module.exports = window._;
 
-}).call(this);
-
-},{"./hipbone/application_spec":8,"./hipbone/collection_spec":17,"./hipbone/i18n_spec":18,"./hipbone/identity_map_spec":19,"./hipbone/model_spec":28,"./hipbone/module_spec":29,"./hipbone/route_spec":36,"./hipbone/router_spec":39,"./hipbone/storage_spec":40,"./hipbone/view_spec":51}]},{},[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52]);
+},{}]},{},[20]);

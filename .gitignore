@@ -1,5 +1,3 @@
 node_modules/
 tmp/
-spec/tmp/
-examples/todomvc/tmp/
 npm-debug.log

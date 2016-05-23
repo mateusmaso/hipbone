@@ -1,4 +1,4 @@
 $(function() {
-  window.app = new TodoMVC();
-  window.app.run();
+  var app = window.app = new TodoMVC();
+  app.run();
 });
