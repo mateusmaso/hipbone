@@ -1,8 +1,8 @@
 // hipbone
 // ------------------
-// v2.0.1
+// v2.0.2
 //
-// Copyright (c) 2012-2016 Mateus Maso
+// Copyright (c) 2012-2017 Mateus Maso
 // Distributed under MIT license
 //
 // http://github.com/mateusmaso/hipbone
