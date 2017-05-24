@@ -11,8 +11,8 @@
     "handlebars"
   ],
   "devDependencies": {
-    "chai": "*",
-    "mocha": "*",
+    "chai": "^3.5.0",
+    "mocha": "^3.4.1",
     "grunt": "^1.0.1",
     "grunt-mocha-phantomjs": "^4.0.0",
     "grunt-browserify": "^5.0.0",
